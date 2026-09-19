@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show SocketException;
+import 'dart:io' show SocketException, File;
 
 import 'package:http/http.dart' as http;
 
@@ -84,7 +84,7 @@ class PassengerDataService {
     try {
       final response = await _sendRequest(
         method: 'POST',
-        path: '/api/passenger/login',
+        path: '/api/login',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -102,18 +102,26 @@ class PassengerDataService {
                 ? decoded
                 : <String, dynamic>{});
 
-        PassengerSession.name = payload['name']?.toString() ?? '';
-        PassengerSession.email = payload['email']?.toString() ?? '';
-        PassengerSession.phone = payload['phone']?.toString() ?? '';
-        PassengerSession.passengerId =
-            int.tryParse(payload['id']?.toString() ?? '0') ?? 0;
+        final role = payload['role']?.toString().toLowerCase() ?? 'passenger';
+        final assignedPort = payload['assigned_port']?.toString();
+
+        await PassengerSession.saveSession(
+          name: payload['name']?.toString() ?? '',
+          email: payload['email']?.toString() ?? '',
+          phone: payload['phone']?.toString() ?? '',
+          passengerId: int.tryParse(payload['id']?.toString() ?? '0') ?? 0,
+          role: role,
+          assignedPort: assignedPort,
+        );
 
         // Persist encrypted Sanctum Bearer token in secure storage
         final token = payload['token']?.toString() ??
             (decoded is Map<String, dynamic> ? decoded['token']?.toString() : null);
         if (token != null && token.isNotEmpty) {
           await TokenStorageService.saveToken(token);
+          ApiService.setAuthToken(token);
         }
+        await TokenStorageService.saveUserRole(role);
 
         return payload;
       }
@@ -125,6 +133,36 @@ class PassengerDataService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw mapNetworkException(e, Uri.parse(ApiConfig.passengerLoginEndpoint));
+    }
+  }
+
+  /// Verify booking ticket QR code for boarding (Scanner Staff API).
+  Future<Map<String, dynamic>> verifyTicket(String codeOrReference) async {
+    try {
+      final response = await _sendRequest(
+        method: 'POST',
+        path: '/api/bookings/verify-ticket',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'reference_number': codeOrReference}),
+        requiresAuth: true,
+      );
+
+      final dynamic decoded = jsonDecode(response.body);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+      return {
+        'success': false,
+        'status': 'UNKNOWN_RESPONSE',
+        'message': 'Unexpected response received from ticket verification server.',
+      };
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      final uri = ApiService.buildUri(ApiConfig.baseUrl, '/api/bookings/verify-ticket');
+      throw mapNetworkException(e, uri);
     }
   }
 
@@ -254,6 +292,7 @@ class PassengerDataService {
     } catch (_) {
       // Gracefully continue even if offline
     } finally {
+      ApiService.clearAuthHeader();
       await TokenStorageService.deleteToken();
       PassengerSession.clear();
     }
@@ -302,6 +341,54 @@ class PassengerDataService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw mapNetworkException(e, Uri.parse('${ApiConfig.baseUrl}/api/schedules'));
+    }
+  }
+
+  /// Fetch distinct dates that have bookable trips for the given route and month.
+  Future<Set<DateTime>> fetchAvailableDates({
+    required String from,
+    required String to,
+    String? month,
+  }) async {
+    try {
+      final response = await _sendRequest(
+        method: 'GET',
+        path: '/api/schedules/available-dates',
+        queryParameters: {
+          'from': from,
+          'to': to,
+          if (month != null) 'month': month,
+        },
+        requiresAuth: false,
+      );
+
+      if (response.statusCode != 200) {
+        return const {};
+      }
+
+      final decoded = jsonDecode(response.body);
+      if (decoded is! Map<String, dynamic>) {
+        return const {};
+      }
+
+      final rawList = decoded['available_dates'];
+      if (rawList is! List) {
+        return const {};
+      }
+
+      final Set<DateTime> dates = {};
+      for (final item in rawList) {
+        if (item is String) {
+          final parsed = DateTime.tryParse(item);
+          if (parsed != null) {
+            dates.add(DateTime(parsed.year, parsed.month, parsed.day));
+          }
+        }
+      }
+      return dates;
+    } catch (_) {
+      // Graceful fallback: return empty set on network error
+      return const {};
     }
   }
 
@@ -375,36 +462,83 @@ class PassengerDataService {
     required String notes,
     List<dynamic>? seatNumbers,
     List<dynamic>? seatBreakdown,
+    Map<int, String>? passengerIdPhotos,
     int? passengerId,
     String? contactNumber,
     String? email,
   }) async {
     try {
-      final response = await _sendRequest(
-        method: 'POST',
-        path: '/api/passenger/bookings',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
-          'schedule_id': scheduleId,
+      final List<http.MultipartFile> multipartFiles = [];
+      if (passengerIdPhotos != null && passengerIdPhotos.isNotEmpty) {
+        for (final entry in passengerIdPhotos.entries) {
+          final filePath = entry.value;
+          if (filePath.isNotEmpty) {
+            final file = File(filePath);
+            if (await file.exists()) {
+              multipartFiles.add(
+                await http.MultipartFile.fromPath(
+                  'passenger_id_photos_${entry.key}',
+                  filePath,
+                ),
+              );
+            }
+          }
+        }
+      }
+
+      final http.Response response;
+      if (multipartFiles.isNotEmpty) {
+        final Map<String, String> fields = {
+          'schedule_id': scheduleId.toString(),
           'passenger_name': passengerName,
-          'seat_count': seatCount,
-          'amount_collected': amountCollected,
+          'seat_count': seatCount.toString(),
+          'amount_collected': amountCollected.toString(),
           'notes': notes,
           if (seatNumbers != null && seatNumbers.isNotEmpty)
-            'seat_numbers': seatNumbers,
+            'seat_numbers': jsonEncode(seatNumbers),
           if (seatBreakdown != null && seatBreakdown.isNotEmpty)
-            'seat_breakdown': seatBreakdown,
+            'seat_breakdown': jsonEncode(seatBreakdown),
           if (passengerId != null && passengerId > 0)
-            'passenger_id': passengerId,
+            'passenger_id': passengerId.toString(),
           if (contactNumber != null && contactNumber.trim().isNotEmpty)
             'contact_number': contactNumber.trim(),
           if (email != null && email.trim().isNotEmpty)
             'email': email.trim(),
-        }),
-      );
+        };
+
+        response = await ApiService.multipartRequest(
+          method: 'POST',
+          endpoint: '/api/passenger/bookings',
+          fields: fields,
+          files: multipartFiles,
+        );
+      } else {
+        response = await _sendRequest(
+          method: 'POST',
+          path: '/api/passenger/bookings',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode({
+            'schedule_id': scheduleId,
+            'passenger_name': passengerName,
+            'seat_count': seatCount,
+            'amount_collected': amountCollected,
+            'notes': notes,
+            if (seatNumbers != null && seatNumbers.isNotEmpty)
+              'seat_numbers': seatNumbers,
+            if (seatBreakdown != null && seatBreakdown.isNotEmpty)
+              'seat_breakdown': seatBreakdown,
+            if (passengerId != null && passengerId > 0)
+              'passenger_id': passengerId,
+            if (contactNumber != null && contactNumber.trim().isNotEmpty)
+              'contact_number': contactNumber.trim(),
+            if (email != null && email.trim().isNotEmpty)
+              'email': email.trim(),
+          }),
+        );
+      }
 
       final decoded = jsonDecode(response.body);
 
@@ -424,6 +558,130 @@ class PassengerDataService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw mapNetworkException(e, Uri.parse('${ApiConfig.baseUrl}/api/passenger/bookings'));
+    }
+  }
+
+  /// Initialize a PayMongo checkout session for dynamic GCash / QR Ph payment.
+  /// Supports both new booking creation and payment for an existing booking.
+  Future<Map<String, dynamic>> createPayMongoCheckoutSession({
+    int? bookingId,
+    int? scheduleId,
+    String? passengerName,
+    int? seatCount,
+    double? amountCollected,
+    String? notes,
+    List<dynamic>? seatNumbers,
+    List<dynamic>? seatBreakdown,
+    Map<int, String>? passengerIdPhotos,
+    int? passengerId,
+    String? contactNumber,
+    String? email,
+  }) async {
+    try {
+      if (bookingId != null && bookingId > 0) {
+        final response = await _sendRequest(
+          method: 'POST',
+          path: '/api/payments/checkout',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode({'booking_id': bookingId}),
+        );
+
+        final dynamic decoded = jsonDecode(response.body);
+        if (response.statusCode == 200 && decoded is Map<String, dynamic> && decoded['checkout_url'] != null) {
+          return decoded;
+        }
+
+        final message = decoded is Map<String, dynamic> ? decoded['message']?.toString() : null;
+        throw ApiException(message ?? 'Failed to initialize PayMongo checkout.');
+      }
+
+      final List<http.MultipartFile> multipartFiles = [];
+      if (passengerIdPhotos != null && passengerIdPhotos.isNotEmpty) {
+        for (final entry in passengerIdPhotos.entries) {
+          final filePath = entry.value;
+          if (filePath.isNotEmpty) {
+            final file = File(filePath);
+            if (await file.exists()) {
+              multipartFiles.add(
+                await http.MultipartFile.fromPath(
+                  'passenger_id_photos_${entry.key}',
+                  filePath,
+                ),
+              );
+            }
+          }
+        }
+      }
+
+      final http.Response response;
+      if (multipartFiles.isNotEmpty) {
+        final Map<String, String> fields = {
+          if (scheduleId != null) 'schedule_id': scheduleId.toString(),
+          if (passengerName != null) 'passenger_name': passengerName,
+          if (seatCount != null) 'seat_count': seatCount.toString(),
+          if (amountCollected != null) 'amount_collected': amountCollected.toString(),
+          if (notes != null) 'notes': notes,
+          if (seatNumbers != null && seatNumbers.isNotEmpty)
+            'seat_numbers': jsonEncode(seatNumbers),
+          if (seatBreakdown != null && seatBreakdown.isNotEmpty)
+            'seat_breakdown': jsonEncode(seatBreakdown),
+          if (passengerId != null && passengerId > 0)
+            'passenger_id': passengerId.toString(),
+          if (contactNumber != null && contactNumber.trim().isNotEmpty)
+            'contact_number': contactNumber.trim(),
+          if (email != null && email.trim().isNotEmpty)
+            'email': email.trim(),
+        };
+
+        response = await ApiService.multipartRequest(
+          method: 'POST',
+          endpoint: '/api/payments/checkout',
+          fields: fields,
+          files: multipartFiles,
+        );
+      } else {
+        response = await _sendRequest(
+          method: 'POST',
+          path: '/api/payments/checkout',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode({
+            if (scheduleId != null) 'schedule_id': scheduleId,
+            if (passengerName != null) 'passenger_name': passengerName,
+            if (seatCount != null) 'seat_count': seatCount,
+            if (amountCollected != null) 'amount_collected': amountCollected,
+            if (notes != null) 'notes': notes,
+            if (seatNumbers != null && seatNumbers.isNotEmpty)
+              'seat_numbers': seatNumbers,
+            if (seatBreakdown != null && seatBreakdown.isNotEmpty)
+              'seat_breakdown': seatBreakdown,
+            if (passengerId != null && passengerId > 0)
+              'passenger_id': passengerId,
+            if (contactNumber != null && contactNumber.trim().isNotEmpty)
+              'contact_number': contactNumber.trim(),
+            if (email != null && email.trim().isNotEmpty)
+              'email': email.trim(),
+          }),
+        );
+      }
+
+      final dynamic decoded = jsonDecode(response.body);
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          decoded is Map<String, dynamic> &&
+          decoded['checkout_url'] != null) {
+        return decoded;
+      }
+
+      final message = decoded is Map<String, dynamic> ? decoded['message']?.toString() : null;
+      throw ApiException(message ?? 'Unable to initialize PayMongo payment session.');
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw mapNetworkException(e, Uri.parse('${ApiConfig.baseUrl}/api/payments/checkout'));
     }
   }
 

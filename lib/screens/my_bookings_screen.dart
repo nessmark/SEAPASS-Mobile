@@ -204,14 +204,27 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                 final booking = activeBookings[index];
                                 return BookingCard(
                                   booking: booking,
-                                  onViewTicket: () {
-                                    Navigator.push(
+                                  onViewTicket: () async {
+                                    // Pause background polling while viewing ticket details
+                                    // to prevent status from visually "changing" mid-view.
+                                    _pollingTimer?.cancel();
+                                    await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (_) =>
                                             ViewTicketScreen(booking: booking),
                                       ),
                                     );
+                                    // Resume polling after returning from detail view
+                                    if (mounted) {
+                                      _pollingTimer = Timer.periodic(
+                                        const Duration(seconds: 5),
+                                        (_) {
+                                          if (mounted) _loadBookings(silent: true);
+                                        },
+                                      );
+                                      _loadBookings(silent: true);
+                                    }
                                   },
                                 );
                               },
@@ -257,7 +270,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withOpacity(0.3)
+                      ? Colors.white.withValues(alpha: 0.3)
                       : Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(10),
                 ),

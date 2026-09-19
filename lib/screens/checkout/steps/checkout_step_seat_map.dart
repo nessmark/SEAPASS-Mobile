@@ -1,0 +1,464 @@
+import 'package:flutter/material.dart';
+
+import '../../../models/passenger_booking_models.dart';
+import '../../../models/schedule.dart';
+import '../../../widgets/app_palette.dart';
+
+/// Step 2 of the booking checkout flow:
+/// Displays the vessel cabin layout, legend, passenger seat assignments, and interactive seat grid.
+class CheckoutStepSeatMap extends StatelessWidget {
+  const CheckoutStepSeatMap({
+    super.key,
+    required this.schedule,
+    required this.passengers,
+    required this.seats,
+    required this.activePassengerIndex,
+    required this.totalSeats,
+    required this.totalRows,
+    required this.isRefreshing,
+    required this.onActivePassengerChanged,
+    required this.onSeatTapped,
+    required this.onBackToDetails,
+    required this.onProceedToPayment,
+    required this.onManualRefresh,
+  });
+
+  final Schedule schedule;
+  final List<PassengerDetail> passengers;
+  final List<VesselSeat> seats;
+  final int activePassengerIndex;
+  final int totalSeats;
+  final int totalRows;
+  final bool isRefreshing;
+
+  final void Function(int index) onActivePassengerChanged;
+  final void Function(VesselSeat seat) onSeatTapped;
+  final VoidCallback onBackToDetails;
+  final VoidCallback onProceedToPayment;
+  final VoidCallback onManualRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final activePassenger = passengers.isNotEmpty && activePassengerIndex < passengers.length
+        ? passengers[activePassengerIndex]
+        : null;
+
+    final int assignedCount = passengers.where((p) => p.assignedSeat != null && p.assignedSeat!.isNotEmpty).length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Vessel Cabin Header Card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    schedule.boatName.isNotEmpty
+                        ? schedule.boatName
+                        : 'Vessel Cabin Seat Map',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: AppPalette.darkText,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Economy Class',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.blue.shade700,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${schedule.from} → ${schedule.to} • ${schedule.time}',
+                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: isRefreshing ? null : onManualRefresh,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppPalette.mintGreen.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppPalette.mintGreen.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isRefreshing)
+                            const SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppPalette.mintGreen,
+                              ),
+                            )
+                          else
+                            const Icon(
+                              Icons.refresh_rounded,
+                              size: 14,
+                              color: AppPalette.mintGreen,
+                            ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isRefreshing ? 'Refreshing...' : 'Refresh Seats',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppPalette.mintGreen,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Active Passenger Selection Chips
+        Text(
+          'Select Passenger to Assign Seat:',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade700,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        SizedBox(
+          height: 48,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: passengers.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final p = passengers[i];
+              final bool isCurrent = i == activePassengerIndex;
+              final bool hasSeat = p.assignedSeat != null && p.assignedSeat!.isNotEmpty;
+
+              return ChoiceChip(
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'P${p.index}: ${p.fullName}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: hasSeat
+                            ? AppPalette.mintGreen
+                            : Colors.grey.shade400,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        hasSeat ? p.assignedSeat! : '--',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                selected: isCurrent,
+                selectedColor: AppPalette.mintGreen.withValues(alpha: 0.2),
+                onSelected: (_) => onActivePassengerChanged(i),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Seat Status Legend (Available, Selected, Unavailable)
+        _buildSeatLegend(),
+        const SizedBox(height: 14),
+
+        // Vessel Cabin Visual Outline & Grid
+        Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 360),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(60),
+                bottom: Radius.circular(20),
+              ),
+              border: Border.all(color: Colors.grey.shade300, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Front / Bow Indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.navigation_rounded, size: 14, color: AppPalette.mintGreen),
+                      SizedBox(width: 4),
+                      Text(
+                        'FRONT / BOW',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Exit Indicators
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('« EXIT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+                    Text('EXIT »', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+                  ],
+                ),
+                const Divider(height: 20),
+
+                // Seat Rows
+                ...List.generate(totalRows, (rIndex) => _buildSeatRow(rIndex + 1)),
+
+                const SizedBox(height: 10),
+                const Text(
+                  'AFT / STERN',
+                  style: TextStyle(fontSize: 10, color: Colors.grey, letterSpacing: 0.8),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Bottom Controls
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Assigned: $assignedCount / $totalSeats Seats',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  if (activePassenger != null)
+                    Text(
+                      'Editing: P${activePassenger.index}',
+                      style: const TextStyle(
+                        color: AppPalette.mintGreen,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: onBackToDetails,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('← Details'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: assignedCount == totalSeats ? onProceedToPayment : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppPalette.mintGreen,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text(
+                        'REVIEW & PAY →',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSeatLegend() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildLegendItem('Available', Colors.white, Colors.blue.shade400, const Text('')),
+        _buildLegendItem('Selected', AppPalette.mintGreen, AppPalette.mintGreen, const Icon(Icons.check, size: 12, color: Colors.white)),
+        _buildLegendItem('Booked', Colors.grey.shade200, Colors.grey.shade300, const Icon(Icons.close, size: 12, color: Colors.grey)),
+      ],
+    );
+  }
+
+  Widget _buildLegendItem(String label, Color fill, Color border, Widget child) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: fill,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: border, width: 1.5),
+          ),
+          child: Center(child: child),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      ],
+    );
+  }
+
+  Widget _buildSeatRow(int rowNumber) {
+    final rowSeats = seats.where((s) => s.row == rowNumber).toList();
+    final leftSide = rowSeats.where((s) => s.column == 'A' || s.column == 'B').toList();
+    final rightSide = rowSeats.where((s) => s.column == 'C' || s.column == 'D' || s.column == 'E').toList();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Left bank [A] [B]
+          ...leftSide.map((seat) => _buildSeatBox(seat)),
+
+          // Aisle with row number
+          Container(
+            width: 36,
+            alignment: Alignment.center,
+            child: Text(
+              '$rowNumber',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade400,
+              ),
+            ),
+          ),
+
+          // Right bank [C] [D] [E]
+          ...rightSide.map((seat) => _buildSeatBox(seat)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSeatBox(VesselSeat seat) {
+    Color bg = Colors.white;
+    Color border = Colors.blue.shade200;
+    Widget child = Text(
+      seat.column,
+      style: TextStyle(
+        fontSize: 12,
+        color: Colors.blue.shade600,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+
+    if (seat.isBooked) {
+      bg = Colors.grey.shade200;
+      border = Colors.grey.shade300;
+      child = const Icon(Icons.close, size: 14, color: Colors.grey);
+    } else if (seat.isSelected) {
+      bg = AppPalette.mintGreen;
+      border = AppPalette.mintGreen;
+      child = Text(
+        'P${seat.assignedPassengerIndex}',
+        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => onSeatTapped(seat),
+      child: Container(
+        width: 36,
+        height: 36,
+        margin: const EdgeInsets.symmetric(horizontal: 3),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: border, width: 1.5),
+        ),
+        child: Center(child: child),
+      ),
+    );
+  }
+}

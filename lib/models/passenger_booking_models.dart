@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 /// Represents a single passenger's details in the checkout flow.
@@ -9,8 +10,12 @@ class PassengerDetail {
   late final TextEditingController lastNameController;
   late final TextEditingController idNumberController;
 
+  String? idPhotoPath;
   String? assignedSeat;
   bool isExpanded = true;
+
+  File? get idPhotoFile =>
+      idPhotoPath != null && idPhotoPath!.isNotEmpty ? File(idPhotoPath!) : null;
 
   PassengerDetail({
     required this.index,
@@ -18,6 +23,7 @@ class PassengerDetail {
     String initialGivenNames = '',
     String initialLastName = '',
     String initialIdNumber = '',
+    this.idPhotoPath,
     this.assignedSeat,
     this.isExpanded = true,
   }) {
@@ -38,6 +44,7 @@ class PassengerDetail {
       initialGivenNames: givenNamesController.text,
       initialLastName: lastNameController.text,
       initialIdNumber: idNumberController.text,
+      idPhotoPath: idPhotoPath,
       assignedSeat: assignedSeat,
       isExpanded: newIsExpanded ?? isExpanded,
     );
@@ -66,7 +73,8 @@ class PassengerDetail {
     final first = givenNamesController.text.trim();
     final last = lastNameController.text.trim();
     final hasNames = first.isNotEmpty && last.isNotEmpty;
-    final hasIdIfDiscounted = (category == 'regular') || idNumberController.text.trim().isNotEmpty;
+    final hasIdIfDiscounted = (category == 'regular') ||
+        (idPhotoPath != null && idPhotoPath!.trim().isNotEmpty);
     return hasNames && hasIdIfDiscounted;
   }
 

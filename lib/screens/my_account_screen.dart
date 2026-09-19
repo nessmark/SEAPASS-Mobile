@@ -105,9 +105,11 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       // 1. Revoke Sanctum access token on backend and clear secure storage
       await _dataService.logout();
 
-      // 2. Clear cached SharedPreferences data
+      // 2. Selectively clear only auth and session data (keep server IP / Base URL intact)
       final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      await prefs.remove('auth_token');
+      await prefs.remove('user_role');
+      await prefs.remove('user_data');
 
       if (!context.mounted) return;
 

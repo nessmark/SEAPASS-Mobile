@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 import '../models/schedule.dart';
 import '../services/api_exception.dart';
 import '../services/passenger_data_service.dart';
 import '../services/passenger_session.dart';
-import '../utils/manila_clock.dart';
 import '../widgets/app_palette.dart';
 import 'booking_checkout_screen.dart';
 
@@ -24,18 +24,24 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
   String _from = 'Surigao';
   String _to = 'San Jose';
   late DateTime _selectedDate;
+  late DateTime _focusedDay;
 
   // ─── Async state ─────────────────────────────────────────────────────────────
   Future<List<Schedule>>? _schedulesFuture;
   bool _hasSearched = false;
+
+  // ─── Calendar availability markers ──────────────────────────────────────────
+  Set<DateTime> _availableDates = {};
 
   final PassengerDataService _dataService = const PassengerDataService();
 
   @override
   void initState() {
     super.initState();
-    // Default to today (Manila-friendly ISO date, times are local)
     _selectedDate = DateTime.now();
+    _focusedDay = _selectedDate;
+    _loadAvailableDates();
+    _search();
   }
 
   // ─── Actions ─────────────────────────────────────────────────────────────────
@@ -53,34 +59,27 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
 
   void _retry() => _search();
 
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: AppPalette.mintGreen,
-            onPrimary: Colors.white,
-          ),
-        ),
-        child: child!,
-      ),
-    );
-
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _hasSearched = true;
-        _schedulesFuture = _dataService.fetchSchedules(
-          date: picked,
-          from: _from,
-          to: _to,
-        );
-      });
+  /// Fetch dates that have available trips for the current route and focused month.
+  Future<void> _loadAvailableDates() async {
+    try {
+      final month =
+          '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}';
+      final dates = await _dataService.fetchAvailableDates(
+        from: _from,
+        to: _to,
+        month: month,
+      );
+      if (mounted) setState(() => _availableDates = dates);
+    } catch (_) {
+      // Silently fail — calendar still works, just without green dots
     }
+  }
+
+  /// Check if a given day has available trips.
+  bool _hasTripsOnDay(DateTime day) {
+    return _availableDates.any(
+      (d) => d.year == day.year && d.month == day.month && d.day == day.day,
+    );
   }
 
   // ─── Build ───────────────────────────────────────────────────────────────────
@@ -131,15 +130,16 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
           text: TextSpan(
             style: const TextStyle(color: AppPalette.darkText, fontSize: 22),
             children: [
-              const TextSpan(text: 'Welcome,\n'),
+              
               TextSpan(
-                text: '$displayName 👋',
+                text: '$displayName!',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 26,
                   color: AppPalette.mintGreen,
                 ),
               ),
+              const TextSpan(text: '\nSakay na!'),
             ],
           ),
         ),
@@ -159,11 +159,6 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
   // ─── Search card ─────────────────────────────────────────────────────────────
 
   Widget _buildSearchCard() {
-    final dateLabel = ManilaClock.toQueryDate(_selectedDate) ==
-            ManilaClock.toQueryDate(DateTime.now())
-        ? 'Today, ${_formatDisplayDate(_selectedDate)}'
-        : _formatDisplayDate(_selectedDate);
-
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -195,16 +190,24 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
           Row(
             children: [
               Expanded(child: _buildPortDropdown('From', _from, (v) {
-                if (v != null) setState(() => _from = v);
+                if (v != null) {
+                  setState(() => _from = v);
+                  _loadAvailableDates();
+                  _search();
+                }
               })),
               const SizedBox(width: 10),
               // Swap button
               GestureDetector(
-                onTap: () => setState(() {
-                  final tmp = _from;
-                  _from = _to;
-                  _to = tmp;
-                }),
+                onTap: () {
+                  setState(() {
+                    final tmp = _from;
+                    _from = _to;
+                    _to = tmp;
+                  });
+                  _loadAvailableDates();
+                  _search();
+                },
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -220,69 +223,137 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
               ),
               const SizedBox(width: 10),
               Expanded(child: _buildPortDropdown('To', _to, (v) {
-                if (v != null) setState(() => _to = v);
+                if (v != null) {
+                  setState(() => _to = v);
+                  _loadAvailableDates();
+                  _search();
+                }
               })),
             ],
           ),
           const SizedBox(height: 12),
 
-          // Date picker
-          GestureDetector(
-            onTap: _pickDate,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_month_outlined,
-                      size: 20, color: AppPalette.subtleGrey),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      dateLabel,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppPalette.darkText,
-                      ),
-                    ),
-                  ),
-                  const Icon(Icons.edit_calendar_outlined,
-                      size: 18, color: AppPalette.subtleGrey),
-                ],
-              ),
+          // ── Inline Calendar Widget ─────────────────────────────────────
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(14),
             ),
-          ),
-          const SizedBox(height: 16),
-
-          // Search button
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton.icon(
-              onPressed: _search,
-              icon: const Icon(Icons.search_rounded, size: 20),
-              label: const Text(
-                'SEARCH',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+            child: TableCalendar(
+              firstDay: DateTime.now().subtract(const Duration(days: 1)),
+              lastDay: DateTime.now().add(const Duration(days: 1825)),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+              onDaySelected: (selected, focused) {
+                setState(() {
+                  _selectedDate = selected;
+                  _focusedDay = focused;
+                });
+                _search(); // Auto-search on date tap
+              },
+              calendarFormat: CalendarFormat.month,
+              availableCalendarFormats: const {CalendarFormat.month: 'Month'},
+              startingDayOfWeek: StartingDayOfWeek.monday,
+              daysOfWeekHeight: 28,
+              rowHeight: 44,
+              headerStyle: const HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle: TextStyle(
                   fontSize: 15,
-                  letterSpacing: 0.8,
+                  fontWeight: FontWeight.w700,
+                  color: AppPalette.darkText,
+                ),
+                leftChevronIcon: Icon(
+                  Icons.chevron_left_rounded,
+                  color: AppPalette.mintGreen,
+                  size: 24,
+                ),
+                rightChevronIcon: Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppPalette.mintGreen,
+                  size: 24,
+                ),
+                headerPadding: EdgeInsets.symmetric(vertical: 8),
+              ),
+              daysOfWeekStyle: DaysOfWeekStyle(
+                weekdayStyle: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade500,
+                ),
+                weekendStyle: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade400,
                 ),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppPalette.mintGreen,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+              calendarStyle: CalendarStyle(
+                // Selected day (user tapped)
+                selectedDecoration: const BoxDecoration(
+                  color: AppPalette.mintGreen,
+                  shape: BoxShape.circle,
                 ),
-                elevation: 0,
+                selectedTextStyle: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                // Today highlight
+                todayDecoration: BoxDecoration(
+                  color: AppPalette.mintGreen.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                todayTextStyle: const TextStyle(
+                  color: AppPalette.darkText,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                // Default days
+                defaultTextStyle: const TextStyle(
+                  fontSize: 14,
+                  color: AppPalette.darkText,
+                ),
+                weekendTextStyle: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade500,
+                ),
+                outsideTextStyle: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade300,
+                ),
+                disabledTextStyle: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade300,
+                ),
+                cellMargin: const EdgeInsets.all(4),
               ),
+              // ── Green availability dot markers ───────────────────────
+              calendarBuilders: CalendarBuilders(
+                markerBuilder: (context, date, events) {
+                  if (_hasTripsOnDay(date)) {
+                    return Positioned(
+                      bottom: 3,
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: AppPalette.mintGreen,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    );
+                  }
+                  return null;
+                },
+              ),
+              onPageChanged: (focusedDay) {
+                _focusedDay = focusedDay;
+                _loadAvailableDates();
+              },
             ),
           ),
+
         ],
       ),
     );
@@ -294,7 +365,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
     ValueChanged<String?> onChanged,
   ) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(fontSize: 13),
@@ -616,14 +687,6 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-  String _formatDisplayDate(DateTime date) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
 }
 
 // ─── Skeleton loader ─────────────────────────────────────────────────────────

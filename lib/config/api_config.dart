@@ -40,7 +40,7 @@ class ApiConfig {
   static const String usbAdbHost = '127.0.0.1';
   static String lanWifiHost = '192.168.1.9';
   static const String emulatorHost = '10.0.2.2';
-  static const String productionUrl = 'https://api.seapass.ph';
+  static const String productionUrl = 'https://overplant-theology-chomp.ngrok-free.dev';
 
   // Build-time environment variable override:
   // flutter run --dart-define=SEAPASS_API_BASE_URL=https://api.example.com

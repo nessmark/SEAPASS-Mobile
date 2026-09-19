@@ -1,20 +1,35 @@
 import 'package:flutter/material.dart';
 
 import 'app_navigator.dart';
-import 'config/api_config.dart';
 import 'models/booking.dart';
 import 'models/schedule.dart';
+import 'screens/advisories_screen.dart';
+import 'screens/auth_gate.dart';
 import 'screens/booking_checkout_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/otp_verification_screen.dart';
 import 'screens/passenger_home_screen.dart';
+import 'screens/scanner_home_screen.dart';
+import 'screens/signup_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/view_ticket_screen.dart';
+import 'package:provider/provider.dart';
+
+import 'providers/advisory_provider.dart';
+import 'services/api_service.dart';
 import 'widgets/app_palette.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ApiConfig.init();
-  runApp(const MyApp());
+  await ApiService.init();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AdvisoryProvider()..fetchUnreadCount()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -53,10 +68,19 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.white,
         ),
       ),
-      home: const SplashScreen(),
+      home: const AuthGate(),
       routes: {
-        PassengerHomeScreen.routeName: (context) => const PassengerHomeScreen(),
+        AuthGate.routeName: (context) => const AuthGate(),
+        SplashScreen.routeName: (context) => const SplashScreen(),
         LoginScreen.routeName: (context) => const LoginScreen(),
+        PassengerHomeScreen.routeName: (context) => const PassengerHomeScreen(),
+        ScannerHomeScreen.routeName: (context) => const ScannerHomeScreen(),
+        AdvisoriesScreen.routeName: (context) => const AdvisoriesScreen(),
+        SignupScreen.routeName: (context) => const SignupScreen(),
+        OtpVerificationScreen.routeName: (context) {
+          final args = ModalRoute.of(context)?.settings.arguments as OtpVerificationArguments?;
+          return OtpVerificationScreen(arguments: args);
+        },
         ViewTicketScreen.routeName: (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
           return ViewTicketScreen(

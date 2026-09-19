@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../config/api_config.dart';
 import '../services/api_exception.dart';
+import '../services/api_service.dart';
 import '../services/passenger_data_service.dart';
+import '../services/passenger_session.dart';
+import '../services/token_storage_service.dart';
 import '../widgets/app_palette.dart';
 import '../widgets/seapass_logo.dart';
+import 'main_navigation_screen.dart';
+import 'scanner_home_screen.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,6 +29,15 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Restore saved server IP / Base URL on login screen render
+    ApiService.init().then((_) {
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   void dispose() {
@@ -227,9 +241,32 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await _dataService.login(email: email, password: password);
+      final payload = await _dataService.login(email: email, password: password);
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+
+      final role = payload['role']?.toString().toLowerCase() ?? PassengerSession.role;
+      await TokenStorageService.saveUserRole(role);
+
+      final token = await TokenStorageService.getToken();
+      if (token != null && token.isNotEmpty) {
+        ApiService.setAuthToken(token);
+      }
+
+      if (!mounted) return;
+
+      if (role == 'scanner') {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const ScannerHomeScreen()),
+          (route) => false,
+        );
+      } else {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+          (route) => false,
+        );
+      }
     } on ApiException catch (error) {
       if (mounted) {
         setState(() => _errorMessage = error.message);

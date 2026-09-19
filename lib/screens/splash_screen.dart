@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 
+import '../services/passenger_session.dart';
+import '../services/token_storage_service.dart';
 import '../widgets/app_palette.dart';
 import '../widgets/seapass_logo.dart';
 import 'login_screen.dart';
+import 'main_navigation_screen.dart';
 
 /// Full-screen splash / loading screen shown while the app initialises.
 ///
 /// Displays the SeaPass ferry logo with a gentle pulse animation, then
-/// navigates automatically to [LoginScreen] after a brief delay.
+/// inspects stored token & role to route to LoginScreen, ScannerHomeScreen, or MainNavigationScreen.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  static const String routeName = '/splash';
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -43,18 +48,53 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Navigate to login after a short branded delay
-    Future.delayed(const Duration(milliseconds: 2200), () {
+    // Verify active session token & role in local storage on startup
+    Future.delayed(const Duration(milliseconds: 1200), () async {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
+
+      await PassengerSession.loadSession();
+      final token = await TokenStorageService.getToken();
+      final storedRole = await TokenStorageService.getUserRole();
+      final userRole = (storedRole != null && storedRole.isNotEmpty)
+          ? storedRole.toLowerCase()
+          : PassengerSession.role.toLowerCase();
+
+      if (!mounted) return;
+
+      final bool hasValidToken =
+          token != null && token.trim().isNotEmpty && token != 'null';
+
+      Widget targetScreen;
+      if (!hasValidToken) {
+        // Case 1: No Token / Unauthenticated -> LoginScreen
+        targetScreen = const LoginScreen();
+      } else if (userRole == 'scanner') {
+        // Scanner staff must NOT bypass login on app launch/restart.
+        // Clear scanner session on startup so staff always authenticates via LoginScreen.
+        await TokenStorageService.deleteToken();
+        await PassengerSession.clear();
+        targetScreen = const LoginScreen();
+      } else if (userRole == 'passenger') {
+        // Case 3: Authenticated as Passenger -> MainNavigationScreen
+        targetScreen = const MainNavigationScreen();
+      } else {
+        // Fallback: Clear invalid state and route to LoginScreen
+        await TokenStorageService.deleteToken();
+        await PassengerSession.clear();
+        targetScreen = const LoginScreen();
+      }
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const LoginScreen(),
+          pageBuilder: (_, __, ___) => targetScreen,
           transitionsBuilder: (_, animation, __, child) => FadeTransition(
             opacity: animation,
             child: child,
           ),
-          transitionDuration: const Duration(milliseconds: 500),
+          transitionDuration: const Duration(milliseconds: 300),
         ),
+        (route) => false,
       );
     });
   }

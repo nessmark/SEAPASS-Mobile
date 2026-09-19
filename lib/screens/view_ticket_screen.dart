@@ -1,20 +1,268 @@
 import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:gal/gal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../models/booking.dart';
 import '../widgets/app_palette.dart';
 
-class ViewTicketScreen extends StatelessWidget {
+class ViewTicketScreen extends StatefulWidget {
   const ViewTicketScreen({super.key, this.booking});
 
   static const String routeName = '/ticket';
   final Booking? booking;
 
   @override
+  State<ViewTicketScreen> createState() => _ViewTicketScreenState();
+}
+
+class _ViewTicketScreenState extends State<ViewTicketScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _ticketKeys = {};
+  bool _isSaving = false;
+  int _savingProgress = 0;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  GlobalKey _getKeyForIndex(int index) {
+    return _ticketKeys.putIfAbsent(index, () => GlobalKey());
+  }
+
+  /// Captures the RepaintBoundary widget into high-res PNG byte data.
+  Future<Uint8List?> _captureTicketPng(GlobalKey key) async {
+    for (int attempt = 0; attempt < 5; attempt++) {
+      try {
+        final BuildContext? context = key.currentContext;
+        if (context == null || !context.mounted) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          continue;
+        }
+
+        final RenderObject? renderObject = context.findRenderObject();
+        if (renderObject is! RenderRepaintBoundary) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          continue;
+        }
+
+        // Wait for frame to finish rendering so the repaint boundary is fully painted
+        if (WidgetsBinding.instance.hasScheduledFrame) {
+          await WidgetsBinding.instance.endOfFrame;
+        }
+
+        // pixelRatio: 3.0 renders a sharp 3x scale image for crisp QR codes and typography
+        final ui.Image image = await renderObject.toImage(pixelRatio: 3.0);
+        final ByteData? byteData =
+            await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData != null) {
+          return byteData.buffer.asUint8List();
+        }
+      } catch (e) {
+        debugPrint('[SeaPass] RepaintBoundary capture attempt $attempt: $e');
+        await Future.delayed(const Duration(milliseconds: 120));
+      }
+    }
+    return null;
+  }
+
+  /// Loops through all ticket RepaintBoundaries, renders PNGs, and writes to gallery.
+  Future<void> _saveAllTicketsToGallery(
+    List<PassengerTicketInfo> tickets,
+    String bookingRef,
+  ) async {
+    if (_isSaving || tickets.isEmpty) return;
+
+    setState(() {
+      _isSaving = true;
+      _savingProgress = 0;
+    });
+
+    try {
+      // 1. Verify / Request Gallery Storage Access
+      final bool hasAccess = await Gal.hasAccess(toAlbum: false);
+      if (!hasAccess) {
+        final bool granted = await Gal.requestAccess(toAlbum: false);
+        if (!granted) {
+          if (mounted) {
+            _showFeedbackSnackBar(
+              message:
+                  'Storage permission denied. Please grant permission in App Settings to save tickets.',
+              isError: true,
+            );
+          }
+          return;
+        }
+      }
+
+      int savedCount = 0;
+
+      for (int i = 0; i < tickets.length; i++) {
+        final passenger = tickets[i];
+        final key = _getKeyForIndex(i);
+
+        if (mounted) {
+          setState(() {
+            _savingProgress = i + 1;
+          });
+        }
+
+        // Ensure ticket card is in viewport and repainted
+        if (key.currentContext != null) {
+          await Scrollable.ensureVisible(
+            key.currentContext!,
+            duration: const Duration(milliseconds: 160),
+            alignment: 0.05,
+          );
+          await Future.delayed(const Duration(milliseconds: 180));
+        } else {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+
+        final Uint8List? pngBytes = await _captureTicketPng(key);
+        if (pngBytes == null) {
+          debugPrint(
+              '[SeaPass] Failed to capture ticket image for seat ${passenger.seat}');
+          continue;
+        }
+
+        // Clean filename format: SeaPass_Ticket_SP-20260905-0015_Seat4C
+        final sanitizedRef =
+            bookingRef.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+        final sanitizedSeat =
+            passenger.seat.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+        final fileName =
+            'SeaPass_Ticket_${sanitizedRef}_Seat$sanitizedSeat';
+
+        await Gal.putImageBytes(
+          pngBytes,
+          name: fileName,
+        );
+
+        savedCount++;
+      }
+
+      // Smoothly scroll back to the top of the ticket screen
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+
+      if (mounted) {
+        if (savedCount > 0) {
+          _showFeedbackSnackBar(
+            message: savedCount == 1
+                ? '1 Ticket saved to Gallery successfully!'
+                : '$savedCount Tickets saved to Gallery successfully!',
+            isError: false,
+          );
+        } else {
+          _showFeedbackSnackBar(
+            message: 'Could not generate ticket images. Please try again.',
+            isError: true,
+          );
+        }
+      }
+    } on GalException catch (e) {
+      debugPrint('[SeaPass] GalException: ${e.type}');
+      if (mounted) {
+        _showFeedbackSnackBar(
+          message: 'Gallery save error: ${e.type.message}',
+          isError: true,
+        );
+      }
+    } catch (e) {
+      debugPrint('[SeaPass] Ticket save exception: $e');
+      if (mounted) {
+        _showFeedbackSnackBar(
+          message: 'Failed to save tickets: $e',
+          isError: true,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _savingProgress = 0;
+        });
+      }
+    }
+  }
+
+  void _showFeedbackSnackBar({required String message, bool isError = false}) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: isError ? Colors.red.shade700 : AppPalette.mintGreen,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline_rounded : Icons.check_circle_rounded,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.trim().toLowerCase()) {
+      case 'confirmed':
+        return AppPalette.mintGreen;
+      case 'pending':
+        return Colors.orange;
+      case 'to_be_confirmed':
+      case 'to be confirmed':
+        return const Color(0xFFD97706);
+      case 'cancelled':
+      case 'canceled':
+      default:
+        return const Color(0xFFDC2626);
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status.trim().toLowerCase()) {
+      case 'confirmed':
+        return 'CONFIRMED';
+      case 'pending':
+        return 'PENDING';
+      case 'to_be_confirmed':
+      case 'to be confirmed':
+        return 'TO BE CONFIRMED (PENDING ID)';
+      case 'cancelled':
+      case 'canceled':
+        return 'CANCELLED / REFUNDED';
+      default:
+        return status.toUpperCase();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final passedBooking = booking ??
+    final passedBooking = widget.booking ??
         (ModalRoute.of(context)?.settings.arguments is Booking
             ? ModalRoute.of(context)!.settings.arguments as Booking
             : null);
@@ -46,6 +294,10 @@ class ViewTicketScreen extends StatelessWidget {
         ? passedBooking.calculatedTotalFare
         : tickets.fold<double>(0.0, (sum, t) => sum + t.individualFare);
 
+    final String bookingStatus = passedBooking.status;
+    final String statusLabel = _getStatusText(bookingStatus);
+    final Color statusColor = _getStatusColor(bookingStatus);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
@@ -67,6 +319,7 @@ class ViewTicketScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,17 +368,17 @@ class ViewTicketScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 3),
                           decoration: BoxDecoration(
-                            color: AppPalette.mintGreen.withValues(alpha: 0.2),
+                            color: statusColor.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: AppPalette.mintGreen.withValues(alpha: 0.6),
+                              color: statusColor.withValues(alpha: 0.6),
                               width: 1,
                             ),
                           ),
-                          child: const Text(
-                            'CONFIRMED',
+                          child: Text(
+                            statusLabel,
                             style: TextStyle(
-                              color: AppPalette.mintGreen,
+                              color: statusColor,
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
@@ -182,20 +435,91 @@ class ViewTicketScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
+              // ── Holding State Banner for Discount ID Verification ─────────
+              if (bookingStatus.trim().toLowerCase() == 'to_be_confirmed' ||
+                  bookingStatus.trim().toLowerCase() == 'to be confirmed')
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFDE68A)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.hourglass_top_rounded,
+                          color: Color(0xFFD97706),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Awaiting Admin ID Verification',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Color(0xFF92400E),
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Your payment was received via GCash/PayMongo. Port administrators will inspect your uploaded Student/Senior/PWD ID photo. Boarding pass QR codes will unlock once approved.\n\n🛡️ Automatic GCash refund is issued if rejected.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF78350F),
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // ── Stack of Individual Passenger Ticket Cards ─────────────────
               ...tickets.asMap().entries.map((entry) {
                 final int index = entry.key;
                 final PassengerTicketInfo passenger = entry.value;
-                return _buildPassengerTicketCard(
-                  context: context,
-                  index: index,
-                  totalTickets: tickets.length,
-                  passenger: passenger,
-                  bookingRef: ticketId,
-                  vessel: boatName,
-                  route: route,
-                  date: tripDate,
-                  time: tripTime,
+                return RepaintBoundary(
+                  key: _getKeyForIndex(index),
+                  child: Container(
+                    color: const Color(0xFFF1F5F9),
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: _buildPassengerTicketCard(
+                      context: context,
+                      index: index,
+                      totalTickets: tickets.length,
+                      passenger: passenger,
+                      bookingRef: ticketId,
+                      bookingStatus: bookingStatus,
+                      vessel: boatName,
+                      route: route,
+                      date: tripDate,
+                      time: tripTime,
+                    ),
+                  ),
                 );
               }),
 
@@ -205,52 +529,64 @@ class ViewTicketScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 height: 50,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: AppPalette.mintGreen,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        content: Row(
-                          children: [
-                            const Icon(Icons.check_circle_rounded,
-                                color: Colors.white),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                tickets.length > 1
-                                    ? 'All ${tickets.length} E-Tickets & QR codes saved to gallery!'
-                                    : 'E-Ticket & QR code saved to gallery!',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.download_rounded, size: 20),
-                  label: Text(
-                    tickets.length > 1
-                        ? 'DOWNLOAD / SAVE ALL TICKETS (${tickets.length})'
-                        : 'DOWNLOAD / SAVE TO GALLERY',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      letterSpacing: 0.6,
-                    ),
-                  ),
+                child: ElevatedButton(
+                  onPressed: _isSaving
+                      ? null
+                      : () => _saveAllTicketsToGallery(tickets, ticketId),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppPalette.mintGreen,
+                    disabledBackgroundColor:
+                        AppPalette.mintGreen.withValues(alpha: 0.6),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 0,
                   ),
+                  child: _isSaving
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              tickets.length > 1
+                                  ? 'SAVING TICKET $_savingProgress OF ${tickets.length}...'
+                                  : 'SAVING TO GALLERY...',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                letterSpacing: 0.6,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.download_rounded, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              tickets.length > 1
+                                  ? 'DOWNLOAD / SAVE ALL TICKETS (${tickets.length})'
+                                  : 'DOWNLOAD / SAVE TO GALLERY',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
               const SizedBox(height: 10),
@@ -288,11 +624,15 @@ class ViewTicketScreen extends StatelessWidget {
     required int totalTickets,
     required PassengerTicketInfo passenger,
     required String bookingRef,
+    required String bookingStatus,
     required String vessel,
     required String route,
     required String date,
     required String time,
   }) {
+    final bool isConfirmed = bookingStatus.trim().toLowerCase() == 'confirmed';
+    final Color statusColor = _getStatusColor(bookingStatus);
+
     // Unique QR payload per passenger per exact specification
     final Map<String, dynamic> qrPayload = {
       'booking_ref': bookingRef,
@@ -323,7 +663,7 @@ class ViewTicketScreen extends StatelessWidget {
         children: [
           // ── Ticket Header Strip ───────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.only(left: 14, right: 12, top: 11, bottom: 11),
             decoration: const BoxDecoration(
               color: Color(0xFF1E293B),
               borderRadius: BorderRadius.only(
@@ -332,54 +672,63 @@ class ViewTicketScreen extends StatelessWidget {
               ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppPalette.mintGreen,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        passenger.id,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      totalTickets > 1
-                          ? 'TICKET ${index + 1} OF $totalTickets'
-                          : 'INDIVIDUAL BOARDING PASS',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
+                // Passenger ID Badge (e.g. P1)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppPalette.mintGreen.withValues(alpha: 0.2),
+                    color: AppPalette.mintGreen,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
-                    'BOARDING PASS',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: AppPalette.mintGreen,
+                  child: Text(
+                    passenger.id,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Boarding Pass Title with ellipsis guard
+                Expanded(
+                  child: Text(
+                    totalTickets > 1
+                        ? 'TICKET ${index + 1} OF $totalTickets'
+                        : 'INDIVIDUAL BOARDING PASS',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
                       letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Status Badge with Flexible and ellipsis guard
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      isConfirmed ? 'BOARDING PASS' : 'PENDING CONFIRMATION',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        color: statusColor,
+                        letterSpacing: 0.3,
+                      ),
                     ),
                   ),
                 ),
@@ -387,77 +736,152 @@ class ViewTicketScreen extends StatelessWidget {
             ),
           ),
 
-          // ── Dedicated QR Code per Passenger ───────────────────────────────
+          // ── Dedicated QR Code per Passenger (Or Locked Placeholder) ───────
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
             child: Center(
               child: Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: QrImageView(
-                      data: qrData,
-                      version: QrVersions.auto,
-                      size: 190.0,
-                      backgroundColor: Colors.white,
-                      eyeStyle: const QrEyeStyle(
-                        eyeShape: QrEyeShape.square,
-                        color: Color(0xFF0F172A),
-                      ),
-                      dataModuleStyle: const QrDataModuleStyle(
-                        dataModuleShape: QrDataModuleShape.square,
-                        color: Color(0xFF0F172A),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Ref: $bookingRef · Seat ${passenger.seat}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.6,
-                      color: AppPalette.darkText,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppPalette.mintGreen.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.qr_code_scanner_rounded,
-                            size: 14, color: Color(0xFF0D5C3A)),
-                        SizedBox(width: 5),
-                        Text(
-                          'SCAN AT PORT FOR BOARDING',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0D5C3A),
-                            letterSpacing: 0.5,
+                  if (isConfirmed) ...[
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
+                        ],
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: QrImageView(
+                        data: qrData,
+                        version: QrVersions.auto,
+                        size: 190.0,
+                        backgroundColor: Colors.white,
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.square,
+                          color: Color(0xFF0F172A),
                         ),
-                      ],
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Ref: $bookingRef · Seat ${passenger.seat}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                        color: AppPalette.darkText,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppPalette.mintGreen.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.qr_code_scanner_rounded,
+                            size: 14,
+                            color: Color(0xFF0D5C3A),
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            'SCAN AT PORT FOR BOARDING',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0D5C3A),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else ...[
+                    // Holding state / Cancelled state placeholder
+                    Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(minHeight: 170),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: (bookingStatus.toLowerCase().contains('cancel'))
+                            ? const Color(0xFFFEF2F2)
+                            : const Color(0xFFFFFBEB),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: (bookingStatus.toLowerCase().contains('cancel'))
+                              ? const Color(0xFFFECACA)
+                              : const Color(0xFFFDE68A),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            (bookingStatus.toLowerCase().contains('cancel'))
+                                ? Icons.cancel_outlined
+                                : Icons.hourglass_empty_rounded,
+                            size: 44,
+                            color: (bookingStatus.toLowerCase().contains('cancel'))
+                                ? const Color(0xFFDC2626)
+                                : const Color(0xFFD97706),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            (bookingStatus.toLowerCase().contains('cancel'))
+                                ? 'BOOKING CANCELLED'
+                                : 'BOARDING QR LOCKED',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                              letterSpacing: 0.5,
+                              color: (bookingStatus.toLowerCase().contains('cancel'))
+                                  ? const Color(0xFF991B1B)
+                                  : const Color(0xFF92400E),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            (bookingStatus.toLowerCase().contains('cancel'))
+                                ? 'This ticket was cancelled and refunded.'
+                                : 'QR code will unlock once port administrators verify and approve your discounted ID.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1.35,
+                              color: (bookingStatus.toLowerCase().contains('cancel'))
+                                  ? const Color(0xFF7F1D1D)
+                                  : const Color(0xFF78350F),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Ref: $bookingRef · Seat ${passenger.seat}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                        color: AppPalette.darkText,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
