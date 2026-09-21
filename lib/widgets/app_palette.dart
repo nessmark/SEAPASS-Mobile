@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 /// SeaPass Design System v1. All visual colour, geometry and motion tokens.
 ///
+/// NEUTRAL IS NOT FLAT: canvas -> surface is 1.138:1 (measured), and cards carry
+/// a hairline. A <1.10:1 step with no edge makes the card vanish into the page.
+/// In light mode the CANVAS is the grey and cards are white, never both near-white.
+///
 /// COLOUR RULE: the teal ramp is an ACCENT only — buttons, active/selected states,
 /// links, focus rings, chips and marks. Canvases, surfaces, text, hairlines and
 /// shadows are pure greys (R=G=B) in both themes. Dark and white only.
@@ -17,20 +21,20 @@ abstract final class AppPalette {
   static const teal800 = Color(0xFF0E4149);
   static const teal900 = Color(0xFF0A3037);
 
-  static const lightCanvas = Color(0xFFF5F5F5);
+  static const lightCanvas = Color(0xFFF2F2F2);
   static const lightSurface = Color(0xFFFFFFFF);
-  static const lightSurface2 = Color(0xFFFAFAFA);
+  static const lightSurface2 = Color(0xFFF7F7F7);
   static const lightText = Color(0xFF171717);
   static const lightText2 = Color(0xFF666666);
   static const lightText3 = Color(0xFF949494);
-  static const lightHairline = Color(0x17000000);
+  static const lightHairline = Color(0x1A000000);
   static const darkCanvas = Color(0xFF0A0A0A);
-  static const darkSurface = Color(0xFF141414);
-  static const darkSurface2 = Color(0xFF1C1C1C);
+  static const darkSurface = Color(0xFF1A1A1A);
+  static const darkSurface2 = Color(0xFF242424);
   static const darkTextPrimary = Color(0xFFF5F5F5);
   static const darkText2 = Color(0xFFA3A3A3);
   static const darkText3 = Color(0xFF737373);
-  static const darkHairline = Color(0x1AFFFFFF);
+  static const darkHairline = Color(0x16FFFFFF);
   static const darkTopEdge = Color(0x0FFFFFFF);
   static const transparent = Color(0x00000000);
   static const ink = Color(0xFF000000);
