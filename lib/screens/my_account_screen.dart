@@ -4,8 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/booking.dart';
 import '../services/passenger_data_service.dart';
 import '../services/passenger_session.dart';
-import '../widgets/app_palette.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_empty_state.dart';
+import '../widgets/app_palette.dart';
+import '../widgets/app_skeleton.dart';
+import '../widgets/section_header.dart';
+import '../widgets/status_chip.dart';
 import 'login_screen.dart';
 import 'view_ticket_screen.dart';
 
@@ -71,32 +75,28 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     final bool? shouldLogout = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.logout_rounded, color: AppPalette.danger, size: 24),
-            SizedBox(width: 8),
-            Text('Log Out', style: TextStyle(fontWeight: FontWeight.w600)),
+            SizedBox(width: AppPalette.space8),
+            Expanded(child: Text('Log out')),
           ],
         ),
         content: const Text(
           'Are you sure you want to log out of your SeaPass account?',
-          style: TextStyle(fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: TextStyle(color: AppColors.of(context).text3)),
+            child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
+            style: FilledButton.styleFrom(
               backgroundColor: AppPalette.danger,
               foregroundColor: AppPalette.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text('Log Out'),
+            child: const Text('Log out'),
           ),
         ],
       ),
@@ -135,26 +135,18 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Edit Profile',
-            style: TextStyle(fontWeight: FontWeight.w600)),
+        title: const Text('Edit profile'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
-                
-              ),
+              decoration: const InputDecoration(labelText: 'Full Name'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppPalette.space12),
             TextField(
               controller: phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Mobile Number',
-                
-              ),
+              decoration: const InputDecoration(labelText: 'Mobile Number'),
             ),
           ],
         ),
@@ -163,7 +155,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               setState(() {
                 PassengerSession.name = nameController.text.trim();
@@ -173,14 +165,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Profile updated successfully!'),
-                  backgroundColor: AppPalette.teal500,
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppPalette.teal500,
-              foregroundColor: AppPalette.white,
-            ),
             child: const Text('Save'),
           ),
         ],
@@ -193,27 +181,19 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Change Password',
-            style: TextStyle(fontWeight: FontWeight.w600)),
+        title: const Text('Change password'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const TextField(
               obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Current Password',
-                
-              ),
+              decoration: InputDecoration(labelText: 'Current Password'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppPalette.space12),
             TextField(
               controller: passController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'New Password',
-                
-              ),
+              decoration: const InputDecoration(labelText: 'New Password'),
             ),
           ],
         ),
@@ -222,20 +202,16 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Password changed successfully!'),
-                  backgroundColor: AppPalette.teal500,
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppPalette.teal500,
-              foregroundColor: AppPalette.white,
-            ),
             child: const Text('Update'),
           ),
         ],
@@ -247,40 +223,44 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.support_agent_rounded,
                 color: AppPalette.teal500, size: 24),
-            SizedBox(width: 8),
-            Text('Help & Support'),
+            SizedBox(width: AppPalette.space8),
+            Expanded(child: Text('Help & support')),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'SeaPass Passenger Terminal Support',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              style: Theme.of(ctx).textTheme.titleSmall,
             ),
-            SizedBox(height: 10),
-            Text('📍 Surigao Port Terminal / San Jose Port'),
-            SizedBox(height: 4),
-            Text('📞 Hotline: +63 (086) 826-0000 / 0912-345-6789'),
-            SizedBox(height: 4),
-            Text('✉ Email: support@seapass.ph'),
-            SizedBox(height: 4),
-            Text('🕒 Operating Hours: Mon - Sun 05:00 AM - 06:00 PM'),
+            const SizedBox(height: AppPalette.space12),
+            const _SupportLine(
+              icon: Icons.place_outlined,
+              text: 'Surigao Port Terminal / San Jose Port',
+            ),
+            const _SupportLine(
+              icon: Icons.call_outlined,
+              text: 'Hotline: +63 (086) 826-0000 / 0912-345-6789',
+            ),
+            const _SupportLine(
+              icon: Icons.mail_outline_rounded,
+              text: 'support@seapass.ph',
+            ),
+            const _SupportLine(
+              icon: Icons.schedule_rounded,
+              text: 'Mon – Sun, 05:00 AM – 06:00 PM',
+            ),
           ],
         ),
         actions: [
-          ElevatedButton(
+          FilledButton(
             onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppPalette.teal500,
-              foregroundColor: AppPalette.white,
-            ),
             child: const Text('Close'),
           ),
         ],
@@ -295,21 +275,23 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     final String fullName = PassengerSession.name;
     final String email = PassengerSession.email;
     final String phone = PassengerSession.phone;
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      padding: const EdgeInsets.fromLTRB(AppPalette.space24, AppPalette.space20,
+          AppPalette.space24, AppPalette.space32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── 1. User Profile Section ───────────────────────────────────────
           AppCard(
-            padding: const EdgeInsets.all(18),
-            
+            padding: const EdgeInsets.all(AppPalette.space20),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 32,
-                  backgroundColor: AppPalette.teal500.withValues(alpha: 0.15),
+                  backgroundColor: colors.tint,
                   child: Text(
                     fullName.isNotEmpty
                         ? fullName
@@ -318,73 +300,44 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                             .take(2)
                             .join()
                         : 'JM',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: AppPalette.teal500,
-                    ),
+                    style: text.headlineMedium?.copyWith(color: colors.onTint),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: AppPalette.space16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Expanded(
+                          Flexible(
                             child: Text(
                               fullName,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.of(context).text,
-                              ),
+                              style: text.titleLarge,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color:
-                                  AppPalette.teal500.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.check_circle,
-                                    size: 11, color: AppPalette.teal500),
-                                SizedBox(width: 3),
-                                Text(
-                                  'Verified',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppPalette.teal500,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          const SizedBox(width: AppPalette.space8),
+                          const StatusChip(
+                            label: 'Verified',
+                            tone: StatusTone.success,
+                            icon: Icons.check_circle_rounded,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppPalette.space4),
                       Text(
                         email,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.of(context).text2,
-                        ),
+                        style: text.bodySmall,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
                       Text(
                         phone,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.of(context).text3,
-                        ),
+                        style: text.bodySmall?.copyWith(color: colors.text3),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -393,39 +346,32 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             ),
           ),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: AppPalette.space32),
 
           // ── 2. Account Settings Actions ───────────────────────────────────
-          Text(
-            'Account Settings',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: AppColors.of(context).text,
-            ),
-          ),
-          const SizedBox(height: 10),
-          AppCard(padding: EdgeInsets.zero,
-            
+          const SectionHeader('Account settings'),
+          AppCard(
+            padding: EdgeInsets.zero,
+            clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
                 _buildActionTile(
                   icon: Icons.person_outline_rounded,
-                  title: 'Edit Profile',
+                  title: 'Edit profile',
                   subtitle: 'Update your name and contact details',
                   onTap: _showEditProfileDialog,
                 ),
-                const Divider(height: 1, indent: 56),
+                Divider(height: 1, indent: 68, color: colors.hairline),
                 _buildActionTile(
                   icon: Icons.lock_outline_rounded,
-                  title: 'Change Password',
+                  title: 'Change password',
                   subtitle: 'Keep your account secure',
                   onTap: _showChangePasswordDialog,
                 ),
-                const Divider(height: 1, indent: 56),
+                Divider(height: 1, indent: 68, color: colors.hairline),
                 _buildActionTile(
                   icon: Icons.support_agent_rounded,
-                  title: 'Help & Support',
+                  title: 'Help & support',
                   subtitle: 'Terminal hotline and passenger assistance',
                   onTap: _showHelpSupportDialog,
                 ),
@@ -433,106 +379,75 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppPalette.space32),
 
           // ── 3. Travel History Section ─────────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.history_rounded,
-                      size: 20, color: AppColors.of(context).text),
-                  SizedBox(width: 8),
-                  Text(
-                    'Travel History',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.of(context).text,
-                    ),
+          SectionHeader(
+            'Travel history',
+            action: _isLoadingHistory
+                ? null
+                : StatusChip(
+                    label:
+                        '${_travelHistory.length} trip${_travelHistory.length == 1 ? "" : "s"}',
                   ),
-                ],
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppPalette.teal500.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${_travelHistory.length} Trip${_travelHistory.length == 1 ? "" : "s"}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppPalette.teal500,
-                  ),
-                ),
-              ),
-            ],
           ),
-          const SizedBox(height: 12),
 
           if (_isLoadingHistory)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: CircularProgressIndicator(color: AppPalette.teal500),
-              ),
+            const Column(
+              children: [
+                AppCard(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppSkeleton(width: 160, height: 22),
+                    SizedBox(height: AppPalette.space16),
+                    AppSkeleton(),
+                    SizedBox(height: AppPalette.space8),
+                    AppSkeleton(width: 120),
+                  ],
+                )),
+                SizedBox(height: AppPalette.space16),
+                AppCard(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppSkeleton(width: 160, height: 22),
+                    SizedBox(height: AppPalette.space16),
+                    AppSkeleton(),
+                    SizedBox(height: AppPalette.space8),
+                    AppSkeleton(width: 120),
+                  ],
+                )),
+              ],
             )
           else if (_travelHistory.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 28),
-              decoration: BoxDecoration(
-                color: AppColors.of(context).surface,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.directions_boat_outlined,
-                      size: 40, color: AppColors.of(context).text3),
-                  const SizedBox(height: 8),
-                  Text(
-                    'No completed trips yet',
-                    style: TextStyle(color: AppColors.of(context).text2, fontSize: 14),
-                  ),
-                ],
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: AppEmptyState(
+                icon: Icons.directions_boat_outlined,
+                title: 'No completed trips yet',
+                caption:
+                    'Trips you finish will be archived here with their boarding passes.',
+                actionLabel: 'Refresh',
+                onAction: _loadTravelHistory,
               ),
             )
           else
             ..._travelHistory.map((booking) => _buildTripCard(booking)),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: AppPalette.space32),
 
           // ── 4. Prominent Log Out Button ───────────────────────────────────
           SizedBox(
             width: double.infinity,
-            height: 44,
-            child: OutlinedButton.icon(
+            child: FilledButton.icon(
               onPressed: () => _handleLogout(context),
-              icon: const Icon(Icons.logout_rounded,
-                  color: AppPalette.danger, size: 20),
-              label: const Text(
-                'Log out',
-                style: TextStyle(
-                  color: AppPalette.danger,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  letterSpacing: 0,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                
+              icon: const Icon(Icons.logout_rounded, size: 20),
+              label: const Text('Log out'),
+              style: FilledButton.styleFrom(
                 backgroundColor: AppPalette.danger.withValues(alpha: .12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                foregroundColor: AppPalette.danger,
               ),
             ),
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );
@@ -546,151 +461,141 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
     return ListTile(
       onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppPalette.space20, vertical: AppPalette.space4),
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(AppPalette.space8),
         decoration: BoxDecoration(
-          color: AppPalette.teal500.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
+          color: colors.tint,
+          borderRadius: BorderRadius.circular(AppPalette.radiusSm),
         ),
-        child: Icon(icon, color: AppPalette.teal500, size: 20),
+        child: Icon(icon, color: colors.onTint, size: 20),
       ),
-      title: Text(
-        title,
-        style:
-            const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(fontSize: 12, color: AppColors.of(context).text3),
-      ),
-      trailing: Icon(Icons.chevron_right_rounded,
-          size: 20, color: AppColors.of(context).text3),
+      title: Text(title, style: text.titleSmall),
+      subtitle: Text(subtitle, style: text.bodySmall),
+      trailing: Icon(Icons.chevron_right_rounded, size: 20, color: colors.text3),
     );
   }
 
   Widget _buildTripCard(Booking booking) {
-    return AppCard(padding: EdgeInsets.zero,
-      margin: const EdgeInsets.only(bottom: 12),
-      
-      child: Material(
-        color: AppPalette.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ViewTicketScreen(booking: booking),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        booking.route,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.of(context).text,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color:
-                            AppPalette.teal500.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'Completed',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppPalette.success,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.confirmation_number_outlined,
-                        size: 14, color: AppColors.of(context).text3),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Ref: ${booking.referenceNumber}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.of(context).text,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '₱${booking.totalPrice.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppPalette.teal500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.calendar_month_outlined,
-                        size: 14, color: AppColors.of(context).text3),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Date: ${booking.date}${booking.time.isNotEmpty ? " · ${booking.time}" : ""}',
-                      style: TextStyle(
-                          fontSize: 12, color: AppColors.of(context).text2),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'Vessel: ${booking.boatName}',
-                      style: TextStyle(
-                          fontSize: 12, color: AppColors.of(context).text2),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                const Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'View Boarding Pass',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppPalette.teal500,
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_rounded,
-                          size: 14, color: AppPalette.teal500),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
+
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: AppPalette.space16),
+      padding: const EdgeInsets.all(AppPalette.space20),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ViewTicketScreen(booking: booking),
           ),
-        ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: Text(booking.route, style: text.titleLarge)),
+              const SizedBox(width: AppPalette.space8),
+              const Padding(
+                padding: EdgeInsets.only(top: 2),
+                child: StatusChip(
+                    label: 'Completed', tone: StatusTone.success),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppPalette.space16),
+          Row(
+            children: [
+              Icon(Icons.confirmation_number_outlined,
+                  size: 15, color: colors.text3),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  booking.referenceNumber,
+                  style: text.labelMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: AppPalette.space8),
+              Text(
+                '₱${booking.totalPrice.toStringAsFixed(2)}',
+                style: text.titleLarge?.copyWith(color: colors.accent),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppPalette.space8),
+          Row(
+            children: [
+              Icon(Icons.calendar_month_outlined, size: 15, color: colors.text3),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '${booking.date}${booking.time.isNotEmpty ? " · ${booking.time}" : ""}',
+                  style: text.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: AppPalette.space8),
+              Flexible(
+                child: Text(
+                  booking.boatName,
+                  style: text.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppPalette.space12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text('View boarding pass',
+                  style: text.labelMedium?.copyWith(color: colors.accent)),
+              const SizedBox(width: AppPalette.space4),
+              Icon(Icons.arrow_forward_rounded, size: 16, color: colors.accent),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One contact line in the help sheet — icon instead of emoji chrome.
+class _SupportLine extends StatelessWidget {
+  const _SupportLine({required this.icon, required this.text});
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppPalette.space8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(icon, size: 16, color: colors.text3),
+          ),
+          const SizedBox(width: AppPalette.space8),
+          Expanded(
+            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+          ),
+        ],
       ),
     );
   }

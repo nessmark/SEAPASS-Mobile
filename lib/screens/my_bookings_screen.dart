@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import '../models/booking.dart';
 import '../services/passenger_data_service.dart';
 import '../services/passenger_session.dart';
+import '../widgets/app_empty_state.dart';
 import '../widgets/app_palette.dart';
+import '../widgets/app_skeleton.dart';
 import '../widgets/booking_card.dart';
 import 'view_ticket_screen.dart';
 
@@ -91,15 +93,16 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         _isToBeConfirmed ? _pendingBookings : _confirmedBookings;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      padding: const EdgeInsets.fromLTRB(
+          AppPalette.space24, AppPalette.space20, AppPalette.space24, 0),
       child: Column(
         children: [
-          // Toggle Buttons matching image_7de9fd.png
+          // Segmented control: pending vs confirmed
           Container(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(AppPalette.space4),
             decoration: BoxDecoration(
               color: AppColors.of(context).surface2,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppPalette.radiusMd),
             ),
             child: Row(
               children: [
@@ -111,7 +114,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     onTap: () => setState(() => _isToBeConfirmed = true),
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: AppPalette.space4),
                 Expanded(
                   child: _buildToggleButton(
                     title: 'Confirmed',
@@ -123,116 +126,95 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppPalette.space20),
 
           Expanded(
             child: RefreshIndicator(
               onRefresh: _loadBookings,
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _errorMessage != null
-                      ? ListView(
-                          children: [
-                            const SizedBox(height: 60),
-                            Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.cloud_off,
-                                      size: 48, color: AppColors.of(context).text3),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    _errorMessage!,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        color: AppColors.of(context).text2),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  ElevatedButton(
-                                    onPressed: _loadBookings,
-                                    child: const Text('Retry'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                      : activeBookings.isEmpty
-                          ? ListView(
-                              children: [
-                                const SizedBox(height: 80),
-                                Center(
-                                  child: Column(
-                                    children: [
-                                      Icon(
-                                        _isToBeConfirmed
-                                            ? Icons.hourglass_empty_rounded
-                                            : Icons.confirmation_number_outlined,
-                                        size: 56,
-                                        color: AppColors.of(context).text3,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        _isToBeConfirmed
-                                            ? 'No bookings waiting to be confirmed.'
-                                            : 'No confirmed tickets yet.',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.of(context).text2,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        _isToBeConfirmed
-                                            ? 'Bookings submitted from checkout will appear here.'
-                                            : 'Once your booking is approved by admin, your ticket & QR code will appear here.',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: AppColors.of(context).text3,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            )
-                          : ListView.builder(
-                              itemCount: activeBookings.length,
-                              itemBuilder: (context, index) {
-                                final booking = activeBookings[index];
-                                return BookingCard(
-                                  booking: booking,
-                                  onViewTicket: () async {
-                                    // Pause background polling while viewing ticket details
-                                    // to prevent status from visually "changing" mid-view.
-                                    _pollingTimer?.cancel();
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            ViewTicketScreen(booking: booking),
-                                      ),
-                                    );
-                                    // Resume polling after returning from detail view
-                                    if (mounted) {
-                                      _pollingTimer = Timer.periodic(
-                                        const Duration(seconds: 5),
-                                        (_) {
-                                          if (mounted) _loadBookings(silent: true);
-                                        },
-                                      );
-                                      _loadBookings(silent: true);
-                                    }
-                                  },
-                                );
-                              },
-                            ),
+              color: AppColors.of(context).accent,
+              child: _buildContent(activeBookings),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildContent(List<Booking> activeBookings) {
+    if (_isLoading) {
+      return const AppSkeletonList();
+    }
+
+    if (_errorMessage != null) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: AppPalette.space40),
+          AppEmptyState(
+            icon: Icons.cloud_off_rounded,
+            tone: AppPalette.danger,
+            title: 'Cannot reach the terminal',
+            caption: _errorMessage!,
+            actionLabel: 'Retry',
+            onAction: _loadBookings,
+          ),
+        ],
+      );
+    }
+
+    if (activeBookings.isEmpty) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: AppPalette.space40),
+          AppEmptyState(
+            icon: _isToBeConfirmed
+                ? Icons.hourglass_empty_rounded
+                : Icons.confirmation_number_outlined,
+            title: _isToBeConfirmed
+                ? 'Nothing waiting for approval'
+                : 'No confirmed tickets yet',
+            caption: _isToBeConfirmed
+                ? 'Bookings you submit at checkout land here while the port reviews them.'
+                : 'Once the port approves a booking, its ticket and QR code appear here.',
+            actionLabel: 'Refresh',
+            onAction: _loadBookings,
+          ),
+        ],
+      );
+    }
+
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: AppPalette.space24),
+      itemCount: activeBookings.length,
+      itemBuilder: (context, index) {
+        final booking = activeBookings[index];
+        return BookingCard(
+          booking: booking,
+          onViewTicket: () async {
+            // Pause background polling while viewing ticket details
+            // to prevent status from visually "changing" mid-view.
+            _pollingTimer?.cancel();
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ViewTicketScreen(booking: booking),
+              ),
+            );
+            // Resume polling after returning from detail view
+            if (mounted) {
+              _pollingTimer = Timer.periodic(
+                const Duration(seconds: 5),
+                (_) {
+                  if (mounted) _loadBookings(silent: true);
+                },
+              );
+              _loadBookings(silent: true);
+            }
+          },
+        );
+      },
     );
   }
 
@@ -242,49 +224,60 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: AnimatedContainer(
-        duration: AppPalette.duration(context),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppPalette.teal500 : AppPalette.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? AppPalette.white : AppColors.of(context).text2,
-              ),
-            ),
-            if (count > 0) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppPalette.white.withValues(alpha: 0.3)
-                      : AppColors.of(context).hairline,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+    final colors = AppColors.of(context);
+    return Material(
+      color: AppPalette.transparent,
+      borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+        child: AnimatedContainer(
+          duration: AppPalette.duration(context),
+          curve: AppPalette.motionCurve,
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppPalette.space8, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppPalette.teal500 : AppPalette.transparent,
+            borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
                 child: Text(
-                  '$count',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: isSelected ? AppPalette.white : AppColors.of(context).text,
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: isSelected ? AppPalette.white : colors.text2,
+                      ),
+                ),
+              ),
+              if (count > 0) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppPalette.white.withValues(alpha: 0.24)
+                        : colors.hairline,
+                    borderRadius:
+                        BorderRadius.circular(AppPalette.radiusPill),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? AppPalette.white : colors.text,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

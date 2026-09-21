@@ -4,8 +4,24 @@ import 'package:provider/provider.dart';
 
 import '../models/advisory.dart';
 import '../providers/advisory_provider.dart';
-import '../widgets/app_palette.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_empty_state.dart';
+import '../widgets/app_palette.dart';
+import '../widgets/app_skeleton.dart';
+import '../widgets/section_header.dart';
+import '../widgets/status_chip.dart';
+
+/// Maps the advisory severity onto the design-system semantic tones.
+StatusTone _severityTone(Advisory advisory) {
+  switch (advisory.severity) {
+    case 'critical':
+      return StatusTone.danger;
+    case 'warning':
+      return StatusTone.warning;
+    default:
+      return StatusTone.info;
+  }
+}
 
 class AdvisoriesScreen extends StatefulWidget {
   const AdvisoriesScreen({super.key});
@@ -50,7 +66,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => context.read<AdvisoryProvider>().fetchAdvisories(showLoading: false),
-          color: AppPalette.teal500,
+          color: AppColors.of(context).accent,
           child: _buildBody(advisoryProvider),
         ),
       ),
@@ -59,40 +75,27 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
 
   Widget _buildBody(AdvisoryProvider provider) {
     if (provider.isLoading && provider.advisories.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppPalette.teal500),
-        ),
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(AppPalette.space24, AppPalette.space20,
+            AppPalette.space24, 0),
+        child: AppSkeletonList(),
       );
     }
 
     if (provider.errorMessage != null && provider.advisories.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.wifi_off_rounded, size: 54, color: AppColors.of(context).text3),
-              const SizedBox(height: 12),
-              Text(
-                provider.errorMessage!,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.of(context).text2, fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () => context.read<AdvisoryProvider>().fetchAdvisories(),
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Try Again'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppPalette.teal500,
-                  foregroundColor: AppPalette.white,
-                ),
-              ),
-            ],
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: AppPalette.space40),
+          AppEmptyState(
+            icon: Icons.wifi_off_rounded,
+            tone: AppPalette.danger,
+            title: 'Cannot reach the port',
+            caption: provider.errorMessage!,
+            actionLabel: 'Try again',
+            onAction: () => context.read<AdvisoryProvider>().fetchAdvisories(),
           ),
-        ),
+        ],
       );
     }
 
@@ -101,40 +104,18 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
     if (advisories.isEmpty) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(AppPalette.space24,
+            AppPalette.space20, AppPalette.space24, AppPalette.space32),
         children: [
-          SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-          Center(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppPalette.teal500.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.campaign_outlined,
-                    size: 48,
-                    color: AppPalette.teal500,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No Active Travel Advisories',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.of(context).text,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Port operations and schedules are currently normal.\nFair seas ahead! ',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.of(context).text2, fontSize: 13),
-                ),
-              ],
-            ),
+          _buildHeader(0),
+          const SizedBox(height: AppPalette.space32),
+          AppEmptyState(
+            icon: Icons.campaign_outlined,
+            title: 'No active advisories',
+            caption:
+                'Port operations and schedules are running normally. Fair seas ahead.',
+            actionLabel: 'Refresh',
+            onAction: () => context.read<AdvisoryProvider>().fetchAdvisories(),
           ),
         ],
       );
@@ -142,11 +123,12 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
 
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.fromLTRB(AppPalette.space24,
+          AppPalette.space20, AppPalette.space24, AppPalette.space32),
       itemCount: advisories.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
-          return _buildHeaderBanner(advisories.length);
+          return _buildHeader(advisories.length);
         }
         final advisoryIndex = index - 1;
         final advisory = advisories[advisoryIndex];
@@ -154,11 +136,11 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
           key: ValueKey('advisory_${advisory.id}'),
           direction: DismissDirection.endToStart,
           background: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            margin: const EdgeInsets.only(bottom: AppPalette.space16),
+            padding: const EdgeInsets.symmetric(horizontal: AppPalette.space20),
             decoration: BoxDecoration(
               color: AppPalette.danger,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppPalette.radiusLg),
             ),
             alignment: Alignment.centerRight,
             child: const Row(
@@ -185,8 +167,8 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                 content: const Text('Advisory deleted'),
                 behavior: SnackBarBehavior.floating,
                 action: SnackBarAction(
-                  label: 'UNDO',
-                  textColor: AppPalette.teal500,
+                  label: 'Undo',
+                  textColor: AppPalette.teal300,
                   onPressed: () {
                     context.read<AdvisoryProvider>().restoreAdvisory(advisory, advisoryIndex);
                   },
@@ -204,22 +186,20 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Advisory'),
+        title: const Text('Delete advisory'),
         content: const Text(
           'Are you sure you want to remove this notice? It will no longer appear on your page.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: TextStyle(color: AppColors.of(context).text2)),
+            child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
+            style: FilledButton.styleFrom(
               backgroundColor: AppPalette.danger,
               foregroundColor: AppPalette.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Delete'),
           ),
@@ -235,8 +215,8 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
           content: const Text('Advisory deleted'),
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
-            label: 'UNDO',
-            textColor: AppPalette.teal500,
+            label: 'Undo',
+            textColor: AppPalette.teal300,
             onPressed: () {
               context.read<AdvisoryProvider>().restoreAdvisory(advisory, index);
             },
@@ -250,24 +230,22 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Clear All Advisories'),
+        title: const Text('Clear all advisories'),
         content: const Text(
           'Are you sure you want to delete all travel advisories from your inbox?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: TextStyle(color: AppColors.of(context).text2)),
+            child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
+            style: FilledButton.styleFrom(
               backgroundColor: AppPalette.danger,
               foregroundColor: AppPalette.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text('Clear All'),
+            child: const Text('Clear all'),
           ),
         ],
       ),
@@ -286,237 +264,103 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
     }
   }
 
-  Widget _buildHeaderBanner(int count) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.of(context).text,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppPalette.ink.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppPalette.teal500.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.campaign_rounded,
-              color: AppPalette.teal500,
-              size: 26,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Port Travel Advisories',
-                  style: TextStyle(
-                    color: AppPalette.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  'Live notices, weather reports, and maritime alerts.',
-                  style: TextStyle(
-                    color: AppPalette.white.withValues(alpha: .70),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (count > 0)
-            IconButton(
-              icon: Icon(Icons.delete_sweep_rounded, color: AppPalette.white.withValues(alpha: .70), size: 22),
-              tooltip: 'Clear All Advisories',
+  Widget _buildHeader(int count) {
+    return SectionHeader(
+      'Travel advisories',
+      caption: 'Live notices, weather reports and maritime alerts.',
+      action: count > 0
+          ? IconButton(
+              icon: const Icon(Icons.delete_sweep_rounded, size: 22),
+              tooltip: 'Clear all advisories',
               onPressed: () => _confirmClearAll(context),
-            ),
-        ],
-      ),
+            )
+          : null,
     );
   }
 
   Widget _buildAdvisoryCard(Advisory advisory, int index) {
     final bool isUnread = !advisory.isRead;
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: isUnread ? AppColors.of(context).surface : AppColors.of(context).canvas,
-        borderRadius: BorderRadius.circular(14),
-        
-        boxShadow: [
-          BoxShadow(
-            color: isUnread
-                ? AppPalette.teal500.withValues(alpha: 0.08)
-                : AppPalette.ink.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: AppPalette.space16),
+      padding: const EdgeInsets.all(AppPalette.space20),
+      onTap: () => _openAdvisoryDetail(advisory),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top row: severity chip + unread marker + delete action
+          Row(
+            children: [
+              Flexible(
+                child: StatusChip(
+                  label: advisory.severityLabel,
+                  tone: _severityTone(advisory),
+                  icon: advisory.severityIcon,
+                ),
+              ),
+              if (isUnread) ...[
+                const SizedBox(width: AppPalette.space8),
+                const StatusChip(label: 'New', tone: StatusTone.danger),
+              ],
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                tooltip: 'Delete notice',
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => _confirmDeleteAdvisory(advisory, index),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppPalette.space12),
+
+          // Title
+          Text(
+            advisory.title,
+            style: isUnread
+                ? text.titleLarge
+                : text.titleLarge?.copyWith(color: colors.text2),
+          ),
+          const SizedBox(height: AppPalette.space8),
+
+          // Affected route
+          Row(
+            children: [
+              Icon(Icons.alt_route_rounded, size: 15, color: colors.text3),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  advisory.route,
+                  style: text.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppPalette.space12),
+
+          // Date and read-more affordance
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  advisory.formattedDate,
+                  style: text.bodySmall?.copyWith(color: colors.text3),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: AppPalette.space8),
+              Text('View notice',
+                  style: text.labelMedium?.copyWith(color: colors.accent)),
+              Icon(Icons.chevron_right_rounded, size: 18, color: colors.accent),
+            ],
           ),
         ],
-      ),
-      child: Material(
-        color: AppPalette.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => _openAdvisoryDetail(advisory),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Row: Severity Badge + Unread Indicator + Delete Action
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: advisory.severityBgColor,
-                        borderRadius: BorderRadius.circular(20),
-                        
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(advisory.severityIcon, size: 13, color: advisory.severityColor),
-                          const SizedBox(width: 5),
-                          Text(
-                            advisory.severityLabel.toUpperCase(),
-                            style: TextStyle(
-                              color: advisory.severityColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (isUnread) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: AppPalette.danger,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Text(
-                              'NEW',
-                              style: TextStyle(
-                                color: AppPalette.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete_outline_rounded,
-                            size: 20,
-                            color: AppColors.of(context).text3,
-                          ),
-                          tooltip: 'Delete Notice',
-                          visualDensity: VisualDensity.compact,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () => _confirmDeleteAdvisory(advisory, index),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                // Title
-                Text(
-                  advisory.title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: isUnread ? FontWeight.w600 : FontWeight.w700,
-                    color: AppColors.of(context).text,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // Affected Route Badge
-                Row(
-                  children: [
-                    Icon(Icons.alt_route_rounded, size: 14, color: AppColors.of(context).text3),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Text(
-                        advisory.route,
-                        style: TextStyle(
-                          color: AppColors.of(context).text2,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-
-                // Date and Read More Action
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      advisory.formattedDate,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.of(context).text3,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const Row(
-                      children: [
-                        Text(
-                          'View Full Notice',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppPalette.teal500,
-                          ),
-                        ),
-                        SizedBox(width: 2),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          size: 16,
-                          color: AppPalette.teal500,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -533,15 +377,9 @@ class AdvisoryDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.of(context).canvas,
       appBar: AppBar(
-        title: Text(
-          advisory.severityLabel.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0,
-          ),
-        ),
+        title: Text(advisory.severityLabel),
         centerTitle: false,
+        titleSpacing: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.of(context).pop(),
@@ -549,30 +387,25 @@ class AdvisoryDetailScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, size: 22),
-            tooltip: 'Delete Notice',
+            tooltip: 'Delete notice',
             onPressed: () async {
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  title: const Text('Delete Advisory'),
+                  title: const Text('Delete advisory'),
                   content: const Text(
                     'Are you sure you want to remove this notice? It will no longer appear on your page.',
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(false),
-                      child: Text('Cancel',
-                          style: TextStyle(color: AppColors.of(context).text2)),
+                      child: const Text('Cancel'),
                     ),
-                    ElevatedButton(
+                    FilledButton(
                       onPressed: () => Navigator.of(ctx).pop(true),
-                      style: ElevatedButton.styleFrom(
+                      style: FilledButton.styleFrom(
                         backgroundColor: AppPalette.danger,
                         foregroundColor: AppPalette.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
                       ),
                       child: const Text('Delete'),
                     ),
@@ -596,26 +429,25 @@ class AdvisoryDetailScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(AppPalette.space20,
+              AppPalette.space16, AppPalette.space20, AppPalette.space32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              StatusChipRow(advisory: advisory),
+              const SizedBox(height: AppPalette.space16),
               // Rich Email-Matching HTML Container
-              AppCard(padding: EdgeInsets.zero,
-                
+              AppCard(
+                padding: EdgeInsets.zero,
                 clipBehavior: Clip.antiAlias,
                 child: advisory.content.isNotEmpty
                     ? HtmlWidget(
                         advisory.content,
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          height: 1.5,
-                          fontFamily: 'Roboto',
-                        ),
+                        textStyle: Theme.of(context).textTheme.bodyMedium ??
+                            const TextStyle(fontSize: 15, height: 1.5),
                       )
                     : _buildFallbackContent(context),
               ),
-              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -624,31 +456,59 @@ class AdvisoryDetailScreen extends StatelessWidget {
   }
 
   Widget _buildFallbackContent(BuildContext context) {
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppPalette.space24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            advisory.title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.of(context).text,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            advisory.formattedDate,
-            style: TextStyle(fontSize: 12, color: AppColors.of(context).text3),
-          ),
-          const Divider(height: 24),
-          Text(
-            'Route: ${advisory.route}',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          Text(advisory.title, style: text.headlineMedium),
+          const SizedBox(height: AppPalette.space8),
+          Text(advisory.formattedDate,
+              style: text.bodySmall?.copyWith(color: colors.text3)),
+          const Divider(),
+          Row(
+            children: [
+              Icon(Icons.alt_route_rounded, size: 15, color: colors.text3),
+              const SizedBox(width: 6),
+              Expanded(child: Text(advisory.route, style: text.bodyMedium)),
+            ],
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Severity + publish date line above the advisory body.
+class StatusChipRow extends StatelessWidget {
+  const StatusChipRow({super.key, required this.advisory});
+  final Advisory advisory;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return Row(
+      children: [
+        StatusChip(
+          label: advisory.severityLabel,
+          tone: _severityTone(advisory),
+          icon: advisory.severityIcon,
+        ),
+        const SizedBox(width: AppPalette.space12),
+        Expanded(
+          child: Text(
+            advisory.formattedDate,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: colors.text3),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -117,24 +117,22 @@ class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
     final shouldLeave = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Cancel Payment?'),
         content: const Text(
           'Are you sure you want to exit? If you have not completed the QR scan in your GCash / banking app, your payment will not be recorded.',
-          style: TextStyle(fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('STAY & PAY'),
+            child: const Text('Stay & Pay'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
+            style: FilledButton.styleFrom(
               backgroundColor: AppPalette.danger,
               foregroundColor: AppPalette.white,
             ),
-            child: const Text('CANCEL PAYMENT'),
+            child: const Text('Cancel Payment'),
           ),
         ],
       ),
@@ -160,13 +158,18 @@ class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'PayMongo QR Checkout',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleSmall,
               ),
               Text(
                 'Ref: #${widget.referenceNumber} • ₱${widget.totalAmount.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: 12, color: AppColors.of(context).text3),
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelMedium
+                    ?.copyWith(color: AppColors.of(context).text3),
               ),
             ],
           ),
@@ -190,7 +193,7 @@ class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
                   child: LinearProgressIndicator(
                     value: _loadingProgress > 0 ? _loadingProgress / 100 : null,
                     backgroundColor: AppColors.of(context).surface2,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppPalette.teal500),
+                    color: AppColors.of(context).accent,
                   ),
                 )
               : null,
@@ -200,23 +203,29 @@ class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
             WebViewWidget(controller: _controller),
             if (_isLoading)
               Container(
-                color: AppPalette.white,
+                color: AppColors.of(context).surface,
                 child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(color: AppPalette.teal500),
-                      SizedBox(height: 16),
-                      Text(
-                        'Loading PayMongo QR Checkout...',
-                        style: TextStyle(fontSize: 14, color: AppColors.of(context).text),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        'Please prepare your GCash or QR Ph app',
-                        style: TextStyle(fontSize: 12, color: AppColors.of(context).text2),
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                            color: AppColors.of(context).accent),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Loading PayMongo QR Checkout...',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Please prepare your GCash or QR Ph app',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

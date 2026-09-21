@@ -10,6 +10,7 @@ import '../services/passenger_session.dart';
 import '../services/token_storage_service.dart';
 import '../widgets/app_palette.dart';
 import '../widgets/app_card.dart';
+import '../widgets/status_chip.dart';
 import 'login_screen.dart';
 
 class ScannerHomeScreen extends StatefulWidget {
@@ -186,7 +187,6 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
       backgroundColor: AppPalette.transparent,
       builder: (ctx) {
         return AppCard(
-          
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -198,7 +198,6 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                 decoration: BoxDecoration(
                   color: AppPalette.success.withValues(alpha: .12),
                   shape: BoxShape.circle,
-                  
                 ),
                 child: const Icon(
                   Icons.check_circle_rounded,
@@ -207,24 +206,19 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                 ),
               ),
               const SizedBox(height: 14),
-              const Text(
+              Text(
                 'BOARDING APPROVED',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppPalette.success,
-                  letterSpacing: 0,
-                ),
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall
+                    ?.copyWith(color: AppPalette.success),
               ),
               const SizedBox(height: 6),
               Text(
                 passengerName,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.of(context).text,
-                ),
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
 
@@ -232,8 +226,7 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.of(context).canvas,
-                  borderRadius: BorderRadius.circular(16),
-                  
+                  borderRadius: BorderRadius.circular(AppPalette.radiusMd),
                 ),
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -266,7 +259,7 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
               SizedBox(
                 width: double.infinity,
                 height: 44,
-                child: ElevatedButton.icon(
+                child: FilledButton.icon(
                   onPressed: () {
                     Navigator.pop(ctx);
                     if (mounted) {
@@ -274,20 +267,13 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                     }
                   },
                   icon: const Icon(Icons.qr_code_scanner_rounded, size: 22),
-                  label: const Text(
-                    'TAP TO SCAN NEXT',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
+                  label: const Text('Tap to Scan Next',
+                      overflow: TextOverflow.ellipsis),
+                  style: FilledButton.styleFrom(
                     backgroundColor: AppPalette.success,
                     foregroundColor: AppPalette.white,
-                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppPalette.radiusMd),
                     ),
                   ),
                 ),
@@ -368,47 +354,37 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
     final bool isCancelled = rawStatusUpper == 'STATUS_CANCELLED' || (bookingStatus?.toUpperCase() == 'CANCELLED') || (bookingStatus?.toUpperCase() == 'CANCELED');
 
     Color iconBgColor;
-    Color iconBorderColor;
     Color primaryThemeColor;
     IconData statusIcon;
     String statusDisplayTitle;
     Color cardBgColor;
-    Color cardBorderColor;
 
     if (isPending) {
       iconBgColor = AppPalette.warning.withValues(alpha: .12);
-      iconBorderColor = AppPalette.warning;
       primaryThemeColor = AppPalette.warning;
       statusIcon = Icons.hourglass_top_rounded;
       statusDisplayTitle = 'TICKET IS PENDING';
       cardBgColor = AppPalette.warning.withValues(alpha: .12);
-      cardBorderColor = AppPalette.warning.withValues(alpha: .12);
     } else if (isCancelled) {
       iconBgColor = AppPalette.danger.withValues(alpha: .12);
-      iconBorderColor = AppPalette.danger;
       primaryThemeColor = AppPalette.danger;
       statusIcon = Icons.cancel_rounded;
       statusDisplayTitle = 'TICKET CANCELLED';
       cardBgColor = AppPalette.danger.withValues(alpha: .12);
-      cardBorderColor = AppPalette.danger.withValues(alpha: .12);
     } else if (isTooEarly) {
       iconBgColor = AppPalette.warning.withValues(alpha: .12);
-      iconBorderColor = AppPalette.warning;
       primaryThemeColor = AppPalette.warning;
       statusIcon = Icons.schedule_rounded;
       statusDisplayTitle = 'BOARDING NOT OPEN YET';
       cardBgColor = AppPalette.warning.withValues(alpha: .12);
-      cardBorderColor = AppPalette.warning.withValues(alpha: .12);
     } else {
       iconBgColor = AppPalette.danger.withValues(alpha: .12);
-      iconBorderColor = AppPalette.danger;
       primaryThemeColor = AppPalette.danger;
       statusIcon = Icons.close_rounded;
       statusDisplayTitle = (status == 'TICKET_NOT_FOUND' || status == 'NOT_FOUND')
           ? 'TICKET NOT FOUND'
           : status.replaceAll('_', ' ');
       cardBgColor = AppPalette.danger.withValues(alpha: .12);
-      cardBorderColor = AppPalette.danger.withValues(alpha: .12);
     }
 
     // Format Trip Schedule & Boarding Window
@@ -446,7 +422,6 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
       backgroundColor: AppPalette.transparent,
       builder: (ctx) {
         return AppCard(
-          
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -458,7 +433,6 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                 decoration: BoxDecoration(
                   color: iconBgColor,
                   shape: BoxShape.circle,
-                  
                 ),
                 child: Icon(
                   statusIcon,
@@ -469,23 +443,17 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
               const SizedBox(height: 14),
               Text(
                 statusDisplayTitle,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: primaryThemeColor,
-                  letterSpacing: 0,
-                ),
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall
+                    ?.copyWith(color: primaryThemeColor),
               ),
               const SizedBox(height: 8),
               Text(
                 cleanMessage,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.of(context).text,
-                  height: 1.3,
-                ),
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
 
@@ -494,8 +462,7 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: cardBgColor,
-                  borderRadius: BorderRadius.circular(14),
-                  
+                  borderRadius: BorderRadius.circular(AppPalette.radiusMd),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Column(
@@ -545,8 +512,8 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
               // Scan Next Button
               SizedBox(
                 width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
+                height: 44,
+                child: FilledButton.icon(
                   onPressed: () {
                     Navigator.pop(ctx);
                     if (mounted) {
@@ -554,19 +521,13 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                     }
                   },
                   icon: const Icon(Icons.refresh_rounded, size: 20),
-                  label: const Text(
-                    'SCAN NEXT TICKET',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
+                  label: const Text('Scan Next Ticket',
+                      overflow: TextOverflow.ellipsis),
+                  style: FilledButton.styleFrom(
                     backgroundColor: primaryThemeColor,
                     foregroundColor: AppPalette.white,
-                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppPalette.radiusMd),
                     ),
                   ),
                 ),
@@ -584,52 +545,24 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
 
   Widget _buildStatusBadge(String status) {
     final cleanStatus = status.trim().toUpperCase();
-    Color textColor;
-    Color bgColor;
-    IconData iconData;
+    final StatusTone tone;
+    final IconData iconData;
 
     if (cleanStatus == 'CONFIRMED') {
-      textColor = AppPalette.success;
-      bgColor = AppPalette.success.withValues(alpha: .12);
+      tone = StatusTone.success;
       iconData = Icons.check_circle_rounded;
     } else if (cleanStatus == 'PENDING') {
-      textColor = AppPalette.warning;
-      bgColor = AppPalette.warning.withValues(alpha: .12);
+      tone = StatusTone.warning;
       iconData = Icons.hourglass_top_rounded;
     } else if (cleanStatus == 'CANCELLED' || cleanStatus == 'CANCELED') {
-      textColor = AppPalette.danger;
-      bgColor = AppPalette.danger.withValues(alpha: .12);
+      tone = StatusTone.danger;
       iconData = Icons.cancel_rounded;
     } else {
-      textColor = AppColors.of(context).text2;
-      bgColor = AppColors.of(context).canvas;
+      tone = StatusTone.info;
       iconData = Icons.info_rounded;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-        
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(iconData, size: 14, color: textColor),
-          const SizedBox(width: 4),
-          Text(
-            cleanStatus,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: textColor,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ],
-      ),
-    );
+    return StatusChip(label: cleanStatus, tone: tone, icon: iconData);
   }
 
   Widget _buildModalRow(
@@ -670,7 +603,8 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.of(context).tint,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius:
+                              BorderRadius.circular(AppPalette.radiusPill),
                         ),
                         child: Text(
                           value,
@@ -714,24 +648,22 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Manual Reference Entry', style: TextStyle(fontWeight: FontWeight.w600)),
+          title: const Text('Manual Reference Entry'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Enter ticket reference number if the physical QR code is damaged or unreadable.',
-                style: TextStyle(fontSize: 13, color: AppColors.of(context).text2),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 14),
               TextField(
                 controller: textController,
                 autofocus: true,
                 textCapitalization: TextCapitalization.characters,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'e.g., SP-20260909-0001',
                   labelText: 'Reference Number',
-                  
                 ),
               ),
             ],
@@ -741,7 +673,7 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 final code = textController.text.trim();
                 Navigator.pop(ctx);
@@ -750,10 +682,6 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                   _verifyTicket(referenceNumber: code);
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppPalette.teal500,
-                foregroundColor: AppPalette.white,
-              ),
               child: const Text('Verify Ticket'),
             ),
           ],
@@ -766,7 +694,6 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Confirm Logout'),
         content: const Text('Are you sure you want to log out of the scanner station?'),
         actions: [
@@ -774,9 +701,9 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
+            style: FilledButton.styleFrom(
               backgroundColor: AppPalette.danger,
               foregroundColor: AppPalette.white,
             ),
@@ -809,9 +736,10 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
         : 'Surigao Port Terminal';
 
     return Scaffold(
-      backgroundColor: AppColors.of(context).text,
+      backgroundColor: AppPalette.ink,
       appBar: AppBar(
-        backgroundColor: AppColors.of(context).text,
+        backgroundColor: AppPalette.ink,
+        foregroundColor: AppPalette.white,
         elevation: 0,
         centerTitle: false,
         title: Column(
@@ -821,24 +749,35 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
               children: [
                 const Icon(Icons.badge_rounded, size: 16, color: AppPalette.teal400),
                 const SizedBox(width: 6),
-                Text(
-                  staffName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppPalette.white,
+                Flexible(
+                  child: Text(
+                    staffName,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(color: AppPalette.white),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 2),
-            Text(
-              '📍 $portName',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.of(context).text3,
-              ),
+            Row(
+              children: [
+                const Icon(Icons.place_rounded,
+                    size: 14, color: AppPalette.darkText3),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    portName,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelMedium
+                        ?.copyWith(color: AppPalette.darkText2),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -878,8 +817,7 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
             width: 270,
             height: 270,
             decoration: BoxDecoration(
-              
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppPalette.radiusLg),
               boxShadow: [
                 BoxShadow(
                   color: (_isProcessing 
@@ -956,22 +894,22 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               decoration: BoxDecoration(
                 color: AppPalette.ink.withValues(alpha: 0.75),
-                borderRadius: BorderRadius.circular(30),
-                
+                borderRadius: BorderRadius.circular(AppPalette.radiusPill),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.qr_code_rounded, color: AppPalette.teal400, size: 18),
                   const SizedBox(width: 8),
-                  Text(
-                    _isProcessing 
-                        ? 'Verifying Ticket...' 
-                        : 'Align Passenger QR Code inside box',
-                    style: const TextStyle(
-                      color: AppPalette.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                  Flexible(
+                    child: Text(
+                      _isProcessing
+                          ? 'Verifying Ticket...'
+                          : 'Align Passenger QR Code inside box',
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelMedium
+                          ?.copyWith(color: AppPalette.white),
                     ),
                   ),
                 ],
@@ -1001,22 +939,18 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                 const SizedBox(width: 20),
 
                 // Manual Entry Button
-                ElevatedButton.icon(
+                FilledButton.icon(
                   onPressed: _showManualEntryDialog,
                   icon: const Icon(Icons.keyboard_rounded, size: 18),
-                  label: const Text('ENTER CODE'),
-                  style: ElevatedButton.styleFrom(
+                  label: const Text('Enter Code'),
+                  style: FilledButton.styleFrom(
                     backgroundColor: AppColors.of(context).surface,
                     foregroundColor: AppColors.of(context).text,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(AppPalette.radiusPill),
                     ),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                      letterSpacing: 0,
-                    ),
+                    textStyle: Theme.of(context).textTheme.labelMedium,
                   ),
                 ),
                 const SizedBox(width: 20),

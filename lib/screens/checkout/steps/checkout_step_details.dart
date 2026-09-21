@@ -7,6 +7,8 @@ import '../../../models/route_fare.dart';
 import '../../../models/schedule.dart';
 import '../../../widgets/app_palette.dart';
 import '../../../widgets/app_card.dart';
+import '../../../widgets/section_header.dart';
+import '../../../widgets/status_chip.dart';
 
 /// Step 1 of the booking checkout flow:
 /// Displays the trip summary, passenger counters, and dynamic passenger details form cards.
@@ -51,14 +53,7 @@ class CheckoutStepDetails extends StatelessWidget {
         const SizedBox(height: 18),
 
         // Seat Category Counter Selectors
-        Text(
-          'Select Seats & Passenger Types',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.of(context).text,
-              ),
-        ),
-        const SizedBox(height: 10),
+        const SectionHeader('Select Seats & Passenger Types'),
 
         _buildCounterRow(context, 
           label: 'Regular',
@@ -90,14 +85,7 @@ class CheckoutStepDetails extends StatelessWidget {
         const SizedBox(height: 22),
 
         // Dynamic Passenger Detail Cards
-        Text(
-          'Passenger Details (${passengers.length} Total)',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.of(context).text,
-              ),
-        ),
-        const SizedBox(height: 10),
+        SectionHeader('Passenger Details (${passengers.length} Total)'),
 
         ...passengers.map((p) => _buildPassengerAccordionCard(context, p)),
 
@@ -112,68 +100,61 @@ class CheckoutStepDetails extends StatelessWidget {
   Widget _buildTripSummaryCard(BuildContext context) {
     return AppCard(
       padding: const EdgeInsets.all(16),
-      
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${schedule.from} → ${schedule.to}',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.of(context).text,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppPalette.teal500.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
+              Expanded(
                 child: Text(
-                  '${schedule.availableSeats} seats left',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppPalette.teal500,
-                  ),
+                  '${schedule.from} → ${schedule.to}',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
+              const SizedBox(width: 12),
+              StatusChip(label: '${schedule.availableSeats} seats left'),
             ],
           ),
           const Divider(height: 20),
           Row(
             children: [
-              const Icon(Icons.calendar_today_outlined, size: 16, color: AppPalette.teal500),
+              Icon(Icons.calendar_today_outlined,
+                  size: 16, color: AppColors.of(context).accent),
               const SizedBox(width: 8),
-              Text(
-                'Travel Date: ${schedule.date.isNotEmpty ? schedule.date : 'Selected Date'}',
-                style: const TextStyle(fontSize: 13),
+              Expanded(
+                child: Text(
+                  'Travel Date: ${schedule.date.isNotEmpty ? schedule.date : 'Selected Date'}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.access_time_rounded, size: 16, color: AppPalette.teal500),
+              Icon(Icons.access_time_rounded,
+                  size: 16, color: AppColors.of(context).accent),
               const SizedBox(width: 8),
-              Text(
-                'Departure Time: ${schedule.time}',
-                style: const TextStyle(fontSize: 13),
+              Expanded(
+                child: Text(
+                  'Departure Time: ${schedule.time}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.directions_boat_outlined, size: 16, color: AppPalette.teal500),
+              Icon(Icons.directions_boat_outlined,
+                  size: 16, color: AppColors.of(context).accent),
               const SizedBox(width: 8),
-              Text(
-                'Vessel / Boat: ${schedule.boatName}',
-                style: const TextStyle(fontSize: 13),
+              Expanded(
+                child: Text(
+                  'Vessel / Boat: ${schedule.boatName}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
             ],
           ),
@@ -192,7 +173,6 @@ class CheckoutStepDetails extends StatelessWidget {
   }) {
     return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      
       child: Row(
         children: [
           Expanded(
@@ -204,42 +184,20 @@ class CheckoutStepDetails extends StatelessWidget {
                     Flexible(
                       child: Text(
                         label,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.of(context).text,
-                        ),
+                        style: Theme.of(context).textTheme.titleSmall,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (badgeText != null) ...[
                       const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppPalette.teal500.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          badgeText,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: AppPalette.teal500,
-                          ),
-                        ),
-                      ),
+                      Flexible(child: StatusChip(label: badgeText)),
                     ],
                   ],
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '₱${unitPrice.toStringAsFixed(2)} / passenger',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.of(context).text2,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
@@ -249,22 +207,22 @@ class CheckoutStepDetails extends StatelessWidget {
               IconButton(
                 onPressed: count > 0 ? onDecrement : null,
                 icon: const Icon(Icons.remove_circle_outline),
-                color: AppPalette.teal500,
-                disabledColor: AppColors.of(context).hairline,
+                color: AppColors.of(context).accent,
+                disabledColor: AppColors.of(context).text3,
                 iconSize: 24,
               ),
               SizedBox(
-                width: 20,
+                width: 24,
                 child: Text(
                   '$count',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
               ),
               IconButton(
                 onPressed: onIncrement,
                 icon: const Icon(Icons.add_circle_outline),
-                color: AppPalette.teal500,
+                color: AppColors.of(context).accent,
                 iconSize: 24,
               ),
             ],
@@ -277,9 +235,9 @@ class CheckoutStepDetails extends StatelessWidget {
   Widget _buildPassengerAccordionCard(BuildContext context, PassengerDetail passenger) {
     final bool isCompleted = passenger.isComplete;
 
-    return AppCard(padding: EdgeInsets.zero,
+    return AppCard(
+      padding: EdgeInsets.zero,
       margin: const EdgeInsets.only(bottom: 14),
-      
       child: Column(
         children: [
           // Accordion Header
@@ -288,7 +246,7 @@ class CheckoutStepDetails extends StatelessWidget {
               passenger.isExpanded = !passenger.isExpanded;
               onPassengerFormUpdated();
             },
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppPalette.radiusLg),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
@@ -299,21 +257,13 @@ class CheckoutStepDetails extends StatelessWidget {
                       children: [
                         Text(
                           'Passenger ${passenger.index}: ${passenger.categoryLabel}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color: AppColors.of(context).text,
-                          ),
+                          style: Theme.of(context).textTheme.titleSmall,
                         ),
                         if (passenger.fullName != 'Passenger ${passenger.index}') ...[
                           const SizedBox(height: 2),
                           Text(
                             passenger.fullName,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.of(context).text2,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
                       ],
@@ -321,22 +271,12 @@ class CheckoutStepDetails extends StatelessWidget {
                   ),
 
                   // Status Chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isCompleted
-                          ? AppPalette.teal500.withValues(alpha: 0.15)
-                          : AppColors.of(context).surface2,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      isCompleted ? 'Completed' : 'Not completed',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: isCompleted ? AppPalette.teal500 : AppColors.of(context).text2,
-                      ),
-                    ),
+                  StatusChip(
+                    label: isCompleted ? 'Completed' : 'Not completed',
+                    tone: isCompleted ? StatusTone.success : StatusTone.warning,
+                    icon: isCompleted
+                        ? Icons.check_circle_rounded
+                        : Icons.edit_outlined,
                   ),
                   const SizedBox(width: 8),
 
@@ -363,11 +303,9 @@ class CheckoutStepDetails extends StatelessWidget {
                   TextField(
                     controller: passenger.givenNamesController,
                     onChanged: (_) => onPassengerFormUpdated(),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Given names (including suffix) *',
                       hintText: 'e.g. Juan Jr.',
-                      
-                      
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -376,11 +314,9 @@ class CheckoutStepDetails extends StatelessWidget {
                   TextField(
                     controller: passenger.lastNameController,
                     onChanged: (_) => onPassengerFormUpdated(),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Last name (surname) *',
                       hintText: 'e.g. Dela Cruz',
-                      
-                      
                     ),
                   ),
 
@@ -390,19 +326,19 @@ class CheckoutStepDetails extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppPalette.teal500.withValues(alpha: 0.07),
-                        borderRadius: BorderRadius.circular(12),
-                        
+                        color: AppColors.of(context).tint,
+                        borderRadius:
+                            BorderRadius.circular(AppPalette.radiusMd),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.badge_outlined,
                                 size: 18,
-                                color: AppPalette.teal500,
+                                color: AppColors.of(context).onTint,
                               ),
                               const SizedBox(width: 6),
                               Expanded(
@@ -410,11 +346,11 @@ class CheckoutStepDetails extends StatelessWidget {
                                   passenger.category == 'student'
                                       ? 'Student Discount ID Verification *'
                                       : 'Senior Citizen / PWD ID Verification *',
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppPalette.teal500,
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium
+                                      ?.copyWith(
+                                          color: AppColors.of(context).onTint),
                                 ),
                               ),
                             ],
@@ -422,48 +358,45 @@ class CheckoutStepDetails extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             'Please attach a clear photo of your valid ID card to verify discount eligibility.',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.of(context).text2,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                           const SizedBox(height: 12),
                           if (passenger.idPhotoPath == null || passenger.idPhotoPath!.isEmpty) ...[
                             // Unattached: Upload action box
                             InkWell(
                               onTap: () => _showImageSourceSheet(context, passenger),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius:
+                                  BorderRadius.circular(AppPalette.radiusSm),
                               child: Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
                                 decoration: BoxDecoration(
                                   color: AppColors.of(context).surface,
-                                  borderRadius: BorderRadius.circular(10),
-                                  
+                                  borderRadius: BorderRadius.circular(
+                                      AppPalette.radiusSm),
                                 ),
                                 child: Column(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.add_a_photo_outlined,
                                       size: 32,
-                                      color: AppPalette.teal500,
+                                      color: AppColors.of(context).accent,
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
                                       'Upload Valid ID Photo *',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.of(context).text,
-                                      ),
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall,
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       'Tap to take a photo or select from gallery',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: AppColors.of(context).text3,
-                                      ),
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall,
                                     ),
                                   ],
                                 ),
@@ -473,11 +406,11 @@ class CheckoutStepDetails extends StatelessWidget {
                             // Attached: Preview thumbnail with replace/delete actions
                             AppCard(
                               padding: const EdgeInsets.all(10),
-                              
                               child: Row(
                                 children: [
                                   ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(
+                                        AppPalette.radiusSm),
                                     child: Image.file(
                                       File(passenger.idPhotoPath!),
                                       width: 80,
@@ -496,40 +429,26 @@ class CheckoutStepDetails extends StatelessWidget {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                          decoration: BoxDecoration(
-                                            color: AppPalette.teal500.withValues(alpha: 0.15),
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: const Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(Icons.check_circle_rounded, size: 13, color: AppPalette.teal500),
-                                              SizedBox(width: 4),
-                                              Text(
-                                                'ID Photo Attached',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppPalette.teal500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                        const StatusChip(
+                                          label: 'ID Photo Attached',
+                                          tone: StatusTone.success,
+                                          icon: Icons.check_circle_rounded,
                                         ),
                                         const SizedBox(height: 6),
-                                        InkWell(
-                                          onTap: () => _showImageSourceSheet(context, passenger),
-                                          child: const Text(
-                                            'Change / Retake photo',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: AppPalette.teal500,
-                                              fontWeight: FontWeight.w600,
-                                              decoration: TextDecoration.underline,
-                                            ),
+                                        TextButton(
+                                          onPressed: () => _showImageSourceSheet(
+                                              context, passenger),
+                                          style: TextButton.styleFrom(
+                                            padding: EdgeInsets.zero,
+                                            minimumSize: const Size(0, 36),
+                                            tapTargetSize: MaterialTapTargetSize
+                                                .shrinkWrap,
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .labelMedium,
                                           ),
+                                          child: const Text(
+                                              'Change / Retake photo'),
                                         ),
                                       ],
                                     ),
@@ -554,7 +473,7 @@ class CheckoutStepDetails extends StatelessWidget {
                   const SizedBox(height: 16),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: ElevatedButton(
+                    child: FilledButton.tonal(
                       onPressed: () {
                         passenger.isExpanded = false;
                         final nextIndex = passenger.index;
@@ -563,10 +482,9 @@ class CheckoutStepDetails extends StatelessWidget {
                         }
                         onPassengerFormUpdated();
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.of(context).surface2,
-                        foregroundColor: AppColors.of(context).text,
-                        elevation: 0,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.of(context).tint,
+                        foregroundColor: AppColors.of(context).onTint,
                         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                       ),
                       child: const Text('Save & continue'),
@@ -584,41 +502,31 @@ class CheckoutStepDetails extends StatelessWidget {
   Widget _buildStep1BottomBar(BuildContext context) {
     return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Total price',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.of(context).text3,
-                      letterSpacing: 0,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('TOTAL PRICE',
+                        style: Theme.of(context).textTheme.labelSmall),
+                    Text(
+                      '$totalSeats Seat${totalSeats == 1 ? '' : 's'} Selected',
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
-                  ),
-                  Text(
-                    '$totalSeats Seat${totalSeats == 1 ? '' : 's'} Selected',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.of(context).text,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 12),
               Text(
                 '₱${totalPrice.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: AppPalette.teal500,
-                ),
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(color: AppColors.of(context).accent),
               ),
             ],
           ),
@@ -626,17 +534,9 @@ class CheckoutStepDetails extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             height: 44,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: onProceedToSeats,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppPalette.teal500,
-                foregroundColor: AppPalette.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text(
-                'Select seats',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-              ),
+              child: const Text('Select seats'),
             ),
           ),
         ],
@@ -673,7 +573,8 @@ class CheckoutStepDetails extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppPalette.radiusXl)),
       ),
       backgroundColor: AppColors.of(context).surface,
       builder: (sheetContext) => SafeArea(
@@ -688,42 +589,35 @@ class CheckoutStepDetails extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: AppColors.of(context).hairline,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius:
+                      BorderRadius.circular(AppPalette.radiusPill),
                 ),
               ),
               Text(
                 'Upload Discount ID Photo',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.of(context).text,
-                ),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 4),
               Text(
                 'Select the source for Passenger ${passenger.index}\'s ID photo',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.of(context).text2,
-                ),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
               ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppPalette.teal500.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.photo_camera_rounded, color: AppPalette.teal500),
+                leading: CircleAvatar(
+                  backgroundColor: AppColors.of(context).tint,
+                  child: Icon(Icons.photo_camera_rounded,
+                      color: AppColors.of(context).accent),
                 ),
-                title: const Text(
+                title: Text(
                   'Take Photo (Camera)',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
                 subtitle: Text(
                   'Capture a clear picture of your physical ID card',
-                  style: TextStyle(fontSize: 11, color: AppColors.of(context).text3),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -732,21 +626,18 @@ class CheckoutStepDetails extends StatelessWidget {
               ),
               const Divider(indent: 64, endIndent: 20),
               ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppPalette.teal500.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.photo_library_rounded, color: AppPalette.teal500),
+                leading: CircleAvatar(
+                  backgroundColor: AppColors.of(context).tint,
+                  child: Icon(Icons.photo_library_rounded,
+                      color: AppColors.of(context).accent),
                 ),
-                title: const Text(
+                title: Text(
                   'Choose from Gallery',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
                 subtitle: Text(
                   'Select a photo or scan already saved on your phone',
-                  style: TextStyle(fontSize: 11, color: AppColors.of(context).text3),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();

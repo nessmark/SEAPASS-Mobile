@@ -84,61 +84,59 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
           children: tabs,
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (index) {
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
           setState(() => _currentIndex = index);
           if (index == 2) {
             // Re-sync unread count when switching to advisories tab
             context.read<AdvisoryProvider>().fetchUnreadCount();
           }
         },
-        items: [
-          const BottomNavigationBarItem(
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.directions_boat_outlined),
-            activeIcon: Icon(Icons.directions_boat_filled),
+            selectedIcon: Icon(Icons.directions_boat_filled),
             label: 'Trips',
           ),
-          const BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
-            activeIcon: Icon(Icons.receipt_long_rounded),
-            label: 'My Bookings',
+            selectedIcon: Icon(Icons.receipt_long_rounded),
+            label: 'Bookings',
           ),
-          BottomNavigationBarItem(
-            icon: Consumer<AdvisoryProvider>(
-              builder: (context, advisoryProvider, child) {
-                final unreadCount = advisoryProvider.unreadCount;
-                return Badge(
-                  isLabelVisible: unreadCount > 0,
-                  label: Text('$unreadCount'),
-                  backgroundColor: AppPalette.danger,
-                  textColor: AppPalette.white,
-                  child: const Icon(Icons.campaign_outlined),
-                );
-              },
-            ),
-            activeIcon: Consumer<AdvisoryProvider>(
-              builder: (context, advisoryProvider, child) {
-                final unreadCount = advisoryProvider.unreadCount;
-                return Badge(
-                  isLabelVisible: unreadCount > 0,
-                  label: Text('$unreadCount'),
-                  backgroundColor: AppPalette.danger,
-                  textColor: AppPalette.white,
-                  child: const Icon(Icons.campaign_rounded),
-                );
-              },
-            ),
+          NavigationDestination(
+            icon: _AdvisoryBadge(child: Icon(Icons.campaign_outlined)),
+            selectedIcon: _AdvisoryBadge(child: Icon(Icons.campaign_rounded)),
             label: 'Advisories',
           ),
-          const BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.person_outline_rounded),
-            activeIcon: Icon(Icons.person_rounded),
+            selectedIcon: Icon(Icons.person_rounded),
             label: 'Account',
           ),
         ],
       ),
     );
   }
+}
+
+/// Unread-advisory count bubble, kept out of the destination list so the
+/// destinations themselves stay const.
+class _AdvisoryBadge extends StatelessWidget {
+  const _AdvisoryBadge({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Consumer<AdvisoryProvider>(
+        builder: (context, advisoryProvider, _) {
+          final unreadCount = advisoryProvider.unreadCount;
+          return Badge(
+            isLabelVisible: unreadCount > 0,
+            label: Text('$unreadCount'),
+            backgroundColor: AppPalette.danger,
+            textColor: AppPalette.white,
+            child: child,
+          );
+        },
+      );
 }

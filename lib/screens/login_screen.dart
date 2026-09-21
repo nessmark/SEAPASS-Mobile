@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppPalette.radiusXl)),
       ),
       builder: (ctx) {
         return StatefulBuilder(
@@ -98,11 +98,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Server Connection Settings',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      Expanded(
+                        child: Text(
+                          'Server Connection Settings',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -112,16 +113,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Text(
                     'Active Base URL: ${ApiConfig.baseUrl}',
-                    style: TextStyle(fontSize: 12, color: AppColors.of(context).text3),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: AppColors.of(context).text3),
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppPalette.teal500,
-                        
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    child: FilledButton.tonalIcon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.of(context).tint,
+                        foregroundColor: AppColors.of(context).onTint,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppPalette.radiusMd),
+                        ),
                       ),
                       onPressed: () async {
                         Navigator.pop(ctx);
@@ -133,8 +139,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 12),
                   ListTile(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    tileColor: ApiConfig.currentMode == ConnectionMode.usbAdb ? AppPalette.teal500.withValues(alpha: 0.15) : null,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppPalette.radiusSm)),
+                    tileColor: ApiConfig.currentMode == ConnectionMode.usbAdb
+                        ? AppColors.of(context).tint
+                        : null,
                     leading: const Icon(Icons.usb_rounded),
                     title: const Text('USB Debugging (ADB Reverse)'),
                     subtitle: const Text('127.0.0.1:8000 (Requires adb reverse)'),
@@ -145,8 +154,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   ListTile(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    tileColor: ApiConfig.currentMode == ConnectionMode.lanWifi ? AppPalette.teal500.withValues(alpha: 0.15) : null,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppPalette.radiusSm)),
+                    tileColor: ApiConfig.currentMode == ConnectionMode.lanWifi
+                        ? AppColors.of(context).tint
+                        : null,
                     leading: const Icon(Icons.wifi_rounded),
                     title: const Text('Wi-Fi (Auto-Connect Server)'),
                     subtitle: Text('Auto-scans & connects to PC (Target: http://${ApiConfig.lanWifiHost}:${ApiConfig.defaultPort})'),
@@ -171,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onPressed: () => Navigator.pop(dCtx),
                                 child: const Text('Cancel'),
                               ),
-                              ElevatedButton(
+                              FilledButton(
                                 onPressed: () async {
                                   final ip = ipController.text.trim();
                                   if (ip.isNotEmpty) {
@@ -194,8 +206,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   ListTile(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    tileColor: ApiConfig.currentMode == ConnectionMode.androidEmulator ? AppPalette.teal500.withValues(alpha: 0.15) : null,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppPalette.radiusSm)),
+                    tileColor: ApiConfig.currentMode == ConnectionMode.androidEmulator
+                        ? AppColors.of(context).tint
+                        : null,
                     leading: const Icon(Icons.phone_android_rounded),
                     title: const Text('Android Emulator (10.0.2.2)'),
                     subtitle: const Text('Host loopback alias for AVD emulators'),
@@ -206,8 +221,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   ListTile(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    tileColor: ApiConfig.currentMode == ConnectionMode.production ? AppPalette.teal500.withValues(alpha: 0.15) : null,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppPalette.radiusSm)),
+                    tileColor: ApiConfig.currentMode == ConnectionMode.production
+                        ? AppColors.of(context).tint
+                        : null,
                     leading: const Icon(Icons.cloud_done_rounded),
                     title: const Text('Production Server'),
                     subtitle: const Text(ApiConfig.productionUrl),
@@ -320,7 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           // Ferry logo (interactive on long-press)
                           GestureDetector(
                             onLongPress: () => _showServerSettingsModal(context),
-                            child: const SeaPassLogo(size: 72),
+                            child: const SeaPassLogo(size: 64),
                           ),
                           const SizedBox(height: 18),
 
@@ -328,12 +346,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Text(
                             'SeaPass - San Jose Port\nPassenger',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.of(context).text,
-                              height: 1.35,
-                            ),
+                            style: Theme.of(context).textTheme.headlineMedium,
                           ),
                           const SizedBox(height: 36),
 
@@ -375,18 +388,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                   horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
                                 color: AppPalette.danger.withValues(alpha: .12),
-                                borderRadius: BorderRadius.circular(12),
-                                
+                                borderRadius:
+                                    BorderRadius.circular(AppPalette.radiusMd),
                               ),
                               child: Column(
                                 children: [
                                   Text(
                                     _errorMessage,
-                                    style: TextStyle(
-                                      color: AppPalette.danger,
-                                      fontSize: 12.5,
-                                      height: 1.35,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(color: AppPalette.danger),
                                     textAlign: TextAlign.left,
                                   ),
                                   const SizedBox(height: 10),
@@ -394,37 +406,42 @@ class _LoginScreenState extends State<LoginScreen> {
                                     children: [
                                       // Main Auto-Connect button
                                       Expanded(
-                                        child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: AppPalette.teal500,
-                                            foregroundColor: AppPalette.white,
+                                        child: FilledButton.icon(
+                                          style: FilledButton.styleFrom(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 12, vertical: 10),
                                             textStyle: const TextStyle(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600),
                                             shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(8)),
-                                            elevation: 0,
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        AppPalette.radiusSm)),
                                           ),
                                           onPressed: _isLoading
                                               ? null
                                               : _handleAutoDetect,
                                           icon: const Icon(Icons.wifi_find_rounded, size: 18),
-                                          label: const Text('Auto-Connect Server'),
+                                          label: const Text('Auto-Connect Server',
+                                              overflow: TextOverflow.ellipsis),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
                                       // Manual Settings button
-                                      IconButton.outlined(
+                                      IconButton(
                                         tooltip: 'Server Connection Settings',
                                         style: IconButton.styleFrom(
-                                          
+                                          backgroundColor:
+                                              AppColors.of(context).surface,
                                           shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8)),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      AppPalette.radiusSm)),
                                         ),
                                         onPressed: () => _showServerSettingsModal(context),
-                                        icon: Icon(Icons.settings, size: 18, color: AppColors.of(context).text),
+                                        icon: Icon(Icons.settings_rounded,
+                                            size: 18,
+                                            color: AppColors.of(context).text),
                                       ),
                                     ],
                                   ),
@@ -439,17 +456,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           SizedBox(
                             width: double.infinity,
                             height: 44,
-                            child: ElevatedButton(
+                            child: FilledButton(
                               onPressed: _isLoading ? null : _login,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppPalette.teal500,
-                                foregroundColor: AppPalette.white,
+                              style: FilledButton.styleFrom(
                                 disabledBackgroundColor:
                                     AppPalette.teal500.withValues(alpha: 0.6),
+                                disabledForegroundColor: AppPalette.white,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius:
+                                      BorderRadius.circular(AppPalette.radiusMd),
                                 ),
-                                elevation: 0,
                               ),
                               child: _isLoading
                                   ? const SizedBox(
@@ -473,35 +489,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 14),
 
                           // Sign Up link
-                          GestureDetector(
-                            onTap: () => Navigator.push(
+                          TextButton(
+                            onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (_) => const SignupScreen()),
                             ),
-                            child: const Text(
-                              'Sign Up / Create Account',
-                              style: TextStyle(
-                                color: AppPalette.teal500,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            child: const Text('Sign Up / Create Account'),
                           ),
                         ],
                       ),
                     ),
                   ),
-
-                  // ── Bottom brand decoration (hidden when keyboard is open) ──
-                  if (MediaQuery.of(context).viewInsets.bottom == 0)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 36),
-                      child: SeaPassLogo(
-                        size: 88,
-                        color: AppColors.of(context).text3,
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -527,19 +526,12 @@ class _LoginScreenState extends State<LoginScreen> {
       textInputAction:
           onSubmitted != null ? TextInputAction.done : TextInputAction.next,
       onSubmitted: onSubmitted,
-      style: TextStyle(fontSize: 15, color: AppColors.of(context).text),
+      style: Theme.of(context).textTheme.bodyMedium,
       decoration: InputDecoration(
         labelText: label,
-        
         prefixIcon:
             Icon(prefixIcon, size: 20, color: AppColors.of(context).text3),
         suffixIcon: suffixIcon,
-        filled: true,
-        
-        
-        
-        
-        
       ),
     );
   }

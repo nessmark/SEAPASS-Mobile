@@ -124,21 +124,15 @@ class _SplashScreenState extends State<SplashScreen>
                 // App name
                 Text(
                   'SeaPass',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.of(context).text,
-                    letterSpacing: 0,
-                  ),
+                  style: Theme.of(context).textTheme.displaySmall,
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'San Jose Port — Passenger',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.of(context).text3,
-                    letterSpacing: 0.4,
-                  ),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppColors.of(context).text3),
                 ),
                 const SizedBox(height: 48),
 
@@ -148,9 +142,7 @@ class _SplashScreenState extends State<SplashScreen>
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppPalette.teal500.withValues(alpha: 0.7),
-                    ),
+                    color: AppColors.of(context).accent,
                   ),
                 ),
               ],

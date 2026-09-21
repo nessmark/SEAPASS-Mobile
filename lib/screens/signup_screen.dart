@@ -123,7 +123,8 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
         backgroundColor: AppPalette.danger,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppPalette.radiusMd)),
       ),
     );
   }
@@ -164,7 +165,8 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           backgroundColor: AppPalette.teal500,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppPalette.radiusMd)),
         ),
       );
 
@@ -230,17 +232,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 12),
                 Text(
                   'Create Your Account',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.of(context).text,
-                  ),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Sign up to book boat trips and manage your sea passes',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: AppColors.of(context).text2),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 24),
 
@@ -252,13 +251,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: AppPalette.danger.withValues(alpha: .12),
-                      borderRadius: BorderRadius.circular(10),
-                      
+                      borderRadius: BorderRadius.circular(AppPalette.radiusSm),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.error_outline_rounded,
                           color: AppPalette.danger,
                           size: 18,
@@ -267,11 +265,10 @@ class _SignupScreenState extends State<SignupScreen> {
                         Expanded(
                           child: Text(
                             _errorMessage,
-                            style: TextStyle(
-                              color: AppPalette.danger,
-                              fontSize: 13,
-                              height: 1.4,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: AppPalette.danger),
                           ),
                         ),
                       ],
@@ -371,17 +368,16 @@ class _SignupScreenState extends State<SignupScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 44,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: _isLoading ? null : _handleSignup,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppPalette.teal500,
-                      foregroundColor: AppPalette.white,
+                    style: FilledButton.styleFrom(
                       disabledBackgroundColor:
                           AppPalette.teal500.withValues(alpha: 0.6),
+                      disabledForegroundColor: AppPalette.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius:
+                            BorderRadius.circular(AppPalette.radiusMd),
                       ),
-                      elevation: 0,
                     ),
                     child: _isLoading
                         ? const SizedBox(
@@ -408,21 +404,15 @@ class _SignupScreenState extends State<SignupScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Already have an account? ',
-                      style:
-                          TextStyle(color: AppColors.of(context).text2, fontSize: 13),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: const Text(
-                        'Log In',
-                        style: TextStyle(
-                          color: AppPalette.teal500,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
+                    Flexible(
+                      child: Text(
+                        'Already have an account?',
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Log In'),
                     ),
                   ],
                 ),
@@ -455,22 +445,12 @@ class _SignupScreenState extends State<SignupScreen> {
       textInputAction: textInputAction,
       onFieldSubmitted: onFieldSubmitted,
       validator: validator,
-      style: TextStyle(fontSize: 15, color: AppColors.of(context).text),
+      style: Theme.of(context).textTheme.bodyMedium,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        
-        
         prefixIcon: Icon(prefixIcon, size: 20, color: AppColors.of(context).text3),
         suffixIcon: suffixIcon,
-        filled: true,
-        
-        
-        
-        
-        
-        
-        
       ),
     );
   }

@@ -1,4 +1,3 @@
-import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import '../widgets/app_palette.dart';
 
@@ -41,6 +40,8 @@ abstract final class AppTheme {
       labelSmall: type(12, 16, FontWeight.w600, tracking: .48, color: tertiary),
     );
     final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppPalette.radiusMd));
+    OutlineInputBorder fieldShape([BorderSide side = BorderSide.none]) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppPalette.radiusMd), borderSide: side);
     final overlay = WidgetStateProperty.resolveWith<Color?>((states) {
       if (states.contains(WidgetState.focused)) return accent.withValues(alpha: .24);
       if (states.contains(WidgetState.pressed)) return accent.withValues(alpha: .16);
@@ -96,12 +97,11 @@ abstract final class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         isDense: true, floatingLabelBehavior: FloatingLabelBehavior.always,
         labelStyle: textTheme.bodySmall, hintStyle: textTheme.bodyMedium?.copyWith(color: tertiary),
-        border: InputBorder.none,
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppPalette.radiusMd), borderSide: BorderSide.none),
-        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppPalette.radiusMd), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppPalette.radiusMd), borderSide: const BorderSide(color: AppPalette.teal500, width: 2)),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppPalette.radiusMd), borderSide: const BorderSide(color: AppPalette.danger)),
-        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppPalette.radiusMd), borderSide: const BorderSide(color: AppPalette.danger, width: 2)),
+        // Filled fields carry no outline at rest; the shape only rounds the fill.
+        border: fieldShape(), enabledBorder: fieldShape(), disabledBorder: fieldShape(),
+        focusedBorder: fieldShape(const BorderSide(color: AppPalette.teal500, width: 2)),
+        errorBorder: fieldShape(const BorderSide(color: AppPalette.danger, width: 2)),
+        focusedErrorBorder: fieldShape(const BorderSide(color: AppPalette.danger, width: 2)),
         errorStyle: textTheme.bodySmall?.copyWith(color: AppPalette.danger),
       ),
       appBarTheme: AppBarTheme(backgroundColor: surface, foregroundColor: text,

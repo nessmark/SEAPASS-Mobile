@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'app_palette.dart';
 
 /// The canonical SeaPass logo widget used across the entire app.
 ///
 /// Renders the official mobile SVG asset
-/// with fallback to the MaterialCommunityIcons ferry icon.
+/// with an optional built-in Material ferry icon.
 class SeaPassLogo extends StatelessWidget {
   const SeaPassLogo({
     super.key,
@@ -36,10 +35,9 @@ class SeaPassLogo extends StatelessWidget {
             width: size,
             height: size,
             fit: BoxFit.contain,
-
           )
         : Icon(
-            MaterialCommunityIcons.ferry,
+            Icons.directions_boat_rounded,
             size: size,
             color: color,
           );
@@ -54,9 +52,10 @@ class SeaPassLogo extends StatelessWidget {
             'SeaPass',
             style: TextStyle(
               fontSize: size * 0.22,
-              fontWeight: FontWeight.w800,
+              height: 1.2,
+              fontWeight: FontWeight.w700,
               color: color,
-              letterSpacing: 1.2,
+              letterSpacing: -0.5,
             ),
           ),
         ],

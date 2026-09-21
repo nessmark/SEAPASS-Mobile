@@ -12,6 +12,7 @@ import '../../services/passenger_data_service.dart';
 import '../../services/passenger_session.dart';
 import '../../services/seat_map_service.dart';
 import '../../widgets/app_palette.dart';
+import '../../widgets/status_chip.dart';
 import '../passenger_home_screen.dart';
 import 'steps/checkout_step_details.dart';
 import 'steps/checkout_step_payment.dart';
@@ -684,24 +685,19 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
             context: context,
             barrierDismissible: false,
             builder: (dialogContext) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
               titlePadding: const EdgeInsets.only(top: 26.0, left: 20.0, right: 20.0, bottom: 8.0),
               contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               actionsPadding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 24.0),
               actionsAlignment: MainAxisAlignment.center,
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(Icons.hourglass_top_rounded, color: AppPalette.warning, size: 28),
-                  SizedBox(width: 8),
+                  const Icon(Icons.hourglass_top_rounded,
+                      color: AppPalette.warning, size: 28),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Payment Received!',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
                 ],
@@ -710,37 +706,15 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppPalette.warning.withValues(alpha: .12),
-                      borderRadius: BorderRadius.circular(8),
-                      
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.pending_actions_rounded, color: AppPalette.warning, size: 16),
-                        SizedBox(width: 6),
-                        Text(
-                          'HOLDING STATE • ID VERIFICATION',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppPalette.warning,
-                          ),
-                        ),
-                      ],
-                    ),
+                  const StatusChip(
+                    label: 'HOLDING STATE • ID VERIFICATION',
+                    tone: StatusTone.warning,
+                    icon: Icons.pending_actions_rounded,
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'Reference #$refNum',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.of(context).text,
-                      fontSize: 16,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -748,19 +722,31 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                     'Seats: ${_passengers.map((p) => 'Seat #${p.assignedSeat}').join(', ')}\n'
                     'Amount Paid: ₱${_totalPrice.toStringAsFixed(2)}\n'
                     'Payment: GCash / QR Ph (PayMongo)',
-                    style: const TextStyle(height: 1.45, fontSize: 13),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppColors.of(context).surface2,
-                      borderRadius: BorderRadius.circular(10),
-                      
+                      borderRadius:
+                          BorderRadius.circular(AppPalette.radiusSm),
                     ),
-                    child: Text(
-                      'ℹ Because your booking includes discounted tickets (Student/Senior/PWD), our port administrators must review your uploaded ID photos. Once approved, your Boarding Pass QR will be generated.\n\n🛡 If your ID cannot be verified, your payment will be automatically refunded to your GCash account.',
-                      style: TextStyle(fontSize: 12, height: 1.4, color: AppColors.of(context).text),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildNoteLine(
+                          context,
+                          Icons.info_outline_rounded,
+                          'Because your booking includes discounted tickets (Student/Senior/PWD), our port administrators must review your uploaded ID photos. Once approved, your Boarding Pass QR will be generated.',
+                        ),
+                        const SizedBox(height: 8),
+                        _buildNoteLine(
+                          context,
+                          Icons.shield_outlined,
+                          'If your ID cannot be verified, your payment will be automatically refunded to your GCash account.',
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -768,8 +754,8 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
               actions: [
                 SizedBox(
                   width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
+                  height: 44,
+                  child: FilledButton(
                     onPressed: () {
                       Navigator.of(dialogContext).pop();
                       Navigator.of(context).pushNamedAndRemoveUntil(
@@ -778,18 +764,11 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                         arguments: {'tabIndex': 1},
                       );
                     },
-                    style: ElevatedButton.styleFrom(
+                    style: FilledButton.styleFrom(
                       backgroundColor: AppPalette.warning,
                       foregroundColor: AppPalette.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
                     ),
-                    child: const Text(
-                      'View my bookings',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
+                    child: const Text('View my bookings'),
                   ),
                 ),
               ],
@@ -801,24 +780,19 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
             context: context,
             barrierDismissible: false,
             builder: (dialogContext) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
               titlePadding: const EdgeInsets.only(top: 28.0, left: 20.0, right: 20.0, bottom: 8.0),
               contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               actionsPadding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 24.0),
               actionsAlignment: MainAxisAlignment.center,
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(Icons.check_circle_rounded, color: AppPalette.teal500, size: 28),
-                  SizedBox(width: 8),
+                  Icon(Icons.check_circle_rounded,
+                      color: AppColors.of(context).accent, size: 28),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Booking Confirmed!',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
                 ],
@@ -829,11 +803,10 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                 children: [
                   Text(
                     'Reference #$refNum',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: AppPalette.teal500,
-                      fontSize: 16,
-                    ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(color: AppColors.of(context).accent),
                   ),
                   const SizedBox(height: 10),
                   Text(
@@ -841,20 +814,20 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                     'Seats: ${_passengers.map((p) => 'Seat #${p.assignedSeat}').join(', ')}\n'
                     'Total Paid: ₱${_totalPrice.toStringAsFixed(2)}\n'
                     'Payment: GCash / QR Ph (PayMongo)',
-                    style: const TextStyle(height: 1.45, fontSize: 13.5),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 10),
                   Text(
                     'Your payment was verified via PayMongo and your Boarding Pass QR code is ready.',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.of(context).text2),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),
               actions: [
                 SizedBox(
                   width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
+                  height: 44,
+                  child: FilledButton(
                     onPressed: () {
                       Navigator.of(dialogContext).pop();
                       Navigator.of(context).pushNamedAndRemoveUntil(
@@ -863,18 +836,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                         arguments: {'tabIndex': 1},
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppPalette.teal500,
-                      foregroundColor: AppPalette.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'View my bookings',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
+                    child: const Text('View my bookings'),
                   ),
                 ),
               ],
@@ -938,7 +900,9 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
         ),
       ),
       body: _isLoadingFares
-          ? const Center(child: CircularProgressIndicator(color: AppPalette.teal500))
+          ? Center(
+              child: CircularProgressIndicator(
+                  color: AppColors.of(context).accent))
           : _fareError != null && _fare == const RouteFare()
               ? Center(
                   child: Padding(
@@ -948,7 +912,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                       children: [
                         Text(_fareError!, textAlign: TextAlign.center),
                         const SizedBox(height: 16),
-                        ElevatedButton(
+                        FilledButton(
                           onPressed: _loadFares,
                           child: const Text('Retry'),
                         ),
@@ -980,8 +944,8 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
 
   Widget _buildStepperHeader() {
     return Container(
-      color: AppPalette.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      color: AppColors.of(context).surface,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
           _buildStepNode(0, '1. Details'),
@@ -1021,32 +985,37 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
             height: 24,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isPassed
-                  ? AppPalette.teal500
-                  : isActive
-                      ? AppPalette.teal500
-                      : AppColors.of(context).surface2,
+              color: isPassed || isActive
+                  ? AppColors.of(context).accent
+                  : AppColors.of(context).surface2,
             ),
             child: Center(
               child: isPassed
                   ? const Icon(Icons.check, size: 14, color: AppPalette.white)
                   : Text(
                       '${stepIndex + 1}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isActive ? AppPalette.white : AppColors.of(context).text2,
-                      ),
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            fontSize: 12,
+                            color: isActive
+                                ? AppPalette.white
+                                : AppColors.of(context).text2,
+                          ),
                     ),
             ),
           ),
           const SizedBox(width: 6),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-              color: isActive ? AppColors.of(context).text : AppColors.of(context).text3,
+          Flexible(
+            child: Text(
+              title,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontSize: 12,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                    color: isActive
+                        ? AppColors.of(context).text
+                        : AppColors.of(context).text3,
+                  ),
             ),
           ),
         ],
@@ -1059,9 +1028,24 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
     return Expanded(
       child: Container(
         height: 2,
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        color: isPassed ? AppPalette.teal500 : AppColors.of(context).hairline,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        color: isPassed
+            ? AppColors.of(context).accent
+            : AppColors.of(context).hairline,
       ),
+    );
+  }
+
+  Widget _buildNoteLine(BuildContext context, IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: AppColors.of(context).text3),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+        ),
+      ],
     );
   }
 

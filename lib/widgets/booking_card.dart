@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../models/booking.dart';
-import '../widgets/app_palette.dart';
+import 'app_card.dart';
+import 'app_palette.dart';
+import 'status_chip.dart';
 
 class BookingCard extends StatelessWidget {
   const BookingCard({
@@ -22,139 +24,115 @@ class BookingCard extends StatelessWidget {
             : 'Seats: ${booking.seatNumbers.join(", ")}')
         : '${booking.seatCount} Seat${booking.seatCount > 1 ? "s" : ""}';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        
-      ),
-      child: InkWell(
-        onTap: onViewTicket,
-        borderRadius: BorderRadius.circular(14),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
+
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: AppPalette.space16),
+      padding: const EdgeInsets.all(AppPalette.space20),
+      onTap: onViewTicket,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      booking.route,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.of(context).text,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isConfirmed
-                          ? AppPalette.teal500.withValues(alpha: 0.15)
-                          : AppPalette.warning.withValues(alpha: .12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      isConfirmed ? 'Confirmed' : 'To be confirmed',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: isConfirmed
-                            ? AppPalette.success
-                            : AppPalette.warning,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.confirmation_number_outlined,
-                      size: 16, color: AppColors.of(context).text3),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Ref: ${booking.referenceNumber}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.of(context).text,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(Icons.calendar_today_outlined,
-                      size: 16, color: AppColors.of(context).text3),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Date: ${booking.date}${booking.time.isNotEmpty ? " · ${booking.time}" : ""}',
-                    style: TextStyle(fontSize: 13, color: AppColors.of(context).text),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(Icons.directions_boat, size: 16, color: AppColors.of(context).text3),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Vessel: ${booking.boatName} ($seatsLabel)',
-                    style: TextStyle(fontSize: 13, color: AppColors.of(context).text),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Passenger: ${booking.passengerName}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.of(context).text2,
-                    ),
-                  ),
-                  Text(
-                    '₱${booking.totalPrice.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.of(context).text,
-                    ),
-                  ),
-                ],
-              ),
-              if (isConfirmed) ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: onViewTicket,
-                    icon: const Icon(Icons.qr_code, size: 18),
-                    label: const Text('VIEW TICKET & QR CODE'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppPalette.teal500,
-                      foregroundColor: AppPalette.white,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
+              Expanded(
+                child: Text(
+                  booking.route,
+                  style: text.titleLarge,
                 ),
-              ],
+              ),
+              const SizedBox(width: AppPalette.space12),
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: StatusChip(
+                  label: isConfirmed ? 'Confirmed' : 'To be confirmed',
+                  tone: isConfirmed ? StatusTone.success : StatusTone.warning,
+                ),
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: AppPalette.space16),
+          _MetaRow(
+            icon: Icons.confirmation_number_outlined,
+            label: 'Ref: ${booking.referenceNumber}',
+            strong: true,
+          ),
+          const SizedBox(height: AppPalette.space8),
+          _MetaRow(
+            icon: Icons.calendar_today_outlined,
+            label:
+                '${booking.date}${booking.time.isNotEmpty ? " · ${booking.time}" : ""}',
+          ),
+          const SizedBox(height: AppPalette.space8),
+          _MetaRow(
+            icon: Icons.directions_boat_outlined,
+            label: '${booking.boatName} · $seatsLabel',
+          ),
+          const SizedBox(height: AppPalette.space16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  booking.passengerName,
+                  style: text.bodySmall,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: AppPalette.space12),
+              Text(
+                '₱${booking.totalPrice.toStringAsFixed(2)}',
+                style: text.titleLarge?.copyWith(color: colors.accent),
+              ),
+            ],
+          ),
+          if (isConfirmed) ...[
+            const SizedBox(height: AppPalette.space16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onViewTicket,
+                icon: const Icon(Icons.qr_code_rounded, size: 18),
+                label: const Text('View ticket & QR code'),
+              ),
+            ),
+          ],
+        ],
       ),
+    );
+  }
+}
+
+class _MetaRow extends StatelessWidget {
+  const _MetaRow({required this.icon, required this.label, this.strong = false});
+  final IconData icon;
+  final String label;
+  final bool strong;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, size: 16, color: colors.text3),
+        ),
+        const SizedBox(width: AppPalette.space8),
+        Expanded(
+          child: Text(
+            label,
+            style: strong
+                ? text.bodyMedium?.copyWith(fontWeight: FontWeight.w600)
+                : text.bodyMedium?.copyWith(color: colors.text2),
+          ),
+        ),
+      ],
     );
   }
 }

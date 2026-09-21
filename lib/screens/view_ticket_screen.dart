@@ -8,8 +8,9 @@ import 'package:gal/gal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../models/booking.dart';
-import '../widgets/app_palette.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_palette.dart';
+import '../widgets/status_chip.dart';
 
 class ViewTicketScreen extends StatefulWidget {
   const ViewTicketScreen({super.key, this.booking});
@@ -203,16 +204,15 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: isError ? AppPalette.danger : AppPalette.teal500,
+        backgroundColor: isError ? AppPalette.danger : AppPalette.teal600,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         content: Row(
           children: [
             Icon(
               isError ? Icons.error_outline_rounded : Icons.check_circle_rounded,
               color: AppPalette.white,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppPalette.space12),
             Expanded(
               child: Text(
                 message,
@@ -228,37 +228,55 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
     );
   }
 
-  Color _getStatusColor(String status) {
+
+  // ─── Status helpers ─────────────────────────────────────────────────────────
+
+  StatusTone _statusTone(String status) {
     switch (status.trim().toLowerCase()) {
       case 'confirmed':
-        return AppPalette.teal500;
+        return StatusTone.success;
       case 'pending':
-        return AppPalette.warning;
       case 'to_be_confirmed':
       case 'to be confirmed':
-        return AppPalette.warning;
+        return StatusTone.warning;
       case 'cancelled':
       case 'canceled':
       default:
-        return AppPalette.danger;
+        return StatusTone.danger;
     }
   }
 
   String _getStatusText(String status) {
     switch (status.trim().toLowerCase()) {
       case 'confirmed':
-        return 'CONFIRMED';
+        return 'Confirmed';
       case 'pending':
-        return 'PENDING';
+        return 'Pending';
       case 'to_be_confirmed':
       case 'to be confirmed':
-        return 'TO BE CONFIRMED (PENDING ID)';
+        return 'Awaiting ID check';
       case 'cancelled':
       case 'canceled':
-        return 'CANCELLED / REFUNDED';
+        return 'Cancelled';
       default:
-        return status.toUpperCase();
+        return status;
     }
+  }
+
+  /// Splits "Surigao → San Jose" into its two ports for the route line.
+  /// Falls back to the raw string when the shape is unexpected.
+  List<String> _splitRoute(String route) {
+    for (final separator in ['→', '->', ' to ', ' - ', '–']) {
+      if (route.contains(separator)) {
+        final parts = route.split(separator);
+        if (parts.length == 2 &&
+            parts[0].trim().isNotEmpty &&
+            parts[1].trim().isNotEmpty) {
+          return [parts[0].trim(), parts[1].trim()];
+        }
+      }
+    }
+    return [route.trim()];
   }
 
   @override
@@ -296,23 +314,16 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
         : tickets.fold<double>(0.0, (sum, t) => sum + t.individualFare);
 
     final String bookingStatus = passedBooking.status;
-    final String statusLabel = _getStatusText(bookingStatus);
-    final Color statusColor = _getStatusColor(bookingStatus);
+    final bool isHolding =
+        bookingStatus.trim().toLowerCase() == 'to_be_confirmed' ||
+            bookingStatus.trim().toLowerCase() == 'to be confirmed';
 
     return Scaffold(
       backgroundColor: AppColors.of(context).canvas,
       appBar: AppBar(
-        title: Text(
-          tickets.length > 1
-              ? 'PASSENGER E-TICKETS (${tickets.length})'
-              : 'E-TICKET & BOARDING PASS',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0,
-          ),
-        ),
+        title: Text(tickets.length > 1 ? 'Boarding passes' : 'Boarding pass'),
         centerTitle: false,
+        titleSpacing: 0,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded, size: 22),
           onPressed: () => Navigator.of(context).pop(),
@@ -321,182 +332,31 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           controller: _scrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.fromLTRB(AppPalette.space20,
+              AppPalette.space16, AppPalette.space20, AppPalette.space32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Shared Trip & Vessel Header Banner ─────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.of(context).text,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppPalette.ink.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.directions_boat_filled_rounded,
-                              size: 18,
-                              color: AppPalette.teal500,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              boatName,
-                              style: const TextStyle(
-                                color: AppPalette.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: statusColor.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
-                            
-                          ),
-                          child: Text(
-                            statusLabel,
-                            style: TextStyle(
-                              color: statusColor,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      route,
-                      style: const TextStyle(
-                        color: AppPalette.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(Icons.calendar_month_outlined,
-                            size: 14, color: AppPalette.white.withValues(alpha: .70)),
-                        const SizedBox(width: 6),
-                        Text(
-                          '$tripDate · $tripTime',
-                          style: TextStyle(
-                            color: AppPalette.white.withValues(alpha: .70),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.of(context).surface.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '${tickets.length} Ticket${tickets.length > 1 ? "s" : ""} · ₱${totalCalculated.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: AppPalette.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              // ── Shared trip summary ────────────────────────────────────────
+              _buildTripSummary(
+                route: route,
+                vessel: boatName,
+                date: tripDate,
+                time: tripTime,
+                status: bookingStatus,
+                ticketCount: tickets.length,
+                total: totalCalculated,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppPalette.space16),
 
-              // ── Holding State Banner for Discount ID Verification ─────────
-              if (bookingStatus.trim().toLowerCase() == 'to_be_confirmed' ||
-                  bookingStatus.trim().toLowerCase() == 'to be confirmed')
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppPalette.warning.withValues(alpha: .12),
-                    borderRadius: BorderRadius.circular(14),
-                    
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppPalette.warning.withValues(alpha: 0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppPalette.warning.withValues(alpha: .12),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.hourglass_top_rounded,
-                          color: AppPalette.warning,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Awaiting Admin ID Verification',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                                color: AppPalette.warningText,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Your payment was received via GCash/PayMongo. Port administrators will inspect your uploaded Student/Senior/PWD ID photo. Boarding pass QR codes will unlock once approved.\n\n🛡 Automatic GCash refund is issued if rejected.',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppPalette.warningText,
-                                height: 1.35,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              // ── Holding state banner for discount ID verification ─────────
+              if (isHolding) ...[
+                _buildHoldingBanner(),
+                const SizedBox(height: AppPalette.space16),
+              ],
 
-              // ── Stack of Individual Passenger Ticket Cards ─────────────────
+              // ── Stack of individual passenger ticket cards ────────────────
               ...tickets.asMap().entries.map((entry) {
                 final int index = entry.key;
                 final PassengerTicketInfo passenger = entry.value;
@@ -521,95 +381,218 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                 );
               }),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: AppPalette.space8),
 
-              // ── Action Buttons ──────────────────────────────────────────────
+              // ── Actions ────────────────────────────────────────────────────
               SizedBox(
                 width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
+                child: FilledButton.icon(
                   onPressed: _isSaving
                       ? null
                       : () => _saveAllTicketsToGallery(tickets, ticketId),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppPalette.teal500,
-                    disabledBackgroundColor:
-                        AppPalette.teal500.withValues(alpha: 0.6),
-                    foregroundColor: AppPalette.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isSaving
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(AppPalette.white),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              tickets.length > 1
-                                  ? 'SAVING TICKET $_savingProgress OF ${tickets.length}...'
-                                  : 'SAVING TO GALLERY...',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                                letterSpacing: 0,
-                                color: AppPalette.white,
-                              ),
-                            ),
-                          ],
+                  icon: _isSaving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(AppPalette.white),
+                          ),
                         )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.download_rounded, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              tickets.length > 1
-                                  ? 'DOWNLOAD / SAVE ALL TICKETS (${tickets.length})'
-                                  : 'DOWNLOAD / SAVE TO GALLERY',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                                letterSpacing: 0,
-                              ),
-                            ),
-                          ],
-                        ),
+                      : const Icon(Icons.download_rounded, size: 20),
+                  label: Text(
+                    _isSaving
+                        ? (tickets.length > 1
+                            ? 'Saving ticket $_savingProgress of ${tickets.length}…'
+                            : 'Saving to gallery…')
+                        : (tickets.length > 1
+                            ? 'Save all ${tickets.length} tickets'
+                            : 'Save to gallery'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppPalette.space12),
               SizedBox(
                 width: double.infinity,
-                height: 46,
-                child: OutlinedButton(
+                child: TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.of(context).text,
-                    
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Close',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
+                  child: const Text('Close'),
                 ),
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // ─── Trip summary ───────────────────────────────────────────────────────────
+
+  Widget _buildTripSummary({
+    required String route,
+    required String vessel,
+    required String date,
+    required String time,
+    required String status,
+    required int ticketCount,
+    required double total,
+  }) {
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
+    final ports = _splitRoute(route);
+
+    return AppCard(
+      padding: const EdgeInsets.all(AppPalette.space20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.directions_boat_filled_rounded,
+                  size: 18, color: colors.accent),
+              const SizedBox(width: AppPalette.space8),
+              Expanded(
+                child: Text(
+                  vessel,
+                  style: text.titleSmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: AppPalette.space8),
+              StatusChip(
+                label: _getStatusText(status),
+                tone: _statusTone(status),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppPalette.space16),
+
+          // Route line
+          if (ports.length == 2)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(ports.first,
+                      style: text.headlineMedium, maxLines: 2),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppPalette.space8),
+                  child: Icon(Icons.arrow_right_alt_rounded,
+                      size: 24, color: colors.text3),
+                ),
+                Expanded(
+                  child: Text(ports.last,
+                      style: text.headlineMedium,
+                      maxLines: 2,
+                      textAlign: TextAlign.end),
+                ),
+              ],
+            )
+          else
+            Text(route, style: text.headlineMedium),
+
+          const SizedBox(height: AppPalette.space16),
+
+          // Departure time, big and tabular
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('DEPARTS', style: text.labelSmall),
+                    const SizedBox(height: AppPalette.space4),
+                    Text(
+                      time.isNotEmpty ? time : '—',
+                      style: text.displayMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(date, style: text.bodySmall),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppPalette.space12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '$ticketCount ticket${ticketCount == 1 ? "" : "s"}',
+                    style: text.bodySmall,
+                  ),
+                  const SizedBox(height: AppPalette.space4),
+                  Text(
+                    '₱${total.toStringAsFixed(2)}',
+                    style: text.titleLarge?.copyWith(color: colors.accent),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHoldingBanner() {
+    final text = Theme.of(context).textTheme;
+    return AppCard(
+      padding: const EdgeInsets.all(AppPalette.space20),
+      color: AppPalette.warning.withValues(alpha: .12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.hourglass_top_rounded,
+              color: AppPalette.warning, size: 24),
+          const SizedBox(width: AppPalette.space12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Awaiting admin ID verification',
+                  style: text.titleSmall?.copyWith(
+                      color: AppColors.of(context).dark
+                          ? AppPalette.warning
+                          : AppPalette.warningText),
+                ),
+                const SizedBox(height: AppPalette.space4),
+                Text(
+                  'Your payment was received via GCash/PayMongo. Port administrators will inspect your uploaded Student/Senior/PWD ID photo. Boarding pass QR codes unlock once approved.',
+                  style: text.bodySmall?.copyWith(
+                      color: AppColors.of(context).dark
+                          ? AppPalette.warning
+                          : AppPalette.warningText),
+                ),
+                const SizedBox(height: AppPalette.space8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.verified_user_outlined,
+                        size: 15, color: AppPalette.warning),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'An automatic GCash refund is issued if it is rejected.',
+                        style: text.bodySmall?.copyWith(
+                            color: AppColors.of(context).dark
+                                ? AppPalette.warning
+                                : AppPalette.warningText),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -629,7 +612,9 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
     required String time,
   }) {
     final bool isConfirmed = bookingStatus.trim().toLowerCase() == 'confirmed';
-    final Color statusColor = _getStatusColor(bookingStatus);
+    final bool isCancelled = bookingStatus.toLowerCase().contains('cancel');
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
 
     // Unique QR payload per passenger per exact specification
     final Map<String, dynamic> qrPayload = {
@@ -641,217 +626,164 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
     };
     final String qrData = jsonEncode(qrPayload);
 
-    return AppCard(padding: EdgeInsets.zero,
+    return AppCard(
       key: ValueKey('${passenger.id}_${passenger.seat}'),
-      margin: const EdgeInsets.only(bottom: 18),
-      
+      padding: EdgeInsets.zero,
+      margin: const EdgeInsets.only(bottom: AppPalette.space20),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Ticket Header Strip ───────────────────────────────────────────
+          // ── Ticket header strip ───────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.only(left: 14, right: 12, top: 11, bottom: 11),
-            decoration: BoxDecoration(
-              color: AppColors.of(context).text,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
-              ),
-            ),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppPalette.space20, vertical: AppPalette.space12),
+            color: colors.tint,
             child: Row(
               children: [
-                // Passenger ID Badge (e.g. P1)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppPalette.teal500,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(AppPalette.radiusSm),
                   ),
                   child: Text(
                     passenger.id,
-                    style: const TextStyle(
-                      color: AppPalette.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: text.labelMedium?.copyWith(color: AppPalette.white),
                   ),
                 ),
-                const SizedBox(width: 8),
-
-                // Boarding Pass Title with ellipsis guard
+                const SizedBox(width: AppPalette.space8),
                 Expanded(
                   child: Text(
                     totalTickets > 1
-                        ? 'TICKET ${index + 1} OF $totalTickets'
-                        : 'INDIVIDUAL BOARDING PASS',
+                        ? 'Ticket ${index + 1} of $totalTickets'
+                        : 'Boarding pass',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppPalette.white,
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.4,
-                    ),
+                    style: text.labelMedium?.copyWith(color: colors.onTint),
                   ),
                 ),
-                const SizedBox(width: 8),
-
-                // Status Badge with Flexible and ellipsis guard
+                const SizedBox(width: AppPalette.space8),
                 Flexible(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      isConfirmed ? 'BOARDING PASS' : 'PENDING CONFIRMATION',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
+                  child: StatusChip(
+                    label: isConfirmed ? 'Ready to board' : _getStatusText(bookingStatus),
+                    tone: _statusTone(bookingStatus),
                   ),
                 ),
               ],
             ),
           ),
 
-          // ── Dedicated QR Code per Passenger (Or Locked Placeholder) ───────
+          // ── Dedicated QR code per passenger (or locked placeholder) ───────
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            padding: const EdgeInsets.symmetric(
+                vertical: AppPalette.space24, horizontal: AppPalette.space20),
             child: Center(
               child: Column(
                 children: [
                   if (isConfirmed) ...[
-                    AppCard(
-                      padding: const EdgeInsets.all(10),
-                      
+                    // The QR stays literal white-on-black so port scanners read
+                    // it in either theme.
+                    Container(
+                      padding: const EdgeInsets.all(AppPalette.space12),
+                      decoration: BoxDecoration(
+                        color: AppPalette.white,
+                        borderRadius:
+                            BorderRadius.circular(AppPalette.radiusMd),
+                      ),
                       child: QrImageView(
                         data: qrData,
                         version: QrVersions.auto,
                         size: 190.0,
-                        backgroundColor: AppColors.of(context).surface,
-                        eyeStyle: QrEyeStyle(
+                        backgroundColor: AppPalette.white,
+                        eyeStyle: const QrEyeStyle(
                           eyeShape: QrEyeShape.square,
-                          color: AppColors.of(context).text,
+                          color: AppPalette.ink,
                         ),
-                        dataModuleStyle: QrDataModuleStyle(
+                        dataModuleStyle: const QrDataModuleStyle(
                           dataModuleShape: QrDataModuleShape.square,
-                          color: AppColors.of(context).text,
+                          color: AppPalette.ink,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppPalette.space16),
                     Text(
-                      'Ref: $bookingRef · Seat ${passenger.seat}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0,
-                        color: AppColors.of(context).text,
-                      ),
+                      '$bookingRef · Seat ${passenger.seat}',
+                      textAlign: TextAlign.center,
+                      style: text.titleSmall,
                     ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppPalette.teal500.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.qr_code_scanner_rounded,
-                            size: 14,
-                            color: AppPalette.success,
-                          ),
-                          SizedBox(width: 5),
-                          Text(
-                            'SCAN AT PORT FOR BOARDING',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: AppPalette.success,
-                              letterSpacing: 0,
-                            ),
-                          ),
-                        ],
-                      ),
+                    const SizedBox(height: AppPalette.space8),
+                    const StatusChip(
+                      label: 'Scan at port to board',
+                      tone: StatusTone.success,
+                      icon: Icons.qr_code_scanner_rounded,
                     ),
                   ] else ...[
-                    // Holding state / Cancelled state placeholder
+                    // Holding state / cancelled state placeholder
                     Container(
                       width: double.infinity,
                       constraints: const BoxConstraints(minHeight: 170),
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(AppPalette.space20),
                       decoration: BoxDecoration(
-                        color: (bookingStatus.toLowerCase().contains('cancel'))
-                            ? AppPalette.danger.withValues(alpha: .12)
-                            : AppPalette.warning.withValues(alpha: .12),
-                        borderRadius: BorderRadius.circular(14),
-                        
+                        color: (isCancelled
+                                ? AppPalette.danger
+                                : AppPalette.warning)
+                            .withValues(alpha: .12),
+                        borderRadius:
+                            BorderRadius.circular(AppPalette.radiusMd),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            (bookingStatus.toLowerCase().contains('cancel'))
+                            isCancelled
                                 ? Icons.cancel_outlined
                                 : Icons.hourglass_empty_rounded,
                             size: 44,
-                            color: (bookingStatus.toLowerCase().contains('cancel'))
+                            color: isCancelled
                                 ? AppPalette.danger
                                 : AppPalette.warning,
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: AppPalette.space12),
                           Text(
-                            (bookingStatus.toLowerCase().contains('cancel'))
-                                ? 'BOOKING CANCELLED'
-                                : 'BOARDING QR LOCKED',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              letterSpacing: 0,
-                              color: (bookingStatus.toLowerCase().contains('cancel'))
-                                  ? AppPalette.dangerText
-                                  : AppPalette.warningText,
+                            isCancelled
+                                ? 'Booking cancelled'
+                                : 'Boarding QR locked',
+                            textAlign: TextAlign.center,
+                            style: text.titleSmall?.copyWith(
+                              color: isCancelled
+                                  ? (colors.dark
+                                      ? AppPalette.danger
+                                      : AppPalette.dangerText)
+                                  : (colors.dark
+                                      ? AppPalette.warning
+                                      : AppPalette.warningText),
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: AppPalette.space4),
                           Text(
-                            (bookingStatus.toLowerCase().contains('cancel'))
+                            isCancelled
                                 ? 'This ticket was cancelled and refunded.'
-                                : 'QR code will unlock once port administrators verify and approve your discounted ID.',
+                                : 'The QR code unlocks once port administrators verify and approve your discounted ID.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              height: 1.35,
-                              color: (bookingStatus.toLowerCase().contains('cancel'))
-                                  ? AppPalette.dangerText
-                                  : AppPalette.warningText,
+                            style: text.bodySmall?.copyWith(
+                              color: isCancelled
+                                  ? (colors.dark
+                                      ? AppPalette.danger
+                                      : AppPalette.dangerText)
+                                  : (colors.dark
+                                      ? AppPalette.warning
+                                      : AppPalette.warningText),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppPalette.space16),
                     Text(
-                      'Ref: $bookingRef · Seat ${passenger.seat}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0,
-                        color: AppColors.of(context).text,
-                      ),
+                      '$bookingRef · Seat ${passenger.seat}',
+                      textAlign: TextAlign.center,
+                      style: text.titleSmall,
                     ),
                   ],
                 ],
@@ -859,7 +791,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
             ),
           ),
 
-          // ── Perforated Tear Line with Cutout Notches ───────────────────────
+          // ── Perforated tear line with cutout notches ───────────────────────
           SizedBox(
             height: 20,
             child: Stack(
@@ -872,7 +804,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                       child: Container(
                         height: 1.5,
                         margin: const EdgeInsets.symmetric(horizontal: 2),
-                        color: AppColors.of(context).hairline,
+                        color: colors.hairline,
                       ),
                     ),
                   ),
@@ -883,7 +815,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: AppColors.of(context).canvas,
+                      color: colors.canvas,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -894,7 +826,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: AppColors.of(context).canvas,
+                      color: colors.canvas,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -903,89 +835,32 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
             ),
           ),
 
-          // ── Passenger Details & Receipt Section ───────────────────────────
+          // ── Passenger details & receipt section ───────────────────────────
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppPalette.space20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildReceiptRow('Passenger Name', passenger.name),
-                _buildReceiptRow('Booking Ref', bookingRef),
-
-                // Prominent Assigned Seat
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 130,
-                        child: Text(
-                          'Assigned Seat(s):',
-                          style: TextStyle(
-                            color: AppColors.of(context).text,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppPalette.teal500.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                              
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.event_seat_rounded,
-                                    size: 15, color: AppPalette.success),
-                                const SizedBox(width: 5),
-                                Text(
-                                  passenger.seat,
-                                  style: const TextStyle(
-                                    color: AppPalette.success,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    letterSpacing: 0,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                _buildReceiptRow('Passenger', passenger.name),
+                _buildReceiptRow('Booking ref', bookingRef),
+                _buildReceiptRow(
+                  'Assigned seat',
+                  passenger.seat,
+                  valueChip: true,
                 ),
-
-                _buildReceiptRow('Fare Category', passenger.categoryDisplay),
-                _buildReceiptRow('Trip Schedule', '$date · $time'),
-                _buildReceiptRow('Vessel Name', vessel),
-                const Divider(height: 18),
+                _buildReceiptRow('Fare category', passenger.categoryDisplay),
+                _buildReceiptRow('Trip schedule', '$date · $time'),
+                _buildReceiptRow('Vessel', vessel),
+                const Divider(),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Individual Fare',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.of(context).text2,
-                      ),
+                    Expanded(
+                      child: Text('Individual fare', style: text.bodySmall),
                     ),
+                    const SizedBox(width: AppPalette.space12),
                     Text(
                       '₱${passenger.individualFare.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: AppPalette.teal500,
-                      ),
+                      style: text.headlineMedium?.copyWith(color: colors.accent),
                     ),
                   ],
                 ),
@@ -997,32 +872,35 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
     );
   }
 
-  Widget _buildReceiptRow(String label, String value) {
+  Widget _buildReceiptRow(String label, String value, {bool valueChip = false}) {
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: AppPalette.space12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 130,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: AppColors.of(context).text2,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
           Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                color: AppColors.of(context).text,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            flex: 4,
+            child: Text(label, style: text.bodySmall),
+          ),
+          const SizedBox(width: AppPalette.space12),
+          Expanded(
+            flex: 6,
+            child: valueChip
+                ? Align(
+                    alignment: Alignment.centerRight,
+                    child: StatusChip(
+                      label: value,
+                      tone: StatusTone.success,
+                      icon: Icons.event_seat_rounded,
+                    ),
+                  )
+                : Text(
+                    value,
+                    textAlign: TextAlign.end,
+                    style: text.titleSmall?.copyWith(color: colors.text),
+                  ),
           ),
         ],
       ),

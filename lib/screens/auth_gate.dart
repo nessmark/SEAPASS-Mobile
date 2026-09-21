@@ -92,12 +92,7 @@ class _AuthGateState extends State<AuthGate> {
             const SizedBox(height: 18),
             Text(
               'SeaPass',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w600,
-                color: AppColors.of(context).text,
-                letterSpacing: 0,
-              ),
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 36),
             SizedBox(
@@ -105,9 +100,7 @@ class _AuthGateState extends State<AuthGate> {
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  AppPalette.teal500.withValues(alpha: 0.8),
-                ),
+                color: AppColors.of(context).accent,
               ),
             ),
           ],

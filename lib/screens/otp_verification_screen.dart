@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../services/api_exception.dart';
 import '../services/auth_service.dart';
 import '../widgets/app_palette.dart';
+import '../widgets/status_chip.dart';
 import '../widgets/seapass_logo.dart';
 import 'passenger_home_screen.dart';
 
@@ -138,8 +139,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           ),
           backgroundColor: AppPalette.teal500,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppPalette.radiusMd)),
         ),
       );
     } on ApiException catch (e) {
@@ -204,8 +205,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           ),
           backgroundColor: AppPalette.teal500,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppPalette.radiusMd)),
         ),
       );
 
@@ -244,7 +245,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         ),
         backgroundColor: AppPalette.danger,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppPalette.radiusMd)),
       ),
     );
   }
@@ -309,16 +311,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               const Center(child: SeaPassLogo(size: 60)),
               const SizedBox(height: 20),
 
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: AppPalette.teal500.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: AppColors.of(context).tint,
+                child: Icon(
                   Icons.mark_email_read_outlined,
-                  color: AppPalette.teal500,
+                  color: AppColors.of(context).accent,
                   size: 38,
                 ),
               ),
@@ -326,53 +324,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
               Text(
                 'Verify Your Email',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.of(context).text,
-                ),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 8),
 
               Text(
                 'Please enter the 6-digit verification code sent to:',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.of(context).text2,
-                  height: 1.4,
-                ),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
 
               // Highlighted email badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppPalette.teal500.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.email_outlined,
-                      size: 15,
-                      color: AppPalette.teal500,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      email,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.of(context).text,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              StatusChip(label: email, icon: Icons.email_outlined),
               const SizedBox(height: 32),
 
               // ── Inline error banner if any ──
@@ -382,12 +347,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppPalette.danger.withValues(alpha: .12),
-                    borderRadius: BorderRadius.circular(10),
-                    
+                    borderRadius: BorderRadius.circular(AppPalette.radiusSm),
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.error_outline_rounded,
                         color: AppPalette.danger,
                         size: 18,
@@ -396,10 +360,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       Expanded(
                         child: Text(
                           _errorMessage,
-                          style: TextStyle(
-                            color: AppPalette.danger,
-                            fontSize: 13,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: AppPalette.danger),
                         ),
                       ),
                     ],
@@ -410,8 +374,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
               // ── 6-digit PIN Box Grid ──
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (index) => _buildOtpBox(index)),
+                children: List.generate(
+                  6,
+                  (index) => Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: _buildOtpBox(index),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
 
@@ -419,18 +390,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 44,
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed:
                       _isLoading ? null : _verifyAndCompleteRegistration,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppPalette.teal500,
-                    foregroundColor: AppPalette.white,
+                  style: FilledButton.styleFrom(
                     disabledBackgroundColor:
                         AppPalette.teal500.withValues(alpha: 0.6),
+                    disabledForegroundColor: AppPalette.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppPalette.radiusMd),
                     ),
-                    elevation: 0,
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -442,12 +411,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           ),
                         )
                       : const Text(
-                          'VERIFY & COMPLETE REGISTRATION',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            letterSpacing: 0,
-                          ),
+                          'Verify & Complete Registration',
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
                         ),
                 ),
               ),
@@ -464,12 +430,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       color: AppColors.of(context).text3,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'Resend code in ${_secondsRemaining}s',
-                      style: TextStyle(
-                        color: AppColors.of(context).text2,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                    Flexible(
+                      child: Text(
+                        'Resend code in ${_secondsRemaining}s',
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
                   ],
@@ -478,32 +442,24 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Didn\'t receive the code? ',
-                      style: TextStyle(
-                        color: AppColors.of(context).text2,
-                        fontSize: 13,
+                    Flexible(
+                      child: Text(
+                        'Didn\'t receive the code?',
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
-                    GestureDetector(
-                      onTap: (_isLoading || _isResending) ? null : _resendOtp,
+                    TextButton(
+                      onPressed: (_isLoading || _isResending) ? null : _resendOtp,
                       child: _isResending
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 14,
                               height: 14,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: AppPalette.teal500,
+                                color: AppColors.of(context).accent,
                               ),
                             )
-                          : const Text(
-                              'Resend OTP',
-                              style: TextStyle(
-                                color: AppPalette.teal500,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
+                          : const Text('Resend OTP'),
                     ),
                   ],
                 ),
@@ -512,15 +468,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               // ── Edit Details Link ──
               TextButton.icon(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: Icon(Icons.arrow_back, size: 16, color: AppColors.of(context).text3),
-                label: Text(
-                  'Edit Registration Details',
-                  style: TextStyle(
-                    color: AppColors.of(context).text3,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.of(context).text3,
+                  textStyle: Theme.of(context).textTheme.labelMedium,
                 ),
+                icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                label: const Text('Edit Registration Details'),
               ),
             ],
           ),
@@ -531,7 +484,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   Widget _buildOtpBox(int index) {
     return SizedBox(
-      width: 48,
       height: 56,
       child: TextField(
         controller: _controllers[index],
@@ -540,19 +492,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         keyboardType: TextInputType.number,
         maxLength: 1,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        style: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
-          color: AppColors.of(context).text,
-        ),
-        decoration: InputDecoration(
+        style: Theme.of(context)
+            .textTheme
+            .titleLarge
+            ?.copyWith(fontSize: 22, height: 1.1),
+        decoration: const InputDecoration(
           counterText: '',
-          filled: true,
-          
-          
-          
-          
-          
+          contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 12),
         ),
         onChanged: (val) => _handleOtpInput(val, index),
       ),
