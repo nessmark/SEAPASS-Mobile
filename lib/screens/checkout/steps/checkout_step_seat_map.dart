@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../models/passenger_booking_models.dart';
 import '../../../models/schedule.dart';
 import '../../../widgets/app_palette.dart';
+import '../../../widgets/app_card.dart';
 
 /// Step 2 of the booking checkout flow:
 /// Displays the vessel cabin layout, legend, passenger seat assignments, and interactive seat grid.
@@ -49,13 +50,9 @@ class CheckoutStepSeatMap extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Vessel Cabin Header Card
-        Container(
+        AppCard(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
+          
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -66,24 +63,24 @@ class CheckoutStepSeatMap extends StatelessWidget {
                     schedule.boatName.isNotEmpty
                         ? schedule.boatName
                         : 'Vessel Cabin Seat Map',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: AppPalette.darkText,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.of(context).text,
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: AppPalette.info.withValues(alpha: .12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'Economy Class',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.blue.shade700,
-                        fontWeight: FontWeight.bold,
+                        color: AppPalette.info,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -96,7 +93,7 @@ class CheckoutStepSeatMap extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '${schedule.from} → ${schedule.to} • ${schedule.time}',
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                      style: TextStyle(fontSize: 13, color: AppColors.of(context).text2),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -106,11 +103,9 @@ class CheckoutStepSeatMap extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppPalette.mintGreen.withValues(alpha: 0.12),
+                        color: AppPalette.teal500.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppPalette.mintGreen.withValues(alpha: 0.3),
-                        ),
+                        
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -121,22 +116,22 @@ class CheckoutStepSeatMap extends StatelessWidget {
                               height: 12,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: AppPalette.mintGreen,
+                                color: AppPalette.teal500,
                               ),
                             )
                           else
                             const Icon(
                               Icons.refresh_rounded,
                               size: 14,
-                              color: AppPalette.mintGreen,
+                              color: AppPalette.teal500,
                             ),
                           const SizedBox(width: 4),
                           Text(
                             isRefreshing ? 'Refreshing...' : 'Refresh Seats',
                             style: const TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: AppPalette.mintGreen,
+                              fontWeight: FontWeight.w600,
+                              color: AppPalette.teal500,
                             ),
                           ),
                         ],
@@ -155,8 +150,8 @@ class CheckoutStepSeatMap extends StatelessWidget {
           'Select Passenger to Assign Seat:',
           style: TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey.shade700,
+            fontWeight: FontWeight.w600,
+            color: AppColors.of(context).text2,
           ),
         ),
         const SizedBox(height: 8),
@@ -180,7 +175,7 @@ class CheckoutStepSeatMap extends StatelessWidget {
                       'P${p.index}: ${p.fullName}',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -188,23 +183,23 @@ class CheckoutStepSeatMap extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: hasSeat
-                            ? AppPalette.mintGreen
-                            : Colors.grey.shade400,
+                            ? AppPalette.teal500
+                            : AppColors.of(context).text3,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         hasSeat ? p.assignedSeat! : '--',
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppPalette.white,
                           fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ],
                 ),
                 selected: isCurrent,
-                selectedColor: AppPalette.mintGreen.withValues(alpha: 0.2),
+                selectedColor: AppPalette.teal500.withValues(alpha: 0.2),
                 onSelected: (_) => onActivePassengerChanged(i),
               );
             },
@@ -213,24 +208,24 @@ class CheckoutStepSeatMap extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Seat Status Legend (Available, Selected, Unavailable)
-        _buildSeatLegend(),
+        _buildSeatLegend(context),
         const SizedBox(height: 14),
 
         // Vessel Cabin Visual Outline & Grid
         Center(
           child: Container(
             constraints: const BoxConstraints(maxWidth: 360),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.of(context).surface,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(60),
                 bottom: Radius.circular(20),
               ),
-              border: Border.all(color: Colors.grey.shade300, width: 1.5),
+              
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: AppPalette.ink.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -242,21 +237,21 @@ class CheckoutStepSeatMap extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: AppColors.of(context).surface2,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.navigation_rounded, size: 14, color: AppPalette.mintGreen),
+                      Icon(Icons.navigation_rounded, size: 14, color: AppPalette.teal500),
                       SizedBox(width: 4),
                       Text(
                         'FRONT / BOW',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                          letterSpacing: 1.0,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.of(context).text3,
+                          letterSpacing: 0,
                         ),
                       ),
                     ],
@@ -265,22 +260,22 @@ class CheckoutStepSeatMap extends StatelessWidget {
                 const SizedBox(height: 14),
 
                 // Exit Indicators
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('« EXIT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
-                    Text('EXIT »', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+                    Text('« EXIT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.of(context).text3)),
+                    Text('EXIT »', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.of(context).text3)),
                   ],
                 ),
                 const Divider(height: 20),
 
                 // Seat Rows
-                ...List.generate(totalRows, (rIndex) => _buildSeatRow(rIndex + 1)),
+                ...List.generate(totalRows, (rIndex) => _buildSeatRow(context, rIndex + 1)),
 
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'AFT / STERN',
-                  style: TextStyle(fontSize: 10, color: Colors.grey, letterSpacing: 0.8),
+                  style: TextStyle(fontSize: 10, color: AppColors.of(context).text3, letterSpacing: 0.8),
                 ),
               ],
             ),
@@ -290,13 +285,9 @@ class CheckoutStepSeatMap extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Bottom Controls
-        Container(
+        AppCard(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
+          
           child: Column(
             children: [
               Row(
@@ -304,14 +295,14 @@ class CheckoutStepSeatMap extends StatelessWidget {
                 children: [
                   Text(
                     'Assigned: $assignedCount / $totalSeats Seats',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                   ),
                   if (activePassenger != null)
                     Text(
                       'Editing: P${activePassenger.index}',
                       style: const TextStyle(
-                        color: AppPalette.mintGreen,
-                        fontWeight: FontWeight.bold,
+                        color: AppPalette.teal500,
+                        fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
                     ),
@@ -327,7 +318,7 @@ class CheckoutStepSeatMap extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('← Details'),
+                      child: const Text('Details'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -336,14 +327,14 @@ class CheckoutStepSeatMap extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: assignedCount == totalSeats ? onProceedToPayment : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppPalette.mintGreen,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppPalette.teal500,
+                        foregroundColor: AppPalette.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       child: const Text(
-                        'REVIEW & PAY →',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        'Review & pay',
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -356,18 +347,18 @@ class CheckoutStepSeatMap extends StatelessWidget {
     );
   }
 
-  Widget _buildSeatLegend() {
+  Widget _buildSeatLegend(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildLegendItem('Available', Colors.white, Colors.blue.shade400, const Text('')),
-        _buildLegendItem('Selected', AppPalette.mintGreen, AppPalette.mintGreen, const Icon(Icons.check, size: 12, color: Colors.white)),
-        _buildLegendItem('Booked', Colors.grey.shade200, Colors.grey.shade300, const Icon(Icons.close, size: 12, color: Colors.grey)),
+        _buildLegendItem(context, 'Available', AppPalette.white, AppPalette.info, const Text('')),
+        _buildLegendItem(context, 'Selected', AppPalette.teal500, AppPalette.teal500, const Icon(Icons.check, size: 12, color: AppPalette.white)),
+        _buildLegendItem(context, 'Booked', AppColors.of(context).surface2, AppColors.of(context).hairline, Icon(Icons.close, size: 12, color: AppColors.of(context).text3)),
       ],
     );
   }
 
-  Widget _buildLegendItem(String label, Color fill, Color border, Widget child) {
+  Widget _buildLegendItem(BuildContext context, String label, Color fill, Color border, Widget child) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -377,17 +368,17 @@ class CheckoutStepSeatMap extends StatelessWidget {
           decoration: BoxDecoration(
             color: fill,
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: border, width: 1.5),
+            
           ),
           child: Center(child: child),
         ),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.of(context).text3)),
       ],
     );
   }
 
-  Widget _buildSeatRow(int rowNumber) {
+  Widget _buildSeatRow(BuildContext context, int rowNumber) {
     final rowSeats = seats.where((s) => s.row == rowNumber).toList();
     final leftSide = rowSeats.where((s) => s.column == 'A' || s.column == 'B').toList();
     final rightSide = rowSeats.where((s) => s.column == 'C' || s.column == 'D' || s.column == 'E').toList();
@@ -398,7 +389,7 @@ class CheckoutStepSeatMap extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Left bank [A] [B]
-          ...leftSide.map((seat) => _buildSeatBox(seat)),
+          ...leftSide.map((seat) => _buildSeatBox(context, seat)),
 
           // Aisle with row number
           Container(
@@ -408,41 +399,41 @@ class CheckoutStepSeatMap extends StatelessWidget {
               '$rowNumber',
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w600,
+                color: AppColors.of(context).text3,
               ),
             ),
           ),
 
           // Right bank [C] [D] [E]
-          ...rightSide.map((seat) => _buildSeatBox(seat)),
+          ...rightSide.map((seat) => _buildSeatBox(context, seat)),
         ],
       ),
     );
   }
 
-  Widget _buildSeatBox(VesselSeat seat) {
-    Color bg = Colors.white;
-    Color border = Colors.blue.shade200;
+  Widget _buildSeatBox(BuildContext context, VesselSeat seat) {
+    Color bg = AppPalette.white;
+    Color border = AppPalette.info.withValues(alpha: .12);
     Widget child = Text(
       seat.column,
       style: TextStyle(
         fontSize: 12,
-        color: Colors.blue.shade600,
-        fontWeight: FontWeight.bold,
+        color: AppPalette.info,
+        fontWeight: FontWeight.w600,
       ),
     );
 
     if (seat.isBooked) {
-      bg = Colors.grey.shade200;
-      border = Colors.grey.shade300;
-      child = const Icon(Icons.close, size: 14, color: Colors.grey);
+      bg = AppColors.of(context).surface2;
+      border = AppColors.of(context).hairline;
+      child = Icon(Icons.close, size: 14, color: AppColors.of(context).text3);
     } else if (seat.isSelected) {
-      bg = AppPalette.mintGreen;
-      border = AppPalette.mintGreen;
+      bg = AppPalette.teal500;
+      border = AppPalette.teal500;
       child = Text(
         'P${seat.assignedPassengerIndex}',
-        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppPalette.white),
       );
     }
 
@@ -455,7 +446,7 @@ class CheckoutStepSeatMap extends StatelessWidget {
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: border, width: 1.5),
+          
         ),
         child: Center(child: child),
       ),

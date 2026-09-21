@@ -17,7 +17,7 @@ import 'package:provider/provider.dart';
 
 import 'providers/advisory_provider.dart';
 import 'services/api_service.dart';
-import 'widgets/app_palette.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,32 +42,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: rootNavigatorKey,
       navigatorObservers: [appRouteObserver],
-      theme: ThemeData(
-        colorScheme: const ColorScheme.light(
-          primary: AppPalette.mintGreen,
-          onPrimary: Colors.white,
-          surface: AppPalette.lightBackground,
-        ),
-        useMaterial3: true,
-        scaffoldBackgroundColor: AppPalette.lightBackground,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: AppPalette.darkText,
-          elevation: 0,
-          centerTitle: true,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppPalette.mintGreen,
-            foregroundColor: Colors.white,
-          ),
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedItemColor: AppPalette.mintGreen,
-          unselectedItemColor: AppPalette.subtleGrey,
-          backgroundColor: Colors.white,
-        ),
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
       home: const AuthGate(),
       routes: {
         AuthGate.routeName: (context) => const AuthGate(),

@@ -27,12 +27,7 @@ class BookingCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: isConfirmed
-              ? AppPalette.mintGreen.withValues(alpha: 0.4)
-              : Colors.orange.shade200,
-          width: 1,
-        ),
+        
       ),
       child: InkWell(
         onTap: onViewTicket,
@@ -48,10 +43,10 @@ class BookingCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       booking.route,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.of(context).text,
                       ),
                     ),
                   ),
@@ -60,8 +55,8 @@ class BookingCard extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: isConfirmed
-                          ? AppPalette.mintGreen.withValues(alpha: 0.15)
-                          : Colors.amber.shade100,
+                          ? AppPalette.teal500.withValues(alpha: 0.15)
+                          : AppPalette.warning.withValues(alpha: .12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -70,8 +65,8 @@ class BookingCard extends StatelessWidget {
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: isConfirmed
-                            ? const Color(0xFF0D5C3A)
-                            : Colors.amber.shade900,
+                            ? AppPalette.success
+                            : AppPalette.warning,
                       ),
                     ),
                   ),
@@ -80,15 +75,15 @@ class BookingCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.confirmation_number_outlined,
-                      size: 16, color: Colors.grey),
+                  Icon(Icons.confirmation_number_outlined,
+                      size: 16, color: AppColors.of(context).text3),
                   const SizedBox(width: 6),
                   Text(
                     'Ref: ${booking.referenceNumber}',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade800,
+                      color: AppColors.of(context).text,
                     ),
                   ),
                 ],
@@ -96,23 +91,23 @@ class BookingCard extends StatelessWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 16, color: Colors.grey),
+                  Icon(Icons.calendar_today_outlined,
+                      size: 16, color: AppColors.of(context).text3),
                   const SizedBox(width: 6),
                   Text(
                     'Date: ${booking.date}${booking.time.isNotEmpty ? " · ${booking.time}" : ""}',
-                    style: const TextStyle(fontSize: 13, color: Colors.black87),
+                    style: TextStyle(fontSize: 13, color: AppColors.of(context).text),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(Icons.directions_boat, size: 16, color: Colors.grey),
+                  Icon(Icons.directions_boat, size: 16, color: AppColors.of(context).text3),
                   const SizedBox(width: 6),
                   Text(
                     'Vessel: ${booking.boatName} ($seatsLabel)',
-                    style: const TextStyle(fontSize: 13, color: Colors.black87),
+                    style: TextStyle(fontSize: 13, color: AppColors.of(context).text),
                   ),
                 ],
               ),
@@ -124,15 +119,15 @@ class BookingCard extends StatelessWidget {
                     'Passenger: ${booking.passengerName}',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey.shade700,
+                      color: AppColors.of(context).text2,
                     ),
                   ),
                   Text(
                     '₱${booking.totalPrice.toStringAsFixed(2)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: AppPalette.darkText,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.of(context).text,
                     ),
                   ),
                 ],
@@ -146,8 +141,8 @@ class BookingCard extends StatelessWidget {
                     icon: const Icon(Icons.qr_code, size: 18),
                     label: const Text('VIEW TICKET & QR CODE'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppPalette.mintGreen,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppPalette.teal500,
+                      foregroundColor: AppPalette.white,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),

@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_svg: ^2.2.0
   cupertino_icons: ^1.0.6
   http: ^1.1.0
   provider: ^6.0.5
@@ -33,3 +34,4 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/brand/

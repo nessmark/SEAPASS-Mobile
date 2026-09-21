@@ -91,14 +91,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         _isToBeConfirmed ? _pendingBookings : _confirmedBookings;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Column(
         children: [
           // Toggle Buttons matching image_7de9fd.png
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.grey.shade200,
+              color: AppColors.of(context).surface2,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -138,14 +138,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.cloud_off,
-                                      size: 48, color: Colors.grey),
+                                  Icon(Icons.cloud_off,
+                                      size: 48, color: AppColors.of(context).text3),
                                   const SizedBox(height: 12),
                                   Text(
                                     _errorMessage!,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                        color: Colors.grey.shade700),
+                                        color: AppColors.of(context).text2),
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton(
@@ -169,7 +169,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                             ? Icons.hourglass_empty_rounded
                                             : Icons.confirmation_number_outlined,
                                         size: 56,
-                                        color: Colors.grey.shade400,
+                                        color: AppColors.of(context).text3,
                                       ),
                                       const SizedBox(height: 12),
                                       Text(
@@ -179,7 +179,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.grey.shade600,
+                                          color: AppColors.of(context).text2,
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -190,7 +190,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           fontSize: 13,
-                                          color: Colors.grey.shade500,
+                                          color: AppColors.of(context).text3,
                                         ),
                                       ),
                                     ],
@@ -246,10 +246,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: AppPalette.duration(context),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppPalette.mintGreen : Colors.transparent,
+          color: isSelected ? AppPalette.teal500 : AppPalette.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -259,8 +259,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               title,
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : Colors.grey.shade700,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? AppPalette.white : AppColors.of(context).text2,
               ),
             ),
             if (count > 0) ...[
@@ -270,16 +270,16 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withValues(alpha: 0.3)
-                      : Colors.grey.shade300,
+                      ? AppPalette.white.withValues(alpha: 0.3)
+                      : AppColors.of(context).hairline,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   '$count',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : Colors.black87,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? AppPalette.white : AppColors.of(context).text,
                   ),
                 ),
               ),

@@ -9,6 +9,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../models/booking.dart';
 import '../widgets/app_palette.dart';
+import '../widgets/app_card.dart';
 
 class ViewTicketScreen extends StatefulWidget {
   const ViewTicketScreen({super.key, this.booking});
@@ -202,22 +203,22 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: isError ? Colors.red.shade700 : AppPalette.mintGreen,
+        backgroundColor: isError ? AppPalette.danger : AppPalette.teal500,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         content: Row(
           children: [
             Icon(
               isError ? Icons.error_outline_rounded : Icons.check_circle_rounded,
-              color: Colors.white,
+              color: AppPalette.white,
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 message,
                 style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  color: AppPalette.white,
                 ),
               ),
             ),
@@ -230,16 +231,16 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
   Color _getStatusColor(String status) {
     switch (status.trim().toLowerCase()) {
       case 'confirmed':
-        return AppPalette.mintGreen;
+        return AppPalette.teal500;
       case 'pending':
-        return Colors.orange;
+        return AppPalette.warning;
       case 'to_be_confirmed':
       case 'to be confirmed':
-        return const Color(0xFFD97706);
+        return AppPalette.warning;
       case 'cancelled':
       case 'canceled':
       default:
-        return const Color(0xFFDC2626);
+        return AppPalette.danger;
     }
   }
 
@@ -299,7 +300,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
     final Color statusColor = _getStatusColor(bookingStatus);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: AppColors.of(context).canvas,
       appBar: AppBar(
         title: Text(
           tickets.length > 1
@@ -307,11 +308,11 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
               : 'E-TICKET & BOARDING PASS',
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.8,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded, size: 22),
           onPressed: () => Navigator.of(context).pop(),
@@ -329,11 +330,11 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A),
+                  color: AppColors.of(context).text,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: AppPalette.ink.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -350,16 +351,16 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                             const Icon(
                               Icons.directions_boat_filled_rounded,
                               size: 18,
-                              color: AppPalette.mintGreen,
+                              color: AppPalette.teal500,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               boatName,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppPalette.white,
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0,
                               ),
                             ),
                           ],
@@ -370,18 +371,15 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                           decoration: BoxDecoration(
                             color: statusColor.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: statusColor.withValues(alpha: 0.6),
-                              width: 1,
-                            ),
+                            
                           ),
                           child: Text(
                             statusLabel,
                             style: TextStyle(
                               color: statusColor,
                               fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0,
                             ),
                           ),
                         ),
@@ -391,21 +389,21 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                     Text(
                       route,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppPalette.white,
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(Icons.calendar_month_outlined,
-                            size: 14, color: Colors.white70),
+                        Icon(Icons.calendar_month_outlined,
+                            size: 14, color: AppPalette.white.withValues(alpha: .70)),
                         const SizedBox(width: 6),
                         Text(
                           '$tripDate · $tripTime',
-                          style: const TextStyle(
-                            color: Colors.white70,
+                          style: TextStyle(
+                            color: AppPalette.white.withValues(alpha: .70),
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
@@ -415,15 +413,15 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.12),
+                            color: AppColors.of(context).surface.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             '${tickets.length} Ticket${tickets.length > 1 ? "s" : ""} · ₱${totalCalculated.toStringAsFixed(2)}',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppPalette.white,
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -443,12 +441,12 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB),
+                    color: AppPalette.warning.withValues(alpha: .12),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFFDE68A)),
+                    
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.amber.withValues(alpha: 0.1),
+                        color: AppPalette.warning.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -460,12 +458,12 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
+                          color: AppPalette.warning.withValues(alpha: .12),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           Icons.hourglass_top_rounded,
-                          color: Color(0xFFD97706),
+                          color: AppPalette.warning,
                           size: 24,
                         ),
                       ),
@@ -477,17 +475,17 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                             Text(
                               'Awaiting Admin ID Verification',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 14,
-                                color: Color(0xFF92400E),
+                                color: AppPalette.warningText,
                               ),
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Your payment was received via GCash/PayMongo. Port administrators will inspect your uploaded Student/Senior/PWD ID photo. Boarding pass QR codes will unlock once approved.\n\n🛡️ Automatic GCash refund is issued if rejected.',
+                              'Your payment was received via GCash/PayMongo. Port administrators will inspect your uploaded Student/Senior/PWD ID photo. Boarding pass QR codes will unlock once approved.\n\n🛡 Automatic GCash refund is issued if rejected.',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFF78350F),
+                                color: AppPalette.warningText,
                                 height: 1.35,
                               ),
                             ),
@@ -505,7 +503,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                 return RepaintBoundary(
                   key: _getKeyForIndex(index),
                   child: Container(
-                    color: const Color(0xFFF1F5F9),
+                    color: AppColors.of(context).canvas,
                     padding: const EdgeInsets.symmetric(vertical: 2),
                     child: _buildPassengerTicketCard(
                       context: context,
@@ -534,10 +532,10 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                       ? null
                       : () => _saveAllTicketsToGallery(tickets, ticketId),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppPalette.mintGreen,
+                    backgroundColor: AppPalette.teal500,
                     disabledBackgroundColor:
-                        AppPalette.mintGreen.withValues(alpha: 0.6),
-                    foregroundColor: Colors.white,
+                        AppPalette.teal500.withValues(alpha: 0.6),
+                    foregroundColor: AppPalette.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -553,7 +551,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2.2,
                                 valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                    AlwaysStoppedAnimation<Color>(AppPalette.white),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -562,10 +560,10 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                                   ? 'SAVING TICKET $_savingProgress OF ${tickets.length}...'
                                   : 'SAVING TO GALLERY...',
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 13,
-                                letterSpacing: 0.6,
-                                color: Colors.white,
+                                letterSpacing: 0,
+                                color: AppPalette.white,
                               ),
                             ),
                           ],
@@ -580,9 +578,9 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                                   ? 'DOWNLOAD / SAVE ALL TICKETS (${tickets.length})'
                                   : 'DOWNLOAD / SAVE TO GALLERY',
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 13,
-                                letterSpacing: 0.6,
+                                letterSpacing: 0,
                               ),
                             ),
                           ],
@@ -596,8 +594,8 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppPalette.darkText,
-                    side: BorderSide(color: Colors.grey.shade300),
+                    foregroundColor: AppColors.of(context).text,
+                    
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -643,29 +641,18 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
     };
     final String qrData = jsonEncode(qrPayload);
 
-    return Container(
+    return AppCard(padding: EdgeInsets.zero,
       key: ValueKey('${passenger.id}_${passenger.seat}'),
       margin: const EdgeInsets.only(bottom: 18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade300),
-      ),
+      
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Ticket Header Strip ───────────────────────────────────────────
           Container(
             padding: const EdgeInsets.only(left: 14, right: 12, top: 11, bottom: 11),
-            decoration: const BoxDecoration(
-              color: Color(0xFF1E293B),
+            decoration: BoxDecoration(
+              color: AppColors.of(context).text,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(15),
                 topRight: Radius.circular(15),
@@ -678,15 +665,15 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppPalette.mintGreen,
+                    color: AppPalette.teal500,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     passenger.id,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppPalette.white,
                       fontSize: 11,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -701,9 +688,9 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppPalette.white,
                       fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 0.4,
                     ),
                   ),
@@ -725,7 +712,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 9.5,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: statusColor,
                         letterSpacing: 0.3,
                       ),
@@ -743,43 +730,32 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
               child: Column(
                 children: [
                   if (isConfirmed) ...[
-                    Container(
+                    AppCard(
                       padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
+                      
                       child: QrImageView(
                         data: qrData,
                         version: QrVersions.auto,
                         size: 190.0,
-                        backgroundColor: Colors.white,
-                        eyeStyle: const QrEyeStyle(
+                        backgroundColor: AppColors.of(context).surface,
+                        eyeStyle: QrEyeStyle(
                           eyeShape: QrEyeShape.square,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.of(context).text,
                         ),
-                        dataModuleStyle: const QrDataModuleStyle(
+                        dataModuleStyle: QrDataModuleStyle(
                           dataModuleShape: QrDataModuleShape.square,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.of(context).text,
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       'Ref: $bookingRef · Seat ${passenger.seat}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.6,
-                        color: AppPalette.darkText,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0,
+                        color: AppColors.of(context).text,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -787,7 +763,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppPalette.mintGreen.withValues(alpha: 0.12),
+                        color: AppPalette.teal500.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Row(
@@ -796,16 +772,16 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                           Icon(
                             Icons.qr_code_scanner_rounded,
                             size: 14,
-                            color: Color(0xFF0D5C3A),
+                            color: AppPalette.success,
                           ),
                           SizedBox(width: 5),
                           Text(
                             'SCAN AT PORT FOR BOARDING',
                             style: TextStyle(
                               fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF0D5C3A),
-                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppPalette.success,
+                              letterSpacing: 0,
                             ),
                           ),
                         ],
@@ -819,14 +795,10 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: (bookingStatus.toLowerCase().contains('cancel'))
-                            ? const Color(0xFFFEF2F2)
-                            : const Color(0xFFFFFBEB),
+                            ? AppPalette.danger.withValues(alpha: .12)
+                            : AppPalette.warning.withValues(alpha: .12),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: (bookingStatus.toLowerCase().contains('cancel'))
-                              ? const Color(0xFFFECACA)
-                              : const Color(0xFFFDE68A),
-                        ),
+                        
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -837,8 +809,8 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                                 : Icons.hourglass_empty_rounded,
                             size: 44,
                             color: (bookingStatus.toLowerCase().contains('cancel'))
-                                ? const Color(0xFFDC2626)
-                                : const Color(0xFFD97706),
+                                ? AppPalette.danger
+                                : AppPalette.warning,
                           ),
                           const SizedBox(height: 10),
                           Text(
@@ -846,12 +818,12 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                                 ? 'BOOKING CANCELLED'
                                 : 'BOARDING QR LOCKED',
                             style: TextStyle(
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w600,
                               fontSize: 14,
-                              letterSpacing: 0.5,
+                              letterSpacing: 0,
                               color: (bookingStatus.toLowerCase().contains('cancel'))
-                                  ? const Color(0xFF991B1B)
-                                  : const Color(0xFF92400E),
+                                  ? AppPalette.dangerText
+                                  : AppPalette.warningText,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -864,8 +836,8 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                               fontSize: 12,
                               height: 1.35,
                               color: (bookingStatus.toLowerCase().contains('cancel'))
-                                  ? const Color(0xFF7F1D1D)
-                                  : const Color(0xFF78350F),
+                                  ? AppPalette.dangerText
+                                  : AppPalette.warningText,
                             ),
                           ),
                         ],
@@ -874,11 +846,11 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'Ref: $bookingRef · Seat ${passenger.seat}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.6,
-                        color: AppPalette.darkText,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0,
+                        color: AppColors.of(context).text,
                       ),
                     ),
                   ],
@@ -900,7 +872,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                       child: Container(
                         height: 1.5,
                         margin: const EdgeInsets.symmetric(horizontal: 2),
-                        color: Colors.grey.shade300,
+                        color: AppColors.of(context).hairline,
                       ),
                     ),
                   ),
@@ -910,8 +882,8 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                   child: Container(
                     width: 20,
                     height: 20,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF1F5F9),
+                    decoration: BoxDecoration(
+                      color: AppColors.of(context).canvas,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -921,8 +893,8 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                   child: Container(
                     width: 20,
                     height: 20,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF1F5F9),
+                    decoration: BoxDecoration(
+                      color: AppColors.of(context).canvas,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -946,14 +918,14 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(
+                      SizedBox(
                         width: 130,
                         child: Text(
                           'Assigned Seat(s):',
                           style: TextStyle(
-                            color: AppPalette.darkText,
+                            color: AppColors.of(context).text,
                             fontSize: 13,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -964,27 +936,23 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppPalette.mintGreen.withValues(alpha: 0.15),
+                              color: AppPalette.teal500.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppPalette.mintGreen
-                                    .withValues(alpha: 0.45),
-                                width: 1.2,
-                              ),
+                              
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(Icons.event_seat_rounded,
-                                    size: 15, color: Color(0xFF0D5C3A)),
+                                    size: 15, color: AppPalette.success),
                                 const SizedBox(width: 5),
                                 Text(
                                   passenger.seat,
                                   style: const TextStyle(
-                                    color: Color(0xFF0D5C3A),
-                                    fontWeight: FontWeight.w900,
+                                    color: AppPalette.success,
+                                    fontWeight: FontWeight.w600,
                                     fontSize: 14,
-                                    letterSpacing: 0.5,
+                                    letterSpacing: 0,
                                   ),
                                 ),
                               ],
@@ -1003,20 +971,20 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Individual Fare',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black54,
+                        color: AppColors.of(context).text2,
                       ),
                     ),
                     Text(
                       '₱${passenger.individualFare.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: AppPalette.mintGreen,
+                        fontWeight: FontWeight.w600,
+                        color: AppPalette.teal500,
                       ),
                     ),
                   ],
@@ -1040,7 +1008,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.grey.shade600,
+                color: AppColors.of(context).text2,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -1049,8 +1017,8 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                color: AppPalette.darkText,
+              style: TextStyle(
+                color: AppColors.of(context).text,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),

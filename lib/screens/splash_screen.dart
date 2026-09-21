@@ -108,7 +108,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.of(context).surface,
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnim,
@@ -122,13 +122,13 @@ class _SplashScreenState extends State<SplashScreen>
                 const SizedBox(height: 20),
 
                 // App name
-                const Text(
+                Text(
                   'SeaPass',
                   style: TextStyle(
                     fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppPalette.darkText,
-                    letterSpacing: 1.4,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.of(context).text,
+                    letterSpacing: 0,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -136,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen>
                   'San Jose Port — Passenger',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade500,
+                    color: AppColors.of(context).text3,
                     letterSpacing: 0.4,
                   ),
                 ),
@@ -149,7 +149,7 @@ class _SplashScreenState extends State<SplashScreen>
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppPalette.mintGreen.withValues(alpha: 0.7),
+                      AppPalette.teal500.withValues(alpha: 0.7),
                     ),
                   ),
                 ),

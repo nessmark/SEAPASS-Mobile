@@ -116,12 +116,12 @@ class _SignupScreenState extends State<SignupScreen> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline_rounded, color: Colors.white),
+            const Icon(Icons.error_outline_rounded, color: AppPalette.white),
             const SizedBox(width: 10),
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: AppPalette.danger,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -157,12 +157,12 @@ class _SignupScreenState extends State<SignupScreen> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.mark_email_read_outlined, color: Colors.white),
+              const Icon(Icons.mark_email_read_outlined, color: AppPalette.white),
               const SizedBox(width: 10),
               Expanded(child: Text(successMsg)),
             ],
           ),
-          backgroundColor: AppPalette.mintGreen,
+          backgroundColor: AppPalette.teal500,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
@@ -203,14 +203,14 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
+      backgroundColor: AppColors.of(context).canvas,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppPalette.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: AppPalette.darkText,
+            color: AppColors.of(context).text,
             size: 20,
           ),
           onPressed: () => Navigator.of(context).pop(),
@@ -228,19 +228,19 @@ class _SignupScreenState extends State<SignupScreen> {
                 // ── Brand Header ──────────────────────────────────────
                 const SeaPassLogo(size: 64),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Create Your Account',
                   style: TextStyle(
                     fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppPalette.darkText,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.of(context).text,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Sign up to book boat trips and manage your sea passes',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 13, color: AppColors.of(context).text2),
                 ),
                 const SizedBox(height: 24),
 
@@ -251,16 +251,16 @@ class _SignupScreenState extends State<SignupScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.red.shade50,
+                      color: AppPalette.danger.withValues(alpha: .12),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.red.shade200),
+                      
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
                           Icons.error_outline_rounded,
-                          color: Colors.red.shade600,
+                          color: AppPalette.danger,
                           size: 18,
                         ),
                         const SizedBox(width: 8),
@@ -268,7 +268,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           child: Text(
                             _errorMessage,
                             style: TextStyle(
-                              color: Colors.red.shade700,
+                              color: AppPalette.danger,
                               fontSize: 13,
                               height: 1.4,
                             ),
@@ -333,7 +333,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       _obscurePassword
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
-                      color: AppPalette.subtleGrey,
+                      color: AppColors.of(context).text3,
                       size: 20,
                     ),
                     onPressed: () =>
@@ -357,7 +357,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       _obscureConfirm
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
-                      color: AppPalette.subtleGrey,
+                      color: AppColors.of(context).text3,
                       size: 20,
                     ),
                     onPressed: () =>
@@ -370,14 +370,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 // ── Sign Up / Register Button ─────────────────────────
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: 44,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleSignup,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppPalette.mintGreen,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppPalette.teal500,
+                      foregroundColor: AppPalette.white,
                       disabledBackgroundColor:
-                          AppPalette.mintGreen.withValues(alpha: 0.6),
+                          AppPalette.teal500.withValues(alpha: 0.6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -388,16 +388,16 @@ class _SignupScreenState extends State<SignupScreen> {
                             width: 22,
                             height: 22,
                             child: CircularProgressIndicator(
-                              color: Colors.white,
+                              color: AppPalette.white,
                               strokeWidth: 2.5,
                             ),
                           )
                         : const Text(
-                            'SIGN UP',
+                            'Create account',
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               fontSize: 15,
-                              letterSpacing: 0.8,
+                              letterSpacing: 0,
                             ),
                           ),
                   ),
@@ -411,14 +411,14 @@ class _SignupScreenState extends State<SignupScreen> {
                     Text(
                       'Already have an account? ',
                       style:
-                          TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                          TextStyle(color: AppColors.of(context).text2, fontSize: 13),
                     ),
                     GestureDetector(
                       onTap: () => Navigator.of(context).pop(),
                       child: const Text(
                         'Log In',
                         style: TextStyle(
-                          color: AppPalette.mintGreen,
+                          color: AppPalette.teal500,
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -455,40 +455,22 @@ class _SignupScreenState extends State<SignupScreen> {
       textInputAction: textInputAction,
       onFieldSubmitted: onFieldSubmitted,
       validator: validator,
-      style: const TextStyle(fontSize: 15, color: AppPalette.darkText),
+      style: TextStyle(fontSize: 15, color: AppColors.of(context).text),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-        labelStyle:
-            const TextStyle(fontSize: 14, color: AppPalette.subtleGrey),
-        prefixIcon: Icon(prefixIcon, size: 20, color: AppPalette.subtleGrey),
+        
+        
+        prefixIcon: Icon(prefixIcon, size: 20, color: AppColors.of(context).text3),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide:
-              const BorderSide(color: AppPalette.mintGreen, width: 1.8),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.red.shade400),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.red.shade700, width: 1.8),
-        ),
+        
+        
+        
+        
+        
+        
+        
       ),
     );
   }

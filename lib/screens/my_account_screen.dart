@@ -5,6 +5,7 @@ import '../models/booking.dart';
 import '../services/passenger_data_service.dart';
 import '../services/passenger_session.dart';
 import '../widgets/app_palette.dart';
+import '../widgets/app_card.dart';
 import 'login_screen.dart';
 import 'view_ticket_screen.dart';
 
@@ -73,9 +74,9 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
-            Icon(Icons.logout_rounded, color: Colors.red, size: 24),
+            Icon(Icons.logout_rounded, color: AppPalette.danger, size: 24),
             SizedBox(width: 8),
-            Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Log Out', style: TextStyle(fontWeight: FontWeight.w600)),
           ],
         ),
         content: const Text(
@@ -85,13 +86,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text('Cancel', style: TextStyle(color: AppColors.of(context).text3)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: AppPalette.danger,
+              foregroundColor: AppPalette.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
@@ -136,7 +137,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Edit Profile',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.w600)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -144,7 +145,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               controller: nameController,
               decoration: const InputDecoration(
                 labelText: 'Full Name',
-                border: OutlineInputBorder(),
+                
               ),
             ),
             const SizedBox(height: 12),
@@ -152,7 +153,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               controller: phoneController,
               decoration: const InputDecoration(
                 labelText: 'Mobile Number',
-                border: OutlineInputBorder(),
+                
               ),
             ),
           ],
@@ -172,13 +173,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Profile updated successfully!'),
-                  backgroundColor: AppPalette.mintGreen,
+                  backgroundColor: AppPalette.teal500,
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppPalette.mintGreen,
-              foregroundColor: Colors.white,
+              backgroundColor: AppPalette.teal500,
+              foregroundColor: AppPalette.white,
             ),
             child: const Text('Save'),
           ),
@@ -194,7 +195,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Change Password',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.w600)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -202,7 +203,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Current Password',
-                border: OutlineInputBorder(),
+                
               ),
             ),
             const SizedBox(height: 12),
@@ -211,7 +212,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: 'New Password',
-                border: OutlineInputBorder(),
+                
               ),
             ),
           ],
@@ -227,13 +228,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Password changed successfully!'),
-                  backgroundColor: AppPalette.mintGreen,
+                  backgroundColor: AppPalette.teal500,
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppPalette.mintGreen,
-              foregroundColor: Colors.white,
+              backgroundColor: AppPalette.teal500,
+              foregroundColor: AppPalette.white,
             ),
             child: const Text('Update'),
           ),
@@ -250,7 +251,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         title: const Row(
           children: [
             Icon(Icons.support_agent_rounded,
-                color: AppPalette.mintGreen, size: 24),
+                color: AppPalette.teal500, size: 24),
             SizedBox(width: 8),
             Text('Help & Support'),
           ],
@@ -261,14 +262,14 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           children: [
             Text(
               'SeaPass Passenger Terminal Support',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
             SizedBox(height: 10),
             Text('📍 Surigao Port Terminal / San Jose Port'),
             SizedBox(height: 4),
             Text('📞 Hotline: +63 (086) 826-0000 / 0912-345-6789'),
             SizedBox(height: 4),
-            Text('✉️ Email: support@seapass.ph'),
+            Text('✉ Email: support@seapass.ph'),
             SizedBox(height: 4),
             Text('🕒 Operating Hours: Mon - Sun 05:00 AM - 06:00 PM'),
           ],
@@ -277,8 +278,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppPalette.mintGreen,
-              foregroundColor: Colors.white,
+              backgroundColor: AppPalette.teal500,
+              foregroundColor: AppPalette.white,
             ),
             child: const Text('Close'),
           ),
@@ -296,29 +297,19 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     final String phone = PassengerSession.phone;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── 1. User Profile Section ───────────────────────────────────────
-          Container(
+          AppCard(
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
+            
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 32,
-                  backgroundColor: AppPalette.mintGreen.withValues(alpha: 0.15),
+                  backgroundColor: AppPalette.teal500.withValues(alpha: 0.15),
                   child: Text(
                     fullName.isNotEmpty
                         ? fullName
@@ -329,8 +320,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                         : 'JM',
                     style: const TextStyle(
                       fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppPalette.mintGreen,
+                      fontWeight: FontWeight.w600,
+                      color: AppPalette.teal500,
                     ),
                   ),
                 ),
@@ -344,10 +335,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                           Expanded(
                             child: Text(
                               fullName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppPalette.darkText,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.of(context).text,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -357,20 +348,20 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color:
-                                  AppPalette.mintGreen.withValues(alpha: 0.12),
+                                  AppPalette.teal500.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: const Row(
                               children: [
                                 Icon(Icons.check_circle,
-                                    size: 11, color: AppPalette.mintGreen),
+                                    size: 11, color: AppPalette.teal500),
                                 SizedBox(width: 3),
                                 Text(
                                   'Verified',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppPalette.mintGreen,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppPalette.teal500,
                                   ),
                                 ),
                               ],
@@ -383,7 +374,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                         email,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey.shade600,
+                          color: AppColors.of(context).text2,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -392,7 +383,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                         phone,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade500,
+                          color: AppColors.of(context).text3,
                         ),
                       ),
                     ],
@@ -405,27 +396,17 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           const SizedBox(height: 22),
 
           // ── 2. Account Settings Actions ───────────────────────────────────
-          const Text(
+          Text(
             'Account Settings',
             style: TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: AppPalette.darkText,
+              fontWeight: FontWeight.w600,
+              color: AppColors.of(context).text,
             ),
           ),
           const SizedBox(height: 10),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
+          AppCard(padding: EdgeInsets.zero,
+            
             child: Column(
               children: [
                 _buildActionTile(
@@ -458,17 +439,17 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(Icons.history_rounded,
-                      size: 20, color: AppPalette.darkText),
+                      size: 20, color: AppColors.of(context).text),
                   SizedBox(width: 8),
                   Text(
                     'Travel History',
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppPalette.darkText,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.of(context).text,
                     ),
                   ),
                 ],
@@ -477,15 +458,15 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppPalette.mintGreen.withValues(alpha: 0.12),
+                  color: AppPalette.teal500.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   '${_travelHistory.length} Trip${_travelHistory.length == 1 ? "" : "s"}',
                   style: const TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: AppPalette.mintGreen,
+                    fontWeight: FontWeight.w600,
+                    color: AppPalette.teal500,
                   ),
                 ),
               ),
@@ -497,7 +478,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             const Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
-                child: CircularProgressIndicator(color: AppPalette.mintGreen),
+                child: CircularProgressIndicator(color: AppPalette.teal500),
               ),
             )
           else if (_travelHistory.isEmpty)
@@ -505,17 +486,17 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 28),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.of(context).surface,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 children: [
                   Icon(Icons.directions_boat_outlined,
-                      size: 40, color: Colors.grey.shade400),
+                      size: 40, color: AppColors.of(context).text3),
                   const SizedBox(height: 8),
                   Text(
                     'No completed trips yet',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                    style: TextStyle(color: AppColors.of(context).text2, fontSize: 14),
                   ),
                 ],
               ),
@@ -528,23 +509,23 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           // ── 4. Prominent Log Out Button ───────────────────────────────────
           SizedBox(
             width: double.infinity,
-            height: 52,
+            height: 44,
             child: OutlinedButton.icon(
               onPressed: () => _handleLogout(context),
               icon: const Icon(Icons.logout_rounded,
-                  color: Color(0xFFDC2626), size: 20),
+                  color: AppPalette.danger, size: 20),
               label: const Text(
-                'LOG OUT',
+                'Log out',
                 style: TextStyle(
-                  color: Color(0xFFDC2626),
-                  fontWeight: FontWeight.bold,
+                  color: AppPalette.danger,
+                  fontWeight: FontWeight.w600,
                   fontSize: 15,
-                  letterSpacing: 1.0,
+                  letterSpacing: 0,
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFFCA5A5), width: 1.5),
-                backgroundColor: const Color(0xFFFEF2F2),
+                
+                backgroundColor: AppPalette.danger.withValues(alpha: .12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -570,42 +551,31 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppPalette.mintGreen.withValues(alpha: 0.1),
+          color: AppPalette.teal500.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, color: AppPalette.mintGreen, size: 20),
+        child: Icon(icon, color: AppPalette.teal500, size: 20),
       ),
       title: Text(
         title,
         style:
-            const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+        style: TextStyle(fontSize: 12, color: AppColors.of(context).text3),
       ),
-      trailing: const Icon(Icons.chevron_right_rounded,
-          size: 20, color: Colors.grey),
+      trailing: Icon(Icons.chevron_right_rounded,
+          size: 20, color: AppColors.of(context).text3),
     );
   }
 
   Widget _buildTripCard(Booking booking) {
-    return Container(
+    return AppCard(padding: EdgeInsets.zero,
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      
       child: Material(
-        color: Colors.transparent,
+        color: AppPalette.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
@@ -627,10 +597,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                     Expanded(
                       child: Text(
                         booking.route,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppPalette.darkText,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.of(context).text,
                         ),
                       ),
                     ),
@@ -639,15 +609,15 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color:
-                            AppPalette.mintGreen.withValues(alpha: 0.15),
+                            AppPalette.teal500.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
                         'Completed',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0D5C3A),
+                          fontWeight: FontWeight.w600,
+                          color: AppPalette.success,
                         ),
                       ),
                     ),
@@ -656,15 +626,15 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.confirmation_number_outlined,
-                        size: 14, color: Colors.grey),
+                    Icon(Icons.confirmation_number_outlined,
+                        size: 14, color: AppColors.of(context).text3),
                     const SizedBox(width: 5),
                     Text(
                       'Ref: ${booking.referenceNumber}',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
+                        color: AppColors.of(context).text,
                       ),
                     ),
                     const Spacer(),
@@ -672,8 +642,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                       '₱${booking.totalPrice.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppPalette.mintGreen,
+                        fontWeight: FontWeight.w600,
+                        color: AppPalette.teal500,
                       ),
                     ),
                   ],
@@ -681,19 +651,19 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.calendar_month_outlined,
-                        size: 14, color: Colors.grey),
+                    Icon(Icons.calendar_month_outlined,
+                        size: 14, color: AppColors.of(context).text3),
                     const SizedBox(width: 5),
                     Text(
                       'Date: ${booking.date}${booking.time.isNotEmpty ? " · ${booking.time}" : ""}',
                       style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade700),
+                          fontSize: 12, color: AppColors.of(context).text2),
                     ),
                     const Spacer(),
                     Text(
                       'Vessel: ${booking.boatName}',
                       style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade600),
+                          fontSize: 12, color: AppColors.of(context).text2),
                     ),
                   ],
                 ),
@@ -707,13 +677,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                         'View Boarding Pass',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppPalette.mintGreen,
+                          fontWeight: FontWeight.w600,
+                          color: AppPalette.teal500,
                         ),
                       ),
                       SizedBox(width: 4),
                       Icon(Icons.arrow_forward_rounded,
-                          size: 14, color: AppPalette.mintGreen),
+                          size: 14, color: AppPalette.teal500),
                     ],
                   ),
                 ),

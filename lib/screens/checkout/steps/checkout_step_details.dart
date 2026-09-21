@@ -6,6 +6,7 @@ import '../../../models/passenger_booking_models.dart';
 import '../../../models/route_fare.dart';
 import '../../../models/schedule.dart';
 import '../../../widgets/app_palette.dart';
+import '../../../widgets/app_card.dart';
 
 /// Step 1 of the booking checkout flow:
 /// Displays the trip summary, passenger counters, and dynamic passenger details form cards.
@@ -46,20 +47,20 @@ class CheckoutStepDetails extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Trip Route & Vessel Summary Card
-        _buildTripSummaryCard(),
+        _buildTripSummaryCard(context),
         const SizedBox(height: 18),
 
         // Seat Category Counter Selectors
         Text(
           'Select Seats & Passenger Types',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppPalette.darkText,
+                fontWeight: FontWeight.w600,
+                color: AppColors.of(context).text,
               ),
         ),
         const SizedBox(height: 10),
 
-        _buildCounterRow(
+        _buildCounterRow(context, 
           label: 'Regular',
           unitPrice: fare.regular,
           count: regularCount,
@@ -68,7 +69,7 @@ class CheckoutStepDetails extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        _buildCounterRow(
+        _buildCounterRow(context, 
           label: 'Student',
           badgeText: 'Discounted',
           unitPrice: fare.student,
@@ -78,7 +79,7 @@ class CheckoutStepDetails extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        _buildCounterRow(
+        _buildCounterRow(context, 
           label: 'Senior Citizen / PWD',
           badgeText: '20% Off',
           unitPrice: fare.senior,
@@ -92,8 +93,8 @@ class CheckoutStepDetails extends StatelessWidget {
         Text(
           'Passenger Details (${passengers.length} Total)',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppPalette.darkText,
+                fontWeight: FontWeight.w600,
+                color: AppColors.of(context).text,
               ),
         ),
         const SizedBox(height: 10),
@@ -103,19 +104,15 @@ class CheckoutStepDetails extends StatelessWidget {
         const SizedBox(height: 14),
 
         // Sticky Bottom Price & Action
-        _buildStep1BottomBar(),
+        _buildStep1BottomBar(context),
       ],
     );
   }
 
-  Widget _buildTripSummaryCard() {
-    return Container(
+  Widget _buildTripSummaryCard(BuildContext context) {
+    return AppCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
+      
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -124,24 +121,24 @@ class CheckoutStepDetails extends StatelessWidget {
             children: [
               Text(
                 '${schedule.from} → ${schedule.to}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppPalette.darkText,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.of(context).text,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppPalette.mintGreen.withValues(alpha: 0.15),
+                  color: AppPalette.teal500.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${schedule.availableSeats} seats left',
                   style: const TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: AppPalette.mintGreen,
+                    fontWeight: FontWeight.w600,
+                    color: AppPalette.teal500,
                   ),
                 ),
               ),
@@ -150,7 +147,7 @@ class CheckoutStepDetails extends StatelessWidget {
           const Divider(height: 20),
           Row(
             children: [
-              const Icon(Icons.calendar_today_outlined, size: 16, color: AppPalette.mintGreen),
+              const Icon(Icons.calendar_today_outlined, size: 16, color: AppPalette.teal500),
               const SizedBox(width: 8),
               Text(
                 'Travel Date: ${schedule.date.isNotEmpty ? schedule.date : 'Selected Date'}',
@@ -161,7 +158,7 @@ class CheckoutStepDetails extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.access_time_rounded, size: 16, color: AppPalette.mintGreen),
+              const Icon(Icons.access_time_rounded, size: 16, color: AppPalette.teal500),
               const SizedBox(width: 8),
               Text(
                 'Departure Time: ${schedule.time}',
@@ -172,7 +169,7 @@ class CheckoutStepDetails extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.directions_boat_outlined, size: 16, color: AppPalette.mintGreen),
+              const Icon(Icons.directions_boat_outlined, size: 16, color: AppPalette.teal500),
               const SizedBox(width: 8),
               Text(
                 'Vessel / Boat: ${schedule.boatName}',
@@ -185,7 +182,7 @@ class CheckoutStepDetails extends StatelessWidget {
     );
   }
 
-  Widget _buildCounterRow({
+  Widget _buildCounterRow(BuildContext context, {
     required String label,
     required double unitPrice,
     required int count,
@@ -193,18 +190,9 @@ class CheckoutStepDetails extends StatelessWidget {
     required VoidCallback onDecrement,
     required VoidCallback onIncrement,
   }) {
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: count > 0
-              ? AppPalette.mintGreen.withValues(alpha: 0.5)
-              : Colors.grey.shade300,
-          width: count > 0 ? 1.5 : 1.0,
-        ),
-      ),
+      
       child: Row(
         children: [
           Expanded(
@@ -216,10 +204,10 @@ class CheckoutStepDetails extends StatelessWidget {
                     Flexible(
                       child: Text(
                         label,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppPalette.darkText,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.of(context).text,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -229,15 +217,15 @@ class CheckoutStepDetails extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppPalette.mintGreen.withValues(alpha: 0.15),
+                          color: AppPalette.teal500.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           badgeText,
                           style: const TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: AppPalette.mintGreen,
+                            fontWeight: FontWeight.w600,
+                            color: AppPalette.teal500,
                           ),
                         ),
                       ),
@@ -249,7 +237,7 @@ class CheckoutStepDetails extends StatelessWidget {
                   '₱${unitPrice.toStringAsFixed(2)} / passenger',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: AppColors.of(context).text2,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -261,8 +249,8 @@ class CheckoutStepDetails extends StatelessWidget {
               IconButton(
                 onPressed: count > 0 ? onDecrement : null,
                 icon: const Icon(Icons.remove_circle_outline),
-                color: AppPalette.mintGreen,
-                disabledColor: Colors.grey.shade300,
+                color: AppPalette.teal500,
+                disabledColor: AppColors.of(context).hairline,
                 iconSize: 24,
               ),
               SizedBox(
@@ -270,13 +258,13 @@ class CheckoutStepDetails extends StatelessWidget {
                 child: Text(
                   '$count',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ),
               IconButton(
                 onPressed: onIncrement,
                 icon: const Icon(Icons.add_circle_outline),
-                color: AppPalette.mintGreen,
+                color: AppPalette.teal500,
                 iconSize: 24,
               ),
             ],
@@ -289,25 +277,9 @@ class CheckoutStepDetails extends StatelessWidget {
   Widget _buildPassengerAccordionCard(BuildContext context, PassengerDetail passenger) {
     final bool isCompleted = passenger.isComplete;
 
-    return Container(
+    return AppCard(padding: EdgeInsets.zero,
       margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isCompleted
-              ? AppPalette.mintGreen.withValues(alpha: 0.5)
-              : Colors.grey.shade300,
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      
       child: Column(
         children: [
           // Accordion Header
@@ -327,10 +299,10 @@ class CheckoutStepDetails extends StatelessWidget {
                       children: [
                         Text(
                           'Passenger ${passenger.index}: ${passenger.categoryLabel}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
                             fontSize: 15,
-                            color: AppPalette.darkText,
+                            color: AppColors.of(context).text,
                           ),
                         ),
                         if (passenger.fullName != 'Passenger ${passenger.index}') ...[
@@ -339,7 +311,7 @@ class CheckoutStepDetails extends StatelessWidget {
                             passenger.fullName,
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.grey.shade600,
+                              color: AppColors.of(context).text2,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -353,8 +325,8 @@ class CheckoutStepDetails extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: isCompleted
-                          ? AppPalette.mintGreen.withValues(alpha: 0.15)
-                          : Colors.grey.shade100,
+                          ? AppPalette.teal500.withValues(alpha: 0.15)
+                          : AppColors.of(context).surface2,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -362,7 +334,7 @@ class CheckoutStepDetails extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: isCompleted ? AppPalette.mintGreen : Colors.grey.shade600,
+                        color: isCompleted ? AppPalette.teal500 : AppColors.of(context).text2,
                       ),
                     ),
                   ),
@@ -372,7 +344,7 @@ class CheckoutStepDetails extends StatelessWidget {
                     passenger.isExpanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
-                    color: Colors.grey.shade600,
+                    color: AppColors.of(context).text2,
                   ),
                 ],
               ),
@@ -394,8 +366,8 @@ class CheckoutStepDetails extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: 'Given names (including suffix) *',
                       hintText: 'e.g. Juan Jr.',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      
+                      
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -407,8 +379,8 @@ class CheckoutStepDetails extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: 'Last name (surname) *',
                       hintText: 'e.g. Dela Cruz',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      
+                      
                     ),
                   ),
 
@@ -418,14 +390,9 @@ class CheckoutStepDetails extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppPalette.mintGreen.withValues(alpha: 0.07),
+                        color: AppPalette.teal500.withValues(alpha: 0.07),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: (passenger.idPhotoPath != null && passenger.idPhotoPath!.isNotEmpty)
-                              ? AppPalette.mintGreen
-                              : AppPalette.mintGreen.withValues(alpha: 0.4),
-                          width: (passenger.idPhotoPath != null && passenger.idPhotoPath!.isNotEmpty) ? 1.5 : 1,
-                        ),
+                        
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,7 +402,7 @@ class CheckoutStepDetails extends StatelessWidget {
                               const Icon(
                                 Icons.badge_outlined,
                                 size: 18,
-                                color: AppPalette.mintGreen,
+                                color: AppPalette.teal500,
                               ),
                               const SizedBox(width: 6),
                               Expanded(
@@ -445,8 +412,8 @@ class CheckoutStepDetails extends StatelessWidget {
                                       : 'Senior Citizen / PWD ID Verification *',
                                   style: const TextStyle(
                                     fontSize: 12.5,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppPalette.mintGreen,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppPalette.teal500,
                                   ),
                                 ),
                               ),
@@ -457,7 +424,7 @@ class CheckoutStepDetails extends StatelessWidget {
                             'Please attach a clear photo of your valid ID card to verify discount eligibility.',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Colors.grey.shade600,
+                              color: AppColors.of(context).text2,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -470,27 +437,24 @@ class CheckoutStepDetails extends StatelessWidget {
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: AppColors.of(context).surface,
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                    width: 1.2,
-                                  ),
+                                  
                                 ),
                                 child: Column(
                                   children: [
                                     const Icon(
                                       Icons.add_a_photo_outlined,
                                       size: 32,
-                                      color: AppPalette.mintGreen,
+                                      color: AppPalette.teal500,
                                     ),
                                     const SizedBox(height: 8),
-                                    const Text(
+                                    Text(
                                       'Upload Valid ID Photo *',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppPalette.darkText,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.of(context).text,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -498,7 +462,7 @@ class CheckoutStepDetails extends StatelessWidget {
                                       'Tap to take a photo or select from gallery',
                                       style: TextStyle(
                                         fontSize: 11,
-                                        color: Colors.grey.shade500,
+                                        color: AppColors.of(context).text3,
                                       ),
                                     ),
                                   ],
@@ -507,13 +471,9 @@ class CheckoutStepDetails extends StatelessWidget {
                             ),
                           ] else ...[
                             // Attached: Preview thumbnail with replace/delete actions
-                            Container(
+                            AppCard(
                               padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.grey.shade200),
-                              ),
+                              
                               child: Row(
                                 children: [
                                   ClipRRect(
@@ -526,8 +486,8 @@ class CheckoutStepDetails extends StatelessWidget {
                                       errorBuilder: (_, __, ___) => Container(
                                         width: 80,
                                         height: 60,
-                                        color: Colors.grey.shade200,
-                                        child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+                                        color: AppColors.of(context).surface2,
+                                        child: Icon(Icons.broken_image_outlined, color: AppColors.of(context).text3),
                                       ),
                                     ),
                                   ),
@@ -539,20 +499,20 @@ class CheckoutStepDetails extends StatelessWidget {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                           decoration: BoxDecoration(
-                                            color: AppPalette.mintGreen.withValues(alpha: 0.15),
+                                            color: AppPalette.teal500.withValues(alpha: 0.15),
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: const Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Icon(Icons.check_circle_rounded, size: 13, color: AppPalette.mintGreen),
+                                              Icon(Icons.check_circle_rounded, size: 13, color: AppPalette.teal500),
                                               SizedBox(width: 4),
                                               Text(
                                                 'ID Photo Attached',
                                                 style: TextStyle(
                                                   fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: AppPalette.mintGreen,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppPalette.teal500,
                                                 ),
                                               ),
                                             ],
@@ -565,7 +525,7 @@ class CheckoutStepDetails extends StatelessWidget {
                                             'Change / Retake photo',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: AppPalette.mintGreen,
+                                              color: AppPalette.teal500,
                                               fontWeight: FontWeight.w600,
                                               decoration: TextDecoration.underline,
                                             ),
@@ -575,7 +535,7 @@ class CheckoutStepDetails extends StatelessWidget {
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                                    icon: const Icon(Icons.delete_outline_rounded, color: AppPalette.danger),
                                     tooltip: 'Remove photo',
                                     onPressed: () {
                                       passenger.idPhotoPath = null;
@@ -604,8 +564,8 @@ class CheckoutStepDetails extends StatelessWidget {
                         onPassengerFormUpdated();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.shade200,
-                        foregroundColor: AppPalette.darkText,
+                        backgroundColor: AppColors.of(context).surface2,
+                        foregroundColor: AppColors.of(context).text,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                       ),
@@ -621,14 +581,10 @@ class CheckoutStepDetails extends StatelessWidget {
     );
   }
 
-  Widget _buildStep1BottomBar() {
-    return Container(
+  Widget _buildStep1BottomBar(BuildContext context) {
+    return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppPalette.mintGreen.withValues(alpha: 0.3)),
-      ),
+      
       child: Column(
         children: [
           Row(
@@ -637,21 +593,21 @@ class CheckoutStepDetails extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'TOTAL PRICE',
+                  Text(
+                    'Total price',
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                      letterSpacing: 0.8,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.of(context).text3,
+                      letterSpacing: 0,
                     ),
                   ),
                   Text(
                     '$totalSeats Seat${totalSeats == 1 ? '' : 's'} Selected',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppPalette.darkText,
+                      color: AppColors.of(context).text,
                     ),
                   ),
                 ],
@@ -660,8 +616,8 @@ class CheckoutStepDetails extends StatelessWidget {
                 '₱${totalPrice.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppPalette.mintGreen,
+                  fontWeight: FontWeight.w600,
+                  color: AppPalette.teal500,
                 ),
               ),
             ],
@@ -669,17 +625,17 @@ class CheckoutStepDetails extends StatelessWidget {
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 44,
             child: ElevatedButton(
               onPressed: onProceedToSeats,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppPalette.mintGreen,
-                foregroundColor: Colors.white,
+                backgroundColor: AppPalette.teal500,
+                foregroundColor: AppPalette.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: const Text(
-                'SELECT SEATS →',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                'Select seats',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
               ),
             ),
           ),
@@ -706,7 +662,7 @@ class CheckoutStepDetails extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to pick photo: $e'),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppPalette.danger,
           ),
         );
       }
@@ -719,7 +675,7 @@ class CheckoutStepDetails extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.of(context).surface,
       builder: (sheetContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -731,16 +687,16 @@ class CheckoutStepDetails extends StatelessWidget {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: AppColors.of(context).hairline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const Text(
+              Text(
                 'Upload Discount ID Photo',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppPalette.darkText,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.of(context).text,
                 ),
               ),
               const SizedBox(height: 4),
@@ -748,7 +704,7 @@ class CheckoutStepDetails extends StatelessWidget {
                 'Select the source for Passenger ${passenger.index}\'s ID photo',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey.shade600,
+                  color: AppColors.of(context).text2,
                 ),
               ),
               const SizedBox(height: 16),
@@ -756,18 +712,18 @@ class CheckoutStepDetails extends StatelessWidget {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppPalette.mintGreen.withValues(alpha: 0.15),
+                    color: AppPalette.teal500.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.photo_camera_rounded, color: AppPalette.mintGreen),
+                  child: const Icon(Icons.photo_camera_rounded, color: AppPalette.teal500),
                 ),
                 title: const Text(
                   'Take Photo (Camera)',
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Capture a clear picture of your physical ID card',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                  style: TextStyle(fontSize: 11, color: AppColors.of(context).text3),
                 ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -779,18 +735,18 @@ class CheckoutStepDetails extends StatelessWidget {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppPalette.mintGreen.withValues(alpha: 0.15),
+                    color: AppPalette.teal500.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.photo_library_rounded, color: AppPalette.mintGreen),
+                  child: const Icon(Icons.photo_library_rounded, color: AppPalette.teal500),
                 ),
                 title: const Text(
                   'Choose from Gallery',
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Select a photo or scan already saved on your phone',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                  style: TextStyle(fontSize: 11, color: AppColors.of(context).text3),
                 ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();

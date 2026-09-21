@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Connected to ${detectedMode.label} (${ApiConfig.baseUrl})'),
-          backgroundColor: AppPalette.mintGreen,
+          backgroundColor: AppPalette.teal500,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const Text(
                         'Server Connection Settings',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -112,15 +112,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Text(
                     'Active Base URL: ${ApiConfig.baseUrl}',
-                    style: const TextStyle(fontSize: 12, color: AppPalette.subtleGrey),
+                    style: TextStyle(fontSize: 12, color: AppColors.of(context).text3),
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppPalette.mintGreen,
-                        side: const BorderSide(color: AppPalette.mintGreen),
+                        foregroundColor: AppPalette.teal500,
+                        
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       onPressed: () async {
@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 12),
                   ListTile(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    tileColor: ApiConfig.currentMode == ConnectionMode.usbAdb ? AppPalette.mintGreen.withValues(alpha: 0.15) : null,
+                    tileColor: ApiConfig.currentMode == ConnectionMode.usbAdb ? AppPalette.teal500.withValues(alpha: 0.15) : null,
                     leading: const Icon(Icons.usb_rounded),
                     title: const Text('USB Debugging (ADB Reverse)'),
                     subtitle: const Text('127.0.0.1:8000 (Requires adb reverse)'),
@@ -146,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   ListTile(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    tileColor: ApiConfig.currentMode == ConnectionMode.lanWifi ? AppPalette.mintGreen.withValues(alpha: 0.15) : null,
+                    tileColor: ApiConfig.currentMode == ConnectionMode.lanWifi ? AppPalette.teal500.withValues(alpha: 0.15) : null,
                     leading: const Icon(Icons.wifi_rounded),
                     title: const Text('Wi-Fi (Auto-Connect Server)'),
                     subtitle: Text('Auto-scans & connects to PC (Target: http://${ApiConfig.lanWifiHost}:${ApiConfig.defaultPort})'),
@@ -195,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   ListTile(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    tileColor: ApiConfig.currentMode == ConnectionMode.androidEmulator ? AppPalette.mintGreen.withValues(alpha: 0.15) : null,
+                    tileColor: ApiConfig.currentMode == ConnectionMode.androidEmulator ? AppPalette.teal500.withValues(alpha: 0.15) : null,
                     leading: const Icon(Icons.phone_android_rounded),
                     title: const Text('Android Emulator (10.0.2.2)'),
                     subtitle: const Text('Host loopback alias for AVD emulators'),
@@ -207,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   ListTile(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    tileColor: ApiConfig.currentMode == ConnectionMode.production ? AppPalette.mintGreen.withValues(alpha: 0.15) : null,
+                    tileColor: ApiConfig.currentMode == ConnectionMode.production ? AppPalette.teal500.withValues(alpha: 0.15) : null,
                     leading: const Icon(Icons.cloud_done_rounded),
                     title: const Text('Production Server'),
                     subtitle: const Text(ApiConfig.productionUrl),
@@ -283,7 +283,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
+      backgroundColor: AppColors.of(context).canvas,
       body: SafeArea(
         child: SingleChildScrollView(
           child: ConstrainedBox(
@@ -309,9 +309,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             alignment: Alignment.topRight,
                             child: IconButton(
                               tooltip: 'Server Connection Settings',
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.settings_ethernet_rounded,
-                                color: AppPalette.subtleGrey,
+                                color: AppColors.of(context).text3,
                               ),
                               onPressed: () => _showServerSettingsModal(context),
                             ),
@@ -325,13 +325,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 18),
 
                           // Title
-                          const Text(
+                          Text(
                             'SeaPass - San Jose Port\nPassenger',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppPalette.darkText,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.of(context).text,
                               height: 1.35,
                             ),
                           ),
@@ -357,7 +357,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 _obscurePassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: AppPalette.subtleGrey,
+                                color: AppColors.of(context).text3,
                                 size: 20,
                               ),
                               onPressed: () => setState(
@@ -374,16 +374,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
-                                color: Colors.red.shade50,
+                                color: AppPalette.danger.withValues(alpha: .12),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.red.shade200),
+                                
                               ),
                               child: Column(
                                 children: [
                                   Text(
                                     _errorMessage,
                                     style: TextStyle(
-                                      color: Colors.red.shade800,
+                                      color: AppPalette.danger,
                                       fontSize: 12.5,
                                       height: 1.35,
                                     ),
@@ -396,13 +396,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                       Expanded(
                                         child: ElevatedButton.icon(
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: AppPalette.mintGreen,
-                                            foregroundColor: Colors.white,
+                                            backgroundColor: AppPalette.teal500,
+                                            foregroundColor: AppPalette.white,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 12, vertical: 10),
                                             textStyle: const TextStyle(
                                                 fontSize: 13,
-                                                fontWeight: FontWeight.bold),
+                                                fontWeight: FontWeight.w600),
                                             shape: RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.circular(8)),
                                             elevation: 0,
@@ -419,12 +419,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                       IconButton.outlined(
                                         tooltip: 'Server Connection Settings',
                                         style: IconButton.styleFrom(
-                                          side: BorderSide(color: Colors.grey.shade400),
+                                          
                                           shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(8)),
                                         ),
                                         onPressed: () => _showServerSettingsModal(context),
-                                        icon: const Icon(Icons.settings, size: 18, color: AppPalette.darkText),
+                                        icon: Icon(Icons.settings, size: 18, color: AppColors.of(context).text),
                                       ),
                                     ],
                                   ),
@@ -438,14 +438,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           // LOG IN button
                           SizedBox(
                             width: double.infinity,
-                            height: 52,
+                            height: 44,
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _login,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppPalette.mintGreen,
-                                foregroundColor: Colors.white,
+                                backgroundColor: AppPalette.teal500,
+                                foregroundColor: AppPalette.white,
                                 disabledBackgroundColor:
-                                    AppPalette.mintGreen.withValues(alpha: 0.6),
+                                    AppPalette.teal500.withValues(alpha: 0.6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
                                 ),
@@ -456,16 +456,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                       width: 22,
                                       height: 22,
                                       child: CircularProgressIndicator(
-                                        color: Colors.white,
+                                        color: AppPalette.white,
                                         strokeWidth: 2.5,
                                       ),
                                     )
                                   : const Text(
-                                      'LOG IN',
+                                      'Log in',
                                       style: TextStyle(
                                         fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.2,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0,
                                       ),
                                     ),
                             ),
@@ -482,7 +482,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: const Text(
                               'Sign Up / Create Account',
                               style: TextStyle(
-                                color: AppPalette.mintGreen,
+                                color: AppPalette.teal500,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -499,7 +499,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.only(bottom: 36),
                       child: SeaPassLogo(
                         size: 88,
-                        color: Colors.grey.shade400,
+                        color: AppColors.of(context).text3,
                       ),
                     ),
                 ],
@@ -527,30 +527,19 @@ class _LoginScreenState extends State<LoginScreen> {
       textInputAction:
           onSubmitted != null ? TextInputAction.done : TextInputAction.next,
       onSubmitted: onSubmitted,
-      style: const TextStyle(fontSize: 15, color: AppPalette.darkText),
+      style: TextStyle(fontSize: 15, color: AppColors.of(context).text),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 14, color: AppPalette.subtleGrey),
+        
         prefixIcon:
-            Icon(prefixIcon, size: 20, color: AppPalette.subtleGrey),
+            Icon(prefixIcon, size: 20, color: AppColors.of(context).text3),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide:
-              const BorderSide(color: AppPalette.mintGreen, width: 1.8),
-        ),
+        
+        
+        
+        
+        
       ),
     );
   }

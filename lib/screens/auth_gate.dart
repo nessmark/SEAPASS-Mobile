@@ -83,20 +83,20 @@ class _AuthGateState extends State<AuthGate> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.of(context).surface,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SeaPassLogo(size: 88),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'SeaPass',
               style: TextStyle(
                 fontSize: 26,
-                fontWeight: FontWeight.w800,
-                color: AppPalette.darkText,
-                letterSpacing: 1.2,
+                fontWeight: FontWeight.w600,
+                color: AppColors.of(context).text,
+                letterSpacing: 0,
               ),
             ),
             const SizedBox(height: 36),
@@ -106,7 +106,7 @@ class _AuthGateState extends State<AuthGate> {
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  AppPalette.mintGreen.withValues(alpha: 0.8),
+                  AppPalette.teal500.withValues(alpha: 0.8),
                 ),
               ),
             ),

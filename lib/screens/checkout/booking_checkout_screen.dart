@@ -495,7 +495,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorMsg),
-              backgroundColor: Colors.redAccent,
+              backgroundColor: AppPalette.danger,
             ),
           );
           return;
@@ -517,7 +517,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
             content: Text(
               'Please assign seats to all passengers (${unassigned.length} remaining).',
             ),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppPalette.danger,
           ),
         );
         return;
@@ -693,14 +693,14 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
               actionsAlignment: MainAxisAlignment.center,
               title: const Row(
                 children: [
-                  Icon(Icons.hourglass_top_rounded, color: Colors.orange, size: 28),
+                  Icon(Icons.hourglass_top_rounded, color: AppPalette.warning, size: 28),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Payment Received!',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -713,21 +713,21 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.orange.shade50,
+                      color: AppPalette.warning.withValues(alpha: .12),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange.shade200),
+                      
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.pending_actions_rounded, color: Colors.orange, size: 16),
+                        Icon(Icons.pending_actions_rounded, color: AppPalette.warning, size: 16),
                         SizedBox(width: 6),
                         Text(
                           'HOLDING STATE • ID VERIFICATION',
                           style: TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange,
+                            fontWeight: FontWeight.w600,
+                            color: AppPalette.warning,
                           ),
                         ),
                       ],
@@ -736,9 +736,9 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                   const SizedBox(height: 12),
                   Text(
                     'Reference #$refNum',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppPalette.darkText,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.of(context).text,
                       fontSize: 16,
                     ),
                   ),
@@ -754,13 +754,13 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF9FAFB),
+                      color: AppColors.of(context).surface2,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300),
+                      
                     ),
-                    child: const Text(
-                      'ℹ️ Because your booking includes discounted tickets (Student/Senior/PWD), our port administrators must review your uploaded ID photos. Once approved, your Boarding Pass QR will be generated.\n\n🛡️ If your ID cannot be verified, your payment will be automatically refunded to your GCash account.',
-                      style: TextStyle(fontSize: 12, height: 1.4, color: AppPalette.darkText),
+                    child: Text(
+                      'ℹ Because your booking includes discounted tickets (Student/Senior/PWD), our port administrators must review your uploaded ID photos. Once approved, your Boarding Pass QR will be generated.\n\n🛡 If your ID cannot be verified, your payment will be automatically refunded to your GCash account.',
+                      style: TextStyle(fontSize: 12, height: 1.4, color: AppColors.of(context).text),
                     ),
                   ),
                 ],
@@ -779,16 +779,16 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange.shade700,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppPalette.warning,
+                      foregroundColor: AppPalette.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 0,
                     ),
                     child: const Text(
-                      'VIEW MY BOOKINGS',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      'View my bookings',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                     ),
                   ),
                 ),
@@ -810,14 +810,14 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
               actionsAlignment: MainAxisAlignment.center,
               title: const Row(
                 children: [
-                  Icon(Icons.check_circle_rounded, color: AppPalette.mintGreen, size: 28),
+                  Icon(Icons.check_circle_rounded, color: AppPalette.teal500, size: 28),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Booking Confirmed!',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -830,8 +830,8 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                   Text(
                     'Reference #$refNum',
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppPalette.mintGreen,
+                      fontWeight: FontWeight.w600,
+                      color: AppPalette.teal500,
                       fontSize: 16,
                     ),
                   ),
@@ -844,9 +844,9 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                     style: const TextStyle(height: 1.45, fontSize: 13.5),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
+                  Text(
                     'Your payment was verified via PayMongo and your Boarding Pass QR code is ready.',
-                    style: TextStyle(fontSize: 12.5, color: Colors.black54),
+                    style: TextStyle(fontSize: 12.5, color: AppColors.of(context).text2),
                   ),
                 ],
               ),
@@ -864,16 +864,16 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppPalette.mintGreen,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppPalette.teal500,
+                      foregroundColor: AppPalette.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 0,
                     ),
                     child: const Text(
-                      'VIEW MY BOOKINGS',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      'View my bookings',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                     ),
                   ),
                 ),
@@ -885,14 +885,14 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Payment was cancelled. Your seat reservation has not been finalized.'),
-            backgroundColor: Colors.orange,
+            backgroundColor: AppPalette.warning,
           ),
         );
       } else if (result == PaymentResult.failed) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Payment could not be completed. Please try again.'),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppPalette.danger,
           ),
         );
       }
@@ -915,10 +915,10 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FA),
+      backgroundColor: AppColors.of(context).canvas,
       appBar: AppBar(
         title: const Text('Booking Checkout'),
-        centerTitle: true,
+        centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () {
@@ -938,7 +938,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
         ),
       ),
       body: _isLoadingFares
-          ? const Center(child: CircularProgressIndicator(color: AppPalette.mintGreen))
+          ? const Center(child: CircularProgressIndicator(color: AppPalette.teal500))
           : _fareError != null && _fare == const RouteFare()
               ? Center(
                   child: Padding(
@@ -950,7 +950,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _loadFares,
-                          child: const Text('RETRY'),
+                          child: const Text('Retry'),
                         ),
                       ],
                     ),
@@ -966,7 +966,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                       // Step Content
                       Expanded(
                         child: SingleChildScrollView(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
                           child: _buildCurrentStepContent(),
                         ),
                       ),
@@ -980,7 +980,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
 
   Widget _buildStepperHeader() {
     return Container(
-      color: Colors.white,
+      color: AppPalette.white,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(
         children: [
@@ -1022,20 +1022,20 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isPassed
-                  ? AppPalette.mintGreen
+                  ? AppPalette.teal500
                   : isActive
-                      ? AppPalette.mintGreen
-                      : Colors.grey.shade200,
+                      ? AppPalette.teal500
+                      : AppColors.of(context).surface2,
             ),
             child: Center(
               child: isPassed
-                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  ? const Icon(Icons.check, size: 14, color: AppPalette.white)
                   : Text(
                       '${stepIndex + 1}',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: isActive ? Colors.white : Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
+                        color: isActive ? AppPalette.white : AppColors.of(context).text2,
                       ),
                     ),
             ),
@@ -1045,8 +1045,8 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
             title,
             style: TextStyle(
               fontSize: 12,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-              color: isActive ? AppPalette.darkText : Colors.grey.shade500,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+              color: isActive ? AppColors.of(context).text : AppColors.of(context).text3,
             ),
           ),
         ],
@@ -1060,7 +1060,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
       child: Container(
         height: 2,
         margin: const EdgeInsets.symmetric(horizontal: 6),
-        color: isPassed ? AppPalette.mintGreen : Colors.grey.shade300,
+        color: isPassed ? AppPalette.teal500 : AppColors.of(context).hairline,
       ),
     );
   }

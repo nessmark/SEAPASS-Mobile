@@ -36,7 +36,7 @@ class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.white)
+      ..setBackgroundColor(AppPalette.white)
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
@@ -131,8 +131,8 @@ class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-              foregroundColor: Colors.white,
+              backgroundColor: AppPalette.danger,
+              foregroundColor: AppPalette.white,
             ),
             child: const Text('CANCEL PAYMENT'),
           ),
@@ -162,11 +162,11 @@ class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
             children: [
               const Text(
                 'PayMongo QR Checkout',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               Text(
                 'Ref: #${widget.referenceNumber} • ₱${widget.totalAmount.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(fontSize: 12, color: AppColors.of(context).text3),
               ),
             ],
           ),
@@ -189,8 +189,8 @@ class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
                   preferredSize: const Size.fromHeight(3.0),
                   child: LinearProgressIndicator(
                     value: _loadingProgress > 0 ? _loadingProgress / 100 : null,
-                    backgroundColor: Colors.grey.shade200,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppPalette.mintGreen),
+                    backgroundColor: AppColors.of(context).surface2,
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppPalette.teal500),
                   ),
                 )
               : null,
@@ -200,21 +200,21 @@ class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
             WebViewWidget(controller: _controller),
             if (_isLoading)
               Container(
-                color: Colors.white,
-                child: const Center(
+                color: AppPalette.white,
+                child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(color: AppPalette.mintGreen),
+                      CircularProgressIndicator(color: AppPalette.teal500),
                       SizedBox(height: 16),
                       Text(
                         'Loading PayMongo QR Checkout...',
-                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                        style: TextStyle(fontSize: 14, color: AppColors.of(context).text),
                       ),
                       SizedBox(height: 6),
                       Text(
                         'Please prepare your GCash or QR Ph app',
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                        style: TextStyle(fontSize: 12, color: AppColors.of(context).text2),
                       ),
                     ],
                   ),

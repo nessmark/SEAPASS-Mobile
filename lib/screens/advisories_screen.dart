@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/advisory.dart';
 import '../providers/advisory_provider.dart';
 import '../widgets/app_palette.dart';
+import '../widgets/app_card.dart';
 
 class AdvisoriesScreen extends StatefulWidget {
   const AdvisoriesScreen({super.key});
@@ -45,11 +46,11 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
     final advisoryProvider = context.watch<AdvisoryProvider>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.of(context).canvas,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => context.read<AdvisoryProvider>().fetchAdvisories(showLoading: false),
-          color: AppPalette.mintGreen,
+          color: AppPalette.teal500,
           child: _buildBody(advisoryProvider),
         ),
       ),
@@ -60,7 +61,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
     if (provider.isLoading && provider.advisories.isEmpty) {
       return const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppPalette.mintGreen),
+          valueColor: AlwaysStoppedAnimation<Color>(AppPalette.teal500),
         ),
       );
     }
@@ -72,12 +73,12 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.wifi_off_rounded, size: 54, color: Colors.grey.shade400),
+              Icon(Icons.wifi_off_rounded, size: 54, color: AppColors.of(context).text3),
               const SizedBox(height: 12),
               Text(
                 provider.errorMessage!,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                style: TextStyle(color: AppColors.of(context).text2, fontSize: 14),
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -85,8 +86,8 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text('Try Again'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppPalette.mintGreen,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppPalette.teal500,
+                  foregroundColor: AppPalette.white,
                 ),
               ),
             ],
@@ -108,29 +109,29 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppPalette.mintGreen.withValues(alpha: 0.1),
+                    color: AppPalette.teal500.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.campaign_outlined,
                     size: 48,
-                    color: AppPalette.mintGreen,
+                    color: AppPalette.teal500,
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'No Active Travel Advisories',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppPalette.darkText,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.of(context).text,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Port operations and schedules are currently normal.\nFair seas ahead! ⛵',
+                  'Port operations and schedules are currently normal.\nFair seas ahead! ',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                  style: TextStyle(color: AppColors.of(context).text2, fontSize: 13),
                 ),
               ],
             ),
@@ -156,7 +157,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
-              color: Colors.red.shade600,
+              color: AppPalette.danger,
               borderRadius: BorderRadius.circular(14),
             ),
             alignment: Alignment.centerRight,
@@ -166,13 +167,13 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                 Text(
                   'Delete',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    color: AppPalette.white,
+                    fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),
                 ),
                 SizedBox(width: 6),
-                Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
+                Icon(Icons.delete_outline_rounded, color: AppPalette.white, size: 22),
               ],
             ),
           ),
@@ -185,7 +186,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                 behavior: SnackBarBehavior.floating,
                 action: SnackBarAction(
                   label: 'UNDO',
-                  textColor: AppPalette.mintGreen,
+                  textColor: AppPalette.teal500,
                   onPressed: () {
                     context.read<AdvisoryProvider>().restoreAdvisory(advisory, advisoryIndex);
                   },
@@ -211,13 +212,13 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey.shade700)),
+            child: Text('Cancel', style: TextStyle(color: AppColors.of(context).text2)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-              foregroundColor: Colors.white,
+              backgroundColor: AppPalette.danger,
+              foregroundColor: AppPalette.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Delete'),
@@ -235,7 +236,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
             label: 'UNDO',
-            textColor: AppPalette.mintGreen,
+            textColor: AppPalette.teal500,
             onPressed: () {
               context.read<AdvisoryProvider>().restoreAdvisory(advisory, index);
             },
@@ -257,13 +258,13 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey.shade700)),
+            child: Text('Cancel', style: TextStyle(color: AppColors.of(context).text2)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-              foregroundColor: Colors.white,
+              backgroundColor: AppPalette.danger,
+              foregroundColor: AppPalette.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Clear All'),
@@ -290,11 +291,11 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: AppColors.of(context).text,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: AppPalette.ink.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -305,34 +306,34 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppPalette.mintGreen.withValues(alpha: 0.2),
+              color: AppPalette.teal500.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.campaign_rounded,
-              color: AppPalette.mintGreen,
+              color: AppPalette.teal500,
               size: 26,
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Port Travel Advisories',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppPalette.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,
                   ),
                 ),
-                SizedBox(height: 3),
+                const SizedBox(height: 3),
                 Text(
                   'Live notices, weather reports, and maritime alerts.',
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: AppPalette.white.withValues(alpha: .70),
                     fontSize: 12,
                   ),
                 ),
@@ -341,7 +342,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
           ),
           if (count > 0)
             IconButton(
-              icon: const Icon(Icons.delete_sweep_rounded, color: Colors.white70, size: 22),
+              icon: Icon(Icons.delete_sweep_rounded, color: AppPalette.white.withValues(alpha: .70), size: 22),
               tooltip: 'Clear All Advisories',
               onPressed: () => _confirmClearAll(context),
             ),
@@ -356,26 +357,21 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isUnread ? const Color(0xFFFFFFFF) : const Color(0xFFF8FAFC),
+        color: isUnread ? AppColors.of(context).surface : AppColors.of(context).canvas,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isUnread
-              ? AppPalette.mintGreen.withValues(alpha: 0.6)
-              : Colors.grey.shade200,
-          width: isUnread ? 1.5 : 1.0,
-        ),
+        
         boxShadow: [
           BoxShadow(
             color: isUnread
-                ? AppPalette.mintGreen.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.03),
+                ? AppPalette.teal500.withValues(alpha: 0.08)
+                : AppPalette.ink.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppPalette.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: () => _openAdvisoryDetail(advisory),
@@ -393,10 +389,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                       decoration: BoxDecoration(
                         color: advisory.severityBgColor,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: advisory.severityColor.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
+                        
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -408,8 +401,8 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                             style: TextStyle(
                               color: advisory.severityColor,
                               fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.6,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0,
                             ),
                           ),
                         ],
@@ -422,16 +415,16 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFDC2626),
+                              color: AppPalette.danger,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Text(
                               'NEW',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppPalette.white,
                                 fontSize: 9,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.6,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0,
                               ),
                             ),
                           ),
@@ -441,7 +434,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                           icon: Icon(
                             Icons.delete_outline_rounded,
                             size: 20,
-                            color: Colors.grey.shade400,
+                            color: AppColors.of(context).text3,
                           ),
                           tooltip: 'Delete Notice',
                           visualDensity: VisualDensity.compact,
@@ -460,8 +453,8 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                   advisory.title,
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: isUnread ? FontWeight.w800 : FontWeight.w700,
-                    color: AppPalette.darkText,
+                    fontWeight: isUnread ? FontWeight.w600 : FontWeight.w700,
+                    color: AppColors.of(context).text,
                     height: 1.3,
                   ),
                 ),
@@ -470,13 +463,13 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                 // Affected Route Badge
                 Row(
                   children: [
-                    Icon(Icons.alt_route_rounded, size: 14, color: Colors.grey.shade500),
+                    Icon(Icons.alt_route_rounded, size: 14, color: AppColors.of(context).text3),
                     const SizedBox(width: 5),
                     Expanded(
                       child: Text(
                         advisory.route,
                         style: TextStyle(
-                          color: Colors.grey.shade600,
+                          color: AppColors.of(context).text2,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -496,7 +489,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                       advisory.formattedDate,
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.grey.shade500,
+                        color: AppColors.of(context).text3,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -506,15 +499,15 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
                           'View Full Notice',
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: AppPalette.mintGreen,
+                            fontWeight: FontWeight.w600,
+                            color: AppPalette.teal500,
                           ),
                         ),
                         SizedBox(width: 2),
                         Icon(
                           Icons.chevron_right_rounded,
                           size: 16,
-                          color: AppPalette.mintGreen,
+                          color: AppPalette.teal500,
                         ),
                       ],
                     ),
@@ -538,17 +531,17 @@ class AdvisoryDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7F6),
+      backgroundColor: AppColors.of(context).canvas,
       appBar: AppBar(
         title: Text(
           advisory.severityLabel.toUpperCase(),
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.of(context).pop(),
@@ -571,13 +564,13 @@ class AdvisoryDetailScreen extends StatelessWidget {
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(false),
                       child: Text('Cancel',
-                          style: TextStyle(color: Colors.grey.shade700)),
+                          style: TextStyle(color: AppColors.of(context).text2)),
                     ),
                     ElevatedButton(
                       onPressed: () => Navigator.of(ctx).pop(true),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade600,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppPalette.danger,
+                        foregroundColor: AppPalette.white,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
                       ),
@@ -608,19 +601,8 @@ class AdvisoryDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Rich Email-Matching HTML Container
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
+              AppCard(padding: EdgeInsets.zero,
+                
                 clipBehavior: Clip.antiAlias,
                 child: advisory.content.isNotEmpty
                     ? HtmlWidget(
@@ -631,7 +613,7 @@ class AdvisoryDetailScreen extends StatelessWidget {
                           fontFamily: 'Roboto',
                         ),
                       )
-                    : _buildFallbackContent(),
+                    : _buildFallbackContent(context),
               ),
               const SizedBox(height: 24),
             ],
@@ -641,7 +623,7 @@ class AdvisoryDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFallbackContent() {
+  Widget _buildFallbackContent(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -649,21 +631,21 @@ class AdvisoryDetailScreen extends StatelessWidget {
         children: [
           Text(
             advisory.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppPalette.darkText,
+              fontWeight: FontWeight.w600,
+              color: AppColors.of(context).text,
             ),
           ),
           const SizedBox(height: 10),
           Text(
             advisory.formattedDate,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+            style: TextStyle(fontSize: 12, color: AppColors.of(context).text3),
           ),
           const Divider(height: 24),
           Text(
             'Route: ${advisory.route}',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           ),
         ],
       ),

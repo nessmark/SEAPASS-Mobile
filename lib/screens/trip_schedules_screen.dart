@@ -8,6 +8,7 @@ import '../services/api_exception.dart';
 import '../services/passenger_data_service.dart';
 import '../services/passenger_session.dart';
 import '../widgets/app_palette.dart';
+import '../widgets/app_card.dart';
 import 'booking_checkout_screen.dart';
 
 class TripSchedulesScreen extends StatefulWidget {
@@ -87,7 +88,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -101,12 +102,12 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
 
           // Results section
           if (_hasSearched) ...[
-            const Text(
+            Text(
               'Available Schedules',
               style: TextStyle(
                 fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: AppPalette.darkText,
+                fontWeight: FontWeight.w600,
+                color: AppColors.of(context).text,
               ),
             ),
             const SizedBox(height: 12),
@@ -128,15 +129,15 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
       children: [
         RichText(
           text: TextSpan(
-            style: const TextStyle(color: AppPalette.darkText, fontSize: 22),
+            style: TextStyle(color: AppColors.of(context).text, fontSize: 22),
             children: [
               
               TextSpan(
                 text: '$displayName!',
                 style: const TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   fontSize: 26,
-                  color: AppPalette.mintGreen,
+                  color: AppPalette.teal500,
                 ),
               ),
               const TextSpan(text: '\nSakay na!'),
@@ -144,11 +145,11 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
-          'Find your Bangka for your trip 🚢',
+        Text(
+          'Find your Bangka for your trip ',
           style: TextStyle(
             fontSize: 14,
-            color: AppPalette.subtleGrey,
+            color: AppColors.of(context).text3,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -159,29 +160,19 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
   // ─── Search card ─────────────────────────────────────────────────────────────
 
   Widget _buildSearchCard() {
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'SCHEDULE SEARCH',
+          Text(
+            'Plan your trip',
             style: TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-              color: AppPalette.subtleGrey,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0,
+              color: AppColors.of(context).text3,
             ),
           ),
           const SizedBox(height: 14),
@@ -211,12 +202,12 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppPalette.mintGreen.withValues(alpha: 0.12),
+                    color: AppPalette.teal500.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.swap_horiz_rounded,
-                    color: AppPalette.mintGreen,
+                    color: AppPalette.teal500,
                     size: 20,
                   ),
                 ),
@@ -236,7 +227,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
           // ── Inline Calendar Widget ─────────────────────────────────────
           Container(
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade200),
+              
               borderRadius: BorderRadius.circular(14),
             ),
             child: TableCalendar(
@@ -256,22 +247,22 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
               startingDayOfWeek: StartingDayOfWeek.monday,
               daysOfWeekHeight: 28,
               rowHeight: 44,
-              headerStyle: const HeaderStyle(
+              headerStyle: HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
                 titleTextStyle: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppPalette.darkText,
+                  color: AppColors.of(context).text,
                 ),
                 leftChevronIcon: Icon(
                   Icons.chevron_left_rounded,
-                  color: AppPalette.mintGreen,
+                  color: AppPalette.teal500,
                   size: 24,
                 ),
                 rightChevronIcon: Icon(
                   Icons.chevron_right_rounded,
-                  color: AppPalette.mintGreen,
+                  color: AppPalette.teal500,
                   size: 24,
                 ),
                 headerPadding: EdgeInsets.symmetric(vertical: 8),
@@ -280,51 +271,51 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                 weekdayStyle: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade500,
+                  color: AppColors.of(context).text3,
                 ),
                 weekendStyle: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade400,
+                  color: AppColors.of(context).text3,
                 ),
               ),
               calendarStyle: CalendarStyle(
                 // Selected day (user tapped)
                 selectedDecoration: const BoxDecoration(
-                  color: AppPalette.mintGreen,
+                  color: AppPalette.teal500,
                   shape: BoxShape.circle,
                 ),
                 selectedTextStyle: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                  color: AppPalette.white,
+                  fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
                 // Today highlight
                 todayDecoration: BoxDecoration(
-                  color: AppPalette.mintGreen.withValues(alpha: 0.2),
+                  color: AppPalette.teal500.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                todayTextStyle: const TextStyle(
-                  color: AppPalette.darkText,
-                  fontWeight: FontWeight.bold,
+                todayTextStyle: TextStyle(
+                  color: AppColors.of(context).text,
+                  fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
                 // Default days
-                defaultTextStyle: const TextStyle(
+                defaultTextStyle: TextStyle(
                   fontSize: 14,
-                  color: AppPalette.darkText,
+                  color: AppColors.of(context).text,
                 ),
                 weekendTextStyle: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade500,
+                  color: AppColors.of(context).text3,
                 ),
                 outsideTextStyle: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade300,
+                  color: AppColors.of(context).hairline,
                 ),
                 disabledTextStyle: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade300,
+                  color: AppColors.of(context).hairline,
                 ),
                 cellMargin: const EdgeInsets.all(4),
               ),
@@ -338,7 +329,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                         width: 6,
                         height: 6,
                         decoration: const BoxDecoration(
-                          color: AppPalette.mintGreen,
+                          color: AppPalette.teal500,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -368,22 +359,11 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
       initialValue: value,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 13),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              const BorderSide(color: AppPalette.mintGreen, width: 1.5),
-        ),
+        
+        
+        
+        
+        
       ),
       items: _ports
           .map((p) => DropdownMenuItem(value: p, child: Text(p)))
@@ -451,21 +431,21 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.shade100),
+        
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.wifi_off_rounded, size: 52, color: Colors.red.shade300),
+          Icon(Icons.wifi_off_rounded, size: 52, color: AppPalette.danger),
           const SizedBox(height: 16),
           Text(
             message,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade700,
+              color: AppColors.of(context).text2,
               height: 1.5,
             ),
           ),
@@ -475,8 +455,8 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
             icon: const Icon(Icons.refresh_rounded, size: 18),
             label: const Text('Retry'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppPalette.mintGreen,
-              foregroundColor: Colors.white,
+              backgroundColor: AppPalette.teal500,
+              foregroundColor: AppPalette.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -494,28 +474,28 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.directions_boat_outlined,
-              size: 52, color: Colors.grey.shade400),
+              size: 52, color: AppColors.of(context).text3),
           const SizedBox(height: 16),
           Text(
             'No schedules found',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w600,
+              color: AppColors.of(context).text2,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'There are no available trips for $_from → $_to on the selected date.\nTry a different date or route.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+            style: TextStyle(fontSize: 13, color: AppColors.of(context).text3),
           ),
         ],
       ),
@@ -536,20 +516,15 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
               )
           : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: AppPalette.duration(context),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.of(context).surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: canBook
-                ? AppPalette.mintGreen.withValues(alpha: 0.4)
-                : Colors.grey.shade200,
-            width: 1.5,
-          ),
+          
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: AppPalette.ink.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -564,10 +539,10 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                 Expanded(
                   child: Text(
                     '${schedule.from} → ${schedule.to}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: AppPalette.darkText,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.of(context).text,
                     ),
                   ),
                 ),
@@ -602,8 +577,8 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: schedule.availableSeats < 5
-                          ? Colors.red.shade400
-                          : AppPalette.mintGreen,
+                          ? AppPalette.danger
+                          : AppPalette.teal500,
                     ),
                   ),
               ],
@@ -616,14 +591,14 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
-                    color: AppPalette.mintGreen,
+                    color: AppPalette.teal500,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text(
                     'Book Now →',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      color: AppPalette.white,
+                      fontWeight: FontWeight.w600,
                       fontSize: 12,
                     ),
                   ),
@@ -642,16 +617,16 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
     String label;
 
     if (soldOut) {
-      bg = Colors.red.shade50;
-      fg = Colors.red.shade400;
+      bg = AppPalette.danger.withValues(alpha: .12);
+      fg = AppPalette.danger;
       label = 'Sold Out';
     } else if (!schedule.isBookableInManila) {
-      bg = Colors.orange.shade50;
-      fg = Colors.orange.shade700;
+      bg = AppPalette.warning.withValues(alpha: .12);
+      fg = AppPalette.warning;
       label = 'Departed';
     } else {
-      bg = AppPalette.mintGreen.withValues(alpha: 0.12);
-      fg = AppPalette.mintGreen;
+      bg = AppPalette.teal500.withValues(alpha: 0.12);
+      fg = AppPalette.teal500;
       label = schedule.status.isNotEmpty ? schedule.status : 'Available';
     }
 
@@ -676,11 +651,11 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppPalette.subtleGrey),
+        Icon(icon, size: 14, color: AppColors.of(context).text3),
         const SizedBox(width: 4),
         Text(
           text,
-          style: const TextStyle(fontSize: 13, color: AppPalette.darkText),
+          style: TextStyle(fontSize: 13, color: AppColors.of(context).text),
         ),
       ],
     );
@@ -709,7 +684,7 @@ class _ScheduleSkeletonState extends State<_ScheduleSkeleton>
       duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
     _animation = Tween<double>(begin: 0.4, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _controller, curve: AppPalette.motionCurve),
     );
   }
 
@@ -723,12 +698,9 @@ class _ScheduleSkeletonState extends State<_ScheduleSkeleton>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _animation,
-      child: Container(
+      child: AppCard(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
+        
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -754,7 +726,7 @@ class _ScheduleSkeletonState extends State<_ScheduleSkeleton>
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: AppColors.of(context).surface2,
         borderRadius: BorderRadius.circular(6),
       ),
     );

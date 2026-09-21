@@ -4,6 +4,7 @@ import '../../../models/passenger_booking_models.dart';
 import '../../../models/route_fare.dart';
 import '../../../models/schedule.dart';
 import '../../../widgets/app_palette.dart';
+import '../../../widgets/app_card.dart';
 
 /// Step 3 of the booking checkout flow:
 /// Displays the hold countdown banner, payment gateway selection, summary card, itemized fares, and confirmation action.
@@ -49,27 +50,27 @@ class CheckoutStepPayment extends StatelessWidget {
       children: [
         // Hold Countdown Timer Banner
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF3E0),
+            color: AppPalette.warning.withValues(alpha: .12),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.orange.shade300),
+            
           ),
           child: Row(
             children: [
-              const Icon(Icons.timer_outlined, color: Colors.deepOrange, size: 22),
+              const Icon(Icons.timer_outlined, color: AppPalette.warning, size: 22),
               const SizedBox(width: 10),
               Expanded(
                 child: RichText(
                   text: TextSpan(
-                    style: const TextStyle(fontSize: 13, color: AppPalette.darkText),
+                    style: TextStyle(fontSize: 13, color: AppColors.of(context).text),
                     children: [
                       const TextSpan(text: 'Please secure your booking within '),
                       TextSpan(
                         text: formattedHoldTime,
                         style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepOrange,
+                          fontWeight: FontWeight.w600,
+                          color: AppPalette.warning,
                           fontSize: 14,
                         ),
                       ),
@@ -86,23 +87,23 @@ class CheckoutStepPayment extends StatelessWidget {
         Text(
           'Select a Payment Method',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppPalette.darkText,
+                fontWeight: FontWeight.w600,
+                color: AppColors.of(context).text,
               ),
         ),
         const SizedBox(height: 10),
 
-        ...paymentMethods.map((pm) => _buildPaymentTile(pm)),
+        ...paymentMethods.map((pm) => _buildPaymentTile(context, pm)),
 
         const SizedBox(height: 20),
 
         // Trip & Passenger Summary Card
-        _buildBookingInfoSummaryCard(),
+        _buildBookingInfoSummaryCard(context),
 
         const SizedBox(height: 20),
 
         // Itemized Price Details Card
-        _buildItemizedPriceCard(),
+        _buildItemizedPriceCard(context),
 
         const SizedBox(height: 24),
 
@@ -116,29 +117,29 @@ class CheckoutStepPayment extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('← Back to Seats'),
+                child: const Text('Back to seats'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               flex: 2,
               child: SizedBox(
-                height: 52,
+                height: 44,
                 child: ElevatedButton(
                   onPressed: isSubmitting ? null : onConfirmAndPay,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppPalette.mintGreen,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppPalette.teal500,
+                    foregroundColor: AppPalette.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: isSubmitting
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(color: AppPalette.white)
                       : Text(
-                          'CONFIRM & PAY (₱${totalPrice.toStringAsFixed(2)})',
+                          'Pay (₱${totalPrice.toStringAsFixed(2)})',
                           style: const TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0,
                           ),
                         ),
                 ),
@@ -151,25 +152,18 @@ class CheckoutStepPayment extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentTile(PaymentMethodOption option) {
+  Widget _buildPaymentTile(BuildContext context, PaymentMethodOption option) {
     final bool isSelected = selectedPaymentId == option.id;
 
-    return Container(
+    return AppCard(padding: EdgeInsets.zero,
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isSelected ? AppPalette.mintGreen : Colors.grey.shade300,
-          width: isSelected ? 1.8 : 1.0,
-        ),
-      ),
+      
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         onTap: () => onPaymentMethodSelected(option.id),
         leading: Icon(
           isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-          color: isSelected ? AppPalette.mintGreen : Colors.grey,
+          color: isSelected ? AppPalette.teal500 : AppColors.of(context).text3,
         ),
         title: Padding(
           padding: const EdgeInsets.only(bottom: 2),
@@ -180,21 +174,21 @@ class CheckoutStepPayment extends StatelessWidget {
             children: [
               Text(
                 option.name,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),
               if (option.badge.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppPalette.mintGreen.withValues(alpha: 0.15),
+                    color: AppPalette.teal500.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     option.badge,
                     style: const TextStyle(
                       fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: AppPalette.mintGreen,
+                      fontWeight: FontWeight.w600,
+                      color: AppPalette.teal500,
                     ),
                   ),
                 ),
@@ -203,27 +197,23 @@ class CheckoutStepPayment extends StatelessWidget {
         ),
         subtitle: Text(
           option.subtitle,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          style: TextStyle(fontSize: 12, color: AppColors.of(context).text2),
         ),
-        trailing: Icon(option.icon, color: AppPalette.mintGreen, size: 28),
+        trailing: Icon(option.icon, color: AppPalette.teal500, size: 28),
       ),
     );
   }
 
-  Widget _buildBookingInfoSummaryCard() {
-    return Container(
+  Widget _buildBookingInfoSummaryCard(BuildContext context) {
+    return AppCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
+      
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Booking Info',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           const Divider(height: 20),
           Row(
@@ -231,20 +221,20 @@ class CheckoutStepPayment extends StatelessWidget {
             children: [
               Text(
                 '${schedule.from} → ${schedule.to}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppPalette.mintGreen.withValues(alpha: 0.15),
+                  color: AppPalette.teal500.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   schedule.boatName,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontSize: 11,
-                    color: AppPalette.mintGreen,
+                    color: AppPalette.teal500,
                   ),
                 ),
               ),
@@ -253,14 +243,14 @@ class CheckoutStepPayment extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             'Date: ${schedule.date} • Departure: ${schedule.time}',
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 13, color: AppColors.of(context).text2),
           ),
           const SizedBox(height: 12),
 
           // Assigned Passengers & Seats
-          const Text(
+          Text(
             'Assigned Passengers & Seats:',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.of(context).text3),
           ),
           const SizedBox(height: 6),
           ...passengers.map(
@@ -276,9 +266,9 @@ class CheckoutStepPayment extends StatelessWidget {
                   Text(
                     'Seat ${p.assignedSeat ?? '--'}',
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      color: AppPalette.mintGreen,
+                      color: AppPalette.teal500,
                     ),
                   ),
                 ],
@@ -290,37 +280,33 @@ class CheckoutStepPayment extends StatelessWidget {
     );
   }
 
-  Widget _buildItemizedPriceCard() {
-    return Container(
+  Widget _buildItemizedPriceCard(BuildContext context) {
+    return AppCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
+      
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Price Details',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           const Divider(height: 20),
 
           if (regularCount > 0)
-            _buildPriceDetailRow(
+            _buildPriceDetailRow(context, 
               '$regularCount × Adult Regular (₱${fare.regular.toStringAsFixed(2)})',
               '₱${(regularCount * fare.regular).toStringAsFixed(2)}',
             ),
 
           if (studentCount > 0)
-            _buildPriceDetailRow(
+            _buildPriceDetailRow(context, 
               '$studentCount × Student (₱${fare.student.toStringAsFixed(2)})',
               '₱${(studentCount * fare.student).toStringAsFixed(2)}',
             ),
 
           if (seniorCount > 0)
-            _buildPriceDetailRow(
+            _buildPriceDetailRow(context, 
               '$seniorCount × Senior/PWD (₱${fare.senior.toStringAsFixed(2)})',
               '₱${(seniorCount * fare.senior).toStringAsFixed(2)}',
             ),
@@ -331,14 +317,14 @@ class CheckoutStepPayment extends StatelessWidget {
             children: [
               const Text(
                 'Total Amount Payable',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
               Text(
                 '₱${totalPrice.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: AppPalette.mintGreen,
+                  fontWeight: FontWeight.w600,
+                  color: AppPalette.teal500,
                 ),
               ),
             ],
@@ -348,13 +334,13 @@ class CheckoutStepPayment extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceDetailRow(String label, String value) {
+  Widget _buildPriceDetailRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+          Text(label, style: TextStyle(fontSize: 13, color: AppColors.of(context).text2)),
           Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
         ],
       ),

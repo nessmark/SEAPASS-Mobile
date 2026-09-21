@@ -74,7 +74,7 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: AppPalette.lightBackground,
+      backgroundColor: AppColors.of(context).canvas,
       appBar: AppBar(
         title: Text(_appBarTitle),
       ),
@@ -112,8 +112,8 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
                 return Badge(
                   isLabelVisible: unreadCount > 0,
                   label: Text('$unreadCount'),
-                  backgroundColor: const Color(0xFFDC2626),
-                  textColor: Colors.white,
+                  backgroundColor: AppPalette.danger,
+                  textColor: AppPalette.white,
                   child: const Icon(Icons.campaign_outlined),
                 );
               },
@@ -124,8 +124,8 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
                 return Badge(
                   isLabelVisible: unreadCount > 0,
                   label: Text('$unreadCount'),
-                  backgroundColor: const Color(0xFFDC2626),
-                  textColor: Colors.white,
+                  backgroundColor: AppPalette.danger,
+                  textColor: AppPalette.white,
                   child: const Icon(Icons.campaign_rounded),
                 );
               },
