@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 import '../models/schedule.dart';
 import '../services/api_exception.dart';
@@ -124,18 +123,20 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
     final text = Theme.of(context).textTheme;
     final colors = AppColors.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    // One line, not a stack of fragments with a caption underneath. The screen
+    // says what it is; it does not need to be narrated.
+    final String firstName = displayName.split(' ').first;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
-        Text(
-          '$displayName!',
-          style: text.headlineLarge?.copyWith(color: colors.accent),
-        ),
-        Text('Sakay na!', style: text.headlineMedium),
-        const SizedBox(height: AppPalette.space8),
-        Text(
-          'Find your bangka for the trip ahead.',
-          style: text.bodySmall,
+        Text('Sakay na, ', style: text.headlineMedium),
+        Flexible(
+          child: Text(
+            firstName,
+            style: text.headlineMedium?.copyWith(color: colors.accent),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
@@ -145,16 +146,12 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
 
   Widget _buildSearchCard() {
     final colors = AppColors.of(context);
-    final text = Theme.of(context).textTheme;
 
     return AppCard(
       padding: const EdgeInsets.all(AppPalette.space20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('PLAN YOUR TRIP', style: text.labelSmall),
-          const SizedBox(height: AppPalette.space16),
-
           // From / To fields, with the swap control alongside them
           Row(
             children: [
@@ -204,97 +201,99 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
           ),
           const SizedBox(height: AppPalette.space12),
 
-          // ── Inline Calendar Widget ─────────────────────────────────────
-          TableCalendar(
-            firstDay: DateTime.now().subtract(const Duration(days: 1)),
-            lastDay: DateTime.now().add(const Duration(days: 1825)),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
-            onDaySelected: (selected, focused) {
-              setState(() {
-                _selectedDate = selected;
-                _focusedDay = focused;
-              });
-              _search(); // Auto-search on date tap
-            },
-            calendarFormat: CalendarFormat.month,
-            availableCalendarFormats: const {CalendarFormat.month: 'Month'},
-            startingDayOfWeek: StartingDayOfWeek.monday,
-            daysOfWeekHeight: 28,
-            rowHeight: 44,
-            headerStyle: HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
-              titleTextStyle: text.titleSmall ?? const TextStyle(),
-              leftChevronIcon: Icon(
-                Icons.chevron_left_rounded,
-                color: colors.accent,
-                size: 24,
-              ),
-              rightChevronIcon: Icon(
-                Icons.chevron_right_rounded,
-                color: colors.accent,
-                size: 24,
-              ),
-              headerPadding: const EdgeInsets.symmetric(vertical: AppPalette.space8),
-            ),
-            daysOfWeekStyle: DaysOfWeekStyle(
-              weekdayStyle: text.labelSmall ?? const TextStyle(),
-              weekendStyle: text.labelSmall ?? const TextStyle(),
-            ),
-            calendarStyle: CalendarStyle(
-              // Selected day (user tapped)
-              selectedDecoration: const BoxDecoration(
-                color: AppPalette.teal500,
-                shape: BoxShape.circle,
-              ),
-              selectedTextStyle: const TextStyle(
-                color: AppPalette.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              // Today highlight
-              todayDecoration: BoxDecoration(
-                color: colors.tint,
-                shape: BoxShape.circle,
-              ),
-              todayTextStyle: TextStyle(
-                color: colors.onTint,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              // Default days
-              defaultTextStyle: TextStyle(fontSize: 14, color: colors.text),
-              weekendTextStyle: TextStyle(fontSize: 14, color: colors.text2),
-              outsideTextStyle: TextStyle(fontSize: 14, color: colors.text3),
-              disabledTextStyle: TextStyle(fontSize: 14, color: colors.text3),
-              cellMargin: const EdgeInsets.all(AppPalette.space4),
-            ),
-            // ── Availability dot markers ─────────────────────────────
-            calendarBuilders: CalendarBuilders(
-              markerBuilder: (context, date, events) {
-                if (_hasTripsOnDay(date)) {
-                  return Positioned(
-                    bottom: 3,
-                    child: Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: colors.accent,
-                        shape: BoxShape.circle,
+          // ── Date rail ──────────────────────────────────────────────────
+          // A month grid to pick tomorrow's boat is a calendar app's answer,
+          // not a ferry's. The route runs daily, so the next two weeks in a
+          // scrollable rail is the whole decision, and it costs 72px instead
+          // of ~380px of screen.
+          _buildDateRail(),
+        ],
+      ),
+    );
+  }
+
+  static const _weekdayShort = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  static const _weekdayLong = [
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+  ];
+  static const _monthLong = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+
+  Widget _buildDateRail() {
+    final colors = AppColors.of(context);
+    final text = Theme.of(context).textTheme;
+    final today = DateUtils.dateOnly(DateTime.now());
+
+    return SizedBox(
+      height: 72,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: 21,
+        separatorBuilder: (_, __) => const SizedBox(width: AppPalette.space8),
+        itemBuilder: (context, i) {
+          final day = today.add(Duration(days: i));
+          final selected = DateUtils.isSameDay(day, _selectedDate);
+          final hasTrips = _hasTripsOnDay(day);
+
+          return Semantics(
+            selected: selected,
+            button: true,
+            label: '${_weekdayLong[day.weekday - 1]}, ${_monthLong[day.month - 1]} ${day.day}',
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppPalette.radiusMd),
+              onTap: () {
+                setState(() {
+                  _selectedDate = day;
+                  _focusedDay = day;
+                });
+                _search();
+              },
+              child: AnimatedContainer(
+                duration: AppPalette.motionFast,
+                curve: AppPalette.motionCurve,
+                width: 56,
+                decoration: BoxDecoration(
+                  color: selected ? colors.accent : colors.surface2,
+                  borderRadius: BorderRadius.circular(AppPalette.radiusMd),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _weekdayShort[day.weekday - 1],
+                      style: text.labelSmall?.copyWith(
+                        color: selected ? AppPalette.white : colors.text3,
                       ),
                     ),
-                  );
-                }
-                return null;
-              },
+                    const SizedBox(height: 2),
+                    Text(
+                      '${day.day}',
+                      style: text.titleMedium?.copyWith(
+                        color: selected ? AppPalette.white : colors.text,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // A dot only where there is actually something to board.
+                    Container(
+                      width: 4,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: hasTrips
+                            ? (selected ? AppPalette.white : colors.accent)
+                            : Colors.transparent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            onPageChanged: (focusedDay) {
-              _focusedDay = focusedDay;
-              _loadAvailableDates();
-            },
-          ),
-        ],
+          );
+        },
       ),
     );
   }
