@@ -49,6 +49,25 @@ class ApiConfig {
     defaultValue: '',
   );
 
+  /// Normalises any user- or discovery-supplied base URL to the SITE ROOT.
+  ///
+  /// Every endpoint below appends its own `/api/...`, so a base that already ends
+  /// in `/api` produced requests like `/api/api/login`. A field labelled "server
+  /// URL" invites exactly that, so strip it here rather than trusting the input.
+  static String normaliseBase(String url) {
+    var clean = url.trim();
+    while (clean.endsWith('/')) {
+      clean = clean.substring(0, clean.length - 1);
+    }
+    if (clean.toLowerCase().endsWith('/api')) {
+      clean = clean.substring(0, clean.length - 4);
+    }
+    while (clean.endsWith('/')) {
+      clean = clean.substring(0, clean.length - 1);
+    }
+    return clean;
+  }
+
   static String customBaseUrl = '';
   static ConnectionMode currentMode = ConnectionMode.lanWifi;
 
@@ -69,7 +88,11 @@ class ApiConfig {
       // Load saved custom base URL
       final saved = prefs.getString(_prefKeyBaseUrl);
       if (saved != null && saved.trim().isNotEmpty) {
-        customBaseUrl = saved.trim();
+        customBaseUrl = normaliseBase(saved);
+        // Repair a base saved by an older build that kept the trailing /api.
+        if (customBaseUrl != saved.trim()) {
+          await prefs.setString(_prefKeyBaseUrl, customBaseUrl);
+        }
         try {
           final uri = Uri.parse(customBaseUrl);
           if (uri.host.isNotEmpty && uri.host != usbAdbHost && uri.host != emulatorHost) {
@@ -115,7 +138,7 @@ class ApiConfig {
 
   /// Persist a custom base URL at runtime.
   static Future<void> setCustomBaseUrl(String url) async {
-    customBaseUrl = url.trim();
+    customBaseUrl = normaliseBase(url);
     try {
       final prefs = await SharedPreferences.getInstance();
       if (customBaseUrl.isEmpty) {
@@ -170,9 +193,7 @@ class ApiConfig {
 
   /// Probes whether a given base URL is currently reachable by hitting the Laravel health or fares endpoint.
   static Future<bool> testConnection(String candidateBaseUrl, {Duration timeout = const Duration(seconds: 3)}) async {
-    final cleanUrl = candidateBaseUrl.endsWith('/')
-        ? candidateBaseUrl.substring(0, candidateBaseUrl.length - 1)
-        : candidateBaseUrl;
+    final cleanUrl = normaliseBase(candidateBaseUrl);
 
     // Test health endpoint (/up) first, then public fares endpoint (/api/fares)
     for (final path in ['/up', '/api/fares']) {
@@ -278,26 +299,23 @@ class ApiConfig {
 
   /// Resolves the active base URL dynamically based on environment and runtime overrides.
   static String get baseUrl {
-    // 1. Production Release Mode safeguard:
-    // If the app is compiled in release mode for production, prioritize build-time definition or production domain.
-    if (kReleaseMode) {
-      if (_configuredBaseUrl.trim().isNotEmpty) {
-        final url = _configuredBaseUrl.trim();
-        return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
-      }
-      return productionUrl;
-    }
-
-    // 2. User runtime override (from Settings or SharedPreferences)
-    if (customBaseUrl.trim().isNotEmpty) {
-      final url = customBaseUrl.trim();
-      return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
-    }
-
-    // 3. Compile-time --dart-define override for debug/testing
+    // 1. Build-time --dart-define wins everywhere: it is the most explicit signal.
     if (_configuredBaseUrl.trim().isNotEmpty) {
-      final url = _configuredBaseUrl.trim();
-      return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+      return normaliseBase(_configuredBaseUrl);
+    }
+
+    // 2. User runtime override (Settings sheet / Auto-Connect / SharedPreferences).
+    //    This MUST be honoured in release too. It used to be skipped under
+    //    kReleaseMode, which silently made the in-app "Server Connection
+    //    Settings" sheet and Auto-Connect do nothing in any release build —
+    //    every request went to productionUrl no matter what the user picked.
+    if (customBaseUrl.trim().isNotEmpty) {
+      return normaliseBase(customBaseUrl);
+    }
+
+    // 3. Release default: the deployed server.
+    if (kReleaseMode) {
+      return normaliseBase(productionUrl);
     }
 
     // 4. Web environment (browser runs on host computer)
