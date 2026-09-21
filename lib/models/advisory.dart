@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/app_palette.dart';
+
 class Advisory {
   final int id;
   final String title;
@@ -63,24 +65,24 @@ class Advisory {
   Color get severityColor {
     switch (severity) {
       case 'critical':
-        return const Color(0xFFDC2626);
+        return AppPalette.danger;
       case 'warning':
-        return const Color(0xFFD97706);
+        return AppPalette.warning;
       case 'info':
       default:
-        return const Color(0xFF0284C7);
+        return AppPalette.teal500;
     }
   }
 
   Color get severityBgColor {
     switch (severity) {
       case 'critical':
-        return const Color(0xFFFEF2F2);
+        return AppPalette.dangerTint;
       case 'warning':
-        return const Color(0xFFFFFBEB);
+        return AppPalette.warningTint;
       case 'info':
       default:
-        return const Color(0xFFF0F9FF);
+        return AppPalette.infoTint;
     }
   }
 

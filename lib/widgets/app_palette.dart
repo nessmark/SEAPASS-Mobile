@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 /// SeaPass Design System v1. All visual colour, geometry and motion tokens.
+///
+/// COLOUR RULE: the teal ramp is an ACCENT only — buttons, active/selected states,
+/// links, focus rings, chips and marks. Canvases, surfaces, text, hairlines and
+/// shadows are pure greys (R=G=B) in both themes. Dark and white only.
 abstract final class AppPalette {
   static const teal50 = Color(0xFFF0F9FA);
   static const teal100 = Color(0xFFDCF0F2);
@@ -13,29 +17,33 @@ abstract final class AppPalette {
   static const teal800 = Color(0xFF0E4149);
   static const teal900 = Color(0xFF0A3037);
 
-  static const lightCanvas = Color(0xFFF4F6F7);
+  static const lightCanvas = Color(0xFFF5F5F5);
   static const lightSurface = Color(0xFFFFFFFF);
-  static const lightSurface2 = Color(0xFFFAFBFB);
-  static const lightText = Color(0xFF14191C);
-  static const lightText2 = Color(0xFF5B6770);
-  static const lightText3 = Color(0xFF8A949B);
-  static const lightHairline = Color(0x1414191C);
-  static const darkCanvas = Color(0xFF0B0F11);
-  static const darkSurface = Color(0xFF151A1D);
-  static const darkSurface2 = Color(0xFF1D2428);
-  static const darkTextPrimary = Color(0xFFF2F5F6);
-  static const darkText2 = Color(0xFFA8B3BA);
-  static const darkText3 = Color(0xFF75828A);
+  static const lightSurface2 = Color(0xFFFAFAFA);
+  static const lightText = Color(0xFF171717);
+  static const lightText2 = Color(0xFF666666);
+  static const lightText3 = Color(0xFF949494);
+  static const lightHairline = Color(0x17000000);
+  static const darkCanvas = Color(0xFF0A0A0A);
+  static const darkSurface = Color(0xFF141414);
+  static const darkSurface2 = Color(0xFF1C1C1C);
+  static const darkTextPrimary = Color(0xFFF5F5F5);
+  static const darkText2 = Color(0xFFA3A3A3);
+  static const darkText3 = Color(0xFF737373);
   static const darkHairline = Color(0x1AFFFFFF);
   static const darkTopEdge = Color(0x0FFFFFFF);
   static const transparent = Color(0x00000000);
-  static const ink = Color(0xFF10181C);
+  static const ink = Color(0xFF000000);
   static const white = lightSurface;
 
   static const success = Color(0xFF1FA971);
   static const warning = Color(0xFFE9A23B);
   static const danger = Color(0xFFE5484D);
   static const info = teal500;
+  static const successTint = Color(0xFFE8F6F0);
+  static const warningTint = Color(0xFFFDF4E8);
+  static const dangerTint = Color(0xFFFBE9EA);
+  static const infoTint = teal50;
   // 700-level semantic text for readable 12% tinted pills.
   static const successText = Color(0xFF126442);
   static const warningText = Color(0xFF885A16);
@@ -58,15 +66,15 @@ abstract final class AppPalette {
   static const space72 = 72.0;
 
   static const elevation1 = [
-    BoxShadow(color: Color(0x0A10181C), offset: Offset(0, 1), blurRadius: 2),
-    BoxShadow(color: Color(0x0D10181C), offset: Offset(0, 6), blurRadius: 16),
+    BoxShadow(color: Color(0x0A000000), offset: Offset(0, 1), blurRadius: 2),
+    BoxShadow(color: Color(0x0D000000), offset: Offset(0, 6), blurRadius: 16),
   ];
   static const elevation2 = [
-    BoxShadow(color: Color(0x0D10181C), offset: Offset(0, 2), blurRadius: 4),
-    BoxShadow(color: Color(0x1410181C), offset: Offset(0, 12), blurRadius: 28),
+    BoxShadow(color: Color(0x0D000000), offset: Offset(0, 2), blurRadius: 4),
+    BoxShadow(color: Color(0x14000000), offset: Offset(0, 12), blurRadius: 28),
   ];
   static const elevation3 = [
-    BoxShadow(color: Color(0x2E10181C), offset: Offset(0, 24), blurRadius: 64),
+    BoxShadow(color: Color(0x2E000000), offset: Offset(0, 24), blurRadius: 64),
   ];
   static List<BoxShadow> shadows(Brightness brightness, {int level = 1}) {
     final source = switch (level) { 3 => elevation3, 2 => elevation2, _ => elevation1 };
