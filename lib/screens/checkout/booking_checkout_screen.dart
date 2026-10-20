@@ -191,56 +191,10 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
 
   // ─── Seat Map Generator & Live Synchronizer ─────────────────────────────────
 
-  void _generateSeatMap({List<dynamic>? backendSeatMap, int? capacity}) {
-    final rawMap = backendSeatMap ?? widget.schedule.seatMap;
-    final boatCapacity = capacity ?? widget.schedule.capacity;
-
-    if (rawMap.isNotEmpty) {
-      _applyBackendSeatMap(rawMap);
-      return;
-    }
-
-    _seats.clear();
-    final columns = ['A', 'B', 'C', 'D', 'E'];
-    final rows = (boatCapacity / 5).ceil();
-    int count = 0;
-
-    for (int r = 1; r <= rows; r++) {
-      for (final col in columns) {
-        count++;
-        if (count > boatCapacity) break;
-        final code = '$r$col';
-        _seats.add(
-          VesselSeat(
-            seatNumber: code,
-            row: r,
-            column: col,
-            status: 'available',
-            isBooked: false,
-          ),
-        );
-      }
-    }
-
-    final available = widget.schedule.availableSeats;
-    if (available < boatCapacity && _seats.isNotEmpty) {
-      final neededBooked = boatCapacity - available;
-      final seed = widget.schedule.id.hashCode;
-      final shuffled = List<VesselSeat>.from(_seats)..shuffle(Random(seed));
-      for (int i = 0; i < neededBooked && i < shuffled.length; i++) {
-        final targetSeatNumber = shuffled[i].seatNumber;
-        final idx = _seats.indexWhere((s) => s.seatNumber == targetSeatNumber);
-        if (idx != -1) {
-          _seats[idx] = VesselSeat(
-            seatNumber: _seats[idx].seatNumber,
-            row: _seats[idx].row,
-            column: _seats[idx].column,
-            status: 'booked',
-            isBooked: true,
-          );
-        }
-      }
-    }
+  void _generateSeatMap() {
+    // Capacity alone cannot identify seat locations or occupied seats.
+    // Wait for the authoritative map instead of inventing a cabin or bookings.
+    _applyBackendSeatMap(widget.schedule.seatMap);
   }
 
   void _applyBackendSeatMap(List<dynamic> rawMap) {
@@ -273,34 +227,14 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
       }
     }
 
-    // Client-side synchronization guarantee:
-    // If backend seat map has fewer booked seats than (capacity - availableSeats),
-    // mark random unbooked seats as booked so available count strictly matches admin setting
-    final boatCapacity = widget.schedule.capacity;
-    final available = widget.schedule.availableSeats;
-    final targetBooked = boatCapacity - available;
-    final currentBooked = newSeats.where((s) => s.isBooked).length;
-    if (targetBooked > currentBooked) {
-      final needed = targetBooked - currentBooked;
-      final seed = widget.schedule.id.hashCode;
-      final unbooked = newSeats.where((s) => !s.isBooked && s.assignedPassengerIndex == null).toList()
-        ..shuffle(Random(seed));
-      for (int i = 0; i < needed && i < unbooked.length; i++) {
-        final seatNum = unbooked[i].seatNumber;
-        final idx = newSeats.indexWhere((s) => s.seatNumber == seatNum);
-        if (idx != -1) {
-          newSeats[idx] = VesselSeat(
-            seatNumber: newSeats[idx].seatNumber,
-            row: newSeats[idx].row,
-            column: newSeats[idx].column,
-            status: 'booked',
-            isBooked: true,
-          );
-        }
+    final seatNumbers = newSeats.map((seat) => seat.seatNumber).toSet();
+    for (final passenger in _passengers) {
+      if (passenger.assignedSeat != null && !seatNumbers.contains(passenger.assignedSeat)) {
+        passenger.assignedSeat = null;
       }
     }
 
-    if (newSeats.isNotEmpty && mounted) {
+    if (mounted) {
       setState(() {
         _seats.clear();
         _seats.addAll(newSeats);

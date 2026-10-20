@@ -89,6 +89,24 @@ Widget host(Widget child, ThemeData theme) => MediaQuery(
     );
 
 void main() {
+  testWidgets('missing live seat map blocks payment even with stale assignments', (tester) async {
+    final passengers = makePassengers();
+    addTearDown(() { for (final passenger in passengers) { passenger.dispose(); } });
+    var refreshes = 0;
+    var payments = 0;
+    await tester.pumpWidget(host(CheckoutStepSeatMap(
+      schedule: schedule, passengers: passengers, seats: const [],
+      activePassengerIndex: 0, totalSeats: 2, totalRows: 8, isRefreshing: false,
+      onActivePassengerChanged: (_) {}, onSeatTapped: (_) {}, onBackToDetails: () {},
+      onProceedToPayment: () => payments++, onManualRefresh: () => refreshes++,
+    ), AppTheme.light));
+    expect(find.text('Seat map unavailable'), findsOneWidget);
+    expect(find.text('Proceed to Payment'), findsNothing);
+    await tester.tap(find.text('Refresh Seats'));
+    expect(refreshes, 1);
+    expect(payments, 0);
+    expect(tester.takeException(), isNull);
+  });
   for (final entry in {'light': AppTheme.light, 'dark': AppTheme.dark}.entries) {
     final theme = entry.value;
 

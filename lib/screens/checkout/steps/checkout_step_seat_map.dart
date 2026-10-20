@@ -41,6 +41,17 @@ class CheckoutStepSeatMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (seats.isEmpty) {
+      return AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text('Seat map unavailable', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 8),
+        const Text('Refresh to load the boat’s live seats before choosing a seat or continuing to payment.'),
+        const SizedBox(height: 16),
+        FilledButton.icon(onPressed: isRefreshing ? null : onManualRefresh,
+          icon: const Icon(Icons.refresh_rounded), label: Text(isRefreshing ? 'Refreshing...' : 'Refresh Seats')),
+        TextButton(onPressed: onBackToDetails, child: const Text('Back to details')),
+      ]));
+    }
     final activePassenger = passengers.isNotEmpty && activePassengerIndex < passengers.length
         ? passengers[activePassengerIndex]
         : null;
