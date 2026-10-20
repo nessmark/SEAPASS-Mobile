@@ -9,6 +9,14 @@ This repository is the `mobile/` half of the project. The Laravel API and admin 
 
 Targets Android (primary) and the web build used for demos.
 
+## Owner review, October 20, 2026
+
+Ready for code and demo review. Update this repository and SEAPASS-Web together because verified payment status and signed boarding tickets depend on the matching API changes.
+
+The desktop web preview opens in a centered phone frame; real phones fill their viewport. Local acceptance passed 41 Flutter tests, analyzer, release web build, Android debug APK and the complete browser mock checkout. See the [mobile review](docs/completion-2026-10-20/mobile-ux.md).
+
+The owner must configure PayMongo and TextLink/SIM details in the web backend's private `.env`, select a reachable API server on the phone, and complete live provider and physical-device testing. The local mock demo does not establish real payment settlement or SMS delivery.
+
 ---
 
 ## 🚀 How to Connect in 2 Simple Steps
