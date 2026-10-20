@@ -27,7 +27,7 @@ Desktop previews preserve Jay's locked centered390px phone frame with surroundin
 
 - Flutter3.47.7, Dart3.13.5, user-local SDK.
 - flutter analyze: no issues after final source fixes.
-- Full Flutter suite:40tests passed. Includes360px checkout/ticket layouts in light and dark themes, actual PATCH transport, uncertain-write non-replay, payment receipt authority, reservation recovery, scanner signed payload transport and real-control guide scrolling/cleanup.
+- Full Flutter suite:41 tests passed. Includes360px checkout/ticket layouts in light and dark themes, actual PATCH transport, uncertain-write non-replay, payment receipt authority, reservation recovery, scanner signed payload transport and real-control guide scrolling/cleanup.
 - Subsequent targeted ticket/layout suite:12tests passed after missing-signature rendering was tightened.
 - Backend profile API exercise saved, read back and restored the demo name; invalid phone and wrong current password were rejected. Evidence: webapp/docs/completion-2026-10-20/evidence/profile-api-result.json.
 - Release web build and final Brave acceptance are recorded in the root continuation document when complete.
@@ -35,3 +35,5 @@ Desktop previews preserve Jay's locked centered390px phone frame with surroundin
 ## Remaining acceptance gates
 
 Real merchant checkout/refund/webhook setup, TextLink Android/SIM receipt and physical camera/microphone/file-save behavior are not established by local tests. Android APK compilation is a separate toolchain check; installing SDK dependencies does not prove a native build.
+
+Final seat-map audit removed random occupancy and fabricated fallback cabin data. Missing maps block payment and offer refresh. Full Flutter suite now passes 41 tests; analyzer clean; release web rebuild passed after this fix. Actual local checkout API probe confirmed a two-seat pending hold, server fare of PHP200 despite a client amount of1, verified mock capture and two signed tickets. Browser complete checkout remains unverified because task tabs closed during testing.
