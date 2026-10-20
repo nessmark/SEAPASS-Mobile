@@ -1,3 +1,4 @@
+import '../widgets/assistant/page_guide.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -125,14 +126,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 ),
               ],
             ),
-          ),
+          ).guide('tabs'),
           const SizedBox(height: AppPalette.space20),
 
           Expanded(
             child: RefreshIndicator(
               onRefresh: _loadBookings,
               color: AppColors.of(context).accent,
-              child: _buildContent(activeBookings),
+              child: _buildContent(activeBookings).guide('booking_card'),
             ),
           ),
         ],
@@ -186,7 +187,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(bottom: AppPalette.space24),
+      padding: const EdgeInsets.only(bottom: AppPalette.space32 + 88),
       itemCount: activeBookings.length,
       itemBuilder: (context, index) {
         final booking = activeBookings[index];
@@ -237,7 +238,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           padding: const EdgeInsets.symmetric(
               horizontal: AppPalette.space8, vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppPalette.teal500 : AppPalette.transparent,
+            color: isSelected ? colors.accent : AppPalette.transparent,
             borderRadius: BorderRadius.circular(AppPalette.radiusSm),
           ),
           child: Row(

@@ -6,6 +6,7 @@ class PassengerTicketInfo {
   final String seat; // e.g. "4D", "4E"
   final String category; // e.g. "regular", "student", "senior"
   final double individualFare; // e.g. 1060.00, 848.00
+  final String? qrPayload;
 
   const PassengerTicketInfo({
     required this.id,
@@ -14,6 +15,7 @@ class PassengerTicketInfo {
     this.category = 'Regular',
     double? individualFare,
     double? fare,
+    this.qrPayload,
   }) : individualFare = individualFare ?? fare ?? 0.0;
 
   /// Backward-compatible alias for `.fare`
@@ -63,6 +65,14 @@ class PassengerTicketInfo {
     required String bookingRef,
     required String vessel,
   }) {
+    if (qrPayload != null && qrPayload!.trim().startsWith('{')) {
+      try {
+        final decoded = jsonDecode(qrPayload!.trim());
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+      } catch (_) {}
+    }
     return {
       'booking_ref': bookingRef,
       'passenger_id': id,
@@ -92,6 +102,7 @@ class Booking {
     this.qrCode,
     this.notes,
     this.showViewTicket = false,
+    this.prebuiltTickets,
   });
 
   final String id;
@@ -109,6 +120,7 @@ class Booking {
   final String? qrCode;
   final String? notes;
   final bool showViewTicket;
+  final List<PassengerTicketInfo>? prebuiltTickets;
 
   bool get isConfirmed => status.toLowerCase() == 'confirmed';
   bool get isPending =>
@@ -125,6 +137,9 @@ class Booking {
   /// Generates category-accurate [PassengerTicketInfo] instances for this booking.
   /// Dynamically computes distinct individual fares for Regular, Student, Senior, and Child.
   List<PassengerTicketInfo> get passengerTickets {
+    if (prebuiltTickets != null && prebuiltTickets!.isNotEmpty) {
+      return prebuiltTickets!;
+    }
     final List<PassengerTicketInfo> tickets = [];
 
     // 1. First priority: Check if seatBreakdown is present from purchase snapshot
@@ -337,6 +352,38 @@ class Booking {
       }
     }
 
+    // Parse server-signed passenger tickets if returned by API
+    List<PassengerTicketInfo>? parsedTickets;
+    if (json['passenger_tickets'] is List &&
+        (json['passenger_tickets'] as List).isNotEmpty) {
+      parsedTickets = [];
+      final list = json['passenger_tickets'] as List;
+      for (int i = 0; i < list.length; i++) {
+        final item = list[i];
+        if (item is Map) {
+          final pId = item['passenger_id']?.toString() ?? 'P${i + 1}';
+          final pName = (item['passenger_name'] ?? item['name'])?.toString() ??
+              (json['passenger_name']?.toString() ?? 'Passenger ${i + 1}');
+          final pSeat = (item['seat'] ?? item['seat_number'])?.toString() ??
+              (seatsList.length > i ? seatsList[i] : '${i + 1}A');
+          final pCat = item['category']?.toString() ?? 'Regular';
+          double pFare = 0.0;
+          if (item['individual_fare'] is num) {
+            pFare = (item['individual_fare'] as num).toDouble();
+          }
+          final String? qr = item['qr_payload']?.toString();
+          parsedTickets.add(PassengerTicketInfo(
+            id: pId,
+            name: pName,
+            seat: pSeat,
+            category: pCat,
+            individualFare: pFare,
+            qrPayload: qr,
+          ));
+        }
+      }
+    }
+
     return Booking(
       id: json['id']?.toString() ?? '',
       referenceNumber: json['reference_number']?.toString() ??
@@ -362,6 +409,7 @@ class Booking {
       qrCode: json['qr_code']?.toString(),
       notes: json['notes']?.toString(),
       showViewTicket: normalizedStatus == 'Confirmed',
+      prebuiltTickets: parsedTickets,
     );
   }
 }

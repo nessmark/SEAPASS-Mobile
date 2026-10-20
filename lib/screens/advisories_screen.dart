@@ -1,3 +1,4 @@
+import '../widgets/assistant/page_guide.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:provider/provider.dart';
@@ -67,7 +68,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
         child: RefreshIndicator(
           onRefresh: () => context.read<AdvisoryProvider>().fetchAdvisories(showLoading: false),
           color: AppColors.of(context).accent,
-          child: _buildBody(advisoryProvider),
+          child: _buildBody(advisoryProvider).guide('advisories_list'),
         ),
       ),
     );
@@ -124,7 +125,7 @@ class _AdvisoriesScreenState extends State<AdvisoriesScreen> {
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(AppPalette.space24,
-          AppPalette.space20, AppPalette.space24, AppPalette.space32),
+          AppPalette.space20, AppPalette.space24, AppPalette.space32 + 88),
       itemCount: advisories.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {

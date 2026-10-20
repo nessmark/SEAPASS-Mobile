@@ -616,15 +616,12 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
     final colors = AppColors.of(context);
     final text = Theme.of(context).textTheme;
 
-    // Unique QR payload per passenger per exact specification
-    final Map<String, dynamic> qrPayload = {
-      'booking_ref': bookingRef,
-      'passenger_id': passenger.id,
-      'passenger_name': passenger.name,
-      'seat': passenger.seat,
-      'vessel': vessel,
-    };
-    final String qrData = jsonEncode(qrPayload);
+    final String qrData = passenger.qrPayload?.trim() ?? '';
+    bool hasSignedQr = false;
+    try {
+      final payload = jsonDecode(qrData);
+      hasSignedQr = payload is Map && payload['boarding_token'] is String && (payload['boarding_token'] as String).isNotEmpty;
+    } catch (_) {}
 
     return AppCard(
       key: ValueKey('${passenger.id}_${passenger.seat}'),
@@ -681,7 +678,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
             child: Center(
               child: Column(
                 children: [
-                  if (isConfirmed) ...[
+                  if (isConfirmed && hasSignedQr) ...[
                     // The QR stays literal white-on-black so port scanners read
                     // it in either theme.
                     Container(
@@ -718,6 +715,8 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                       tone: StatusTone.success,
                       icon: Icons.qr_code_scanner_rounded,
                     ),
+                  ] else if (isConfirmed) ...[
+                    const Padding(padding: EdgeInsets.all(20), child: Text('Refresh this booking to load its signed boarding QR.', textAlign: TextAlign.center)),
                   ] else ...[
                     // Holding state / cancelled state placeholder
                     Container(
@@ -763,8 +762,9 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                           const SizedBox(height: AppPalette.space4),
                           Text(
                             isCancelled
-                                ? 'This ticket was cancelled and refunded.'
-                                : 'The QR code unlocks once port administrators verify and approve your discounted ID.',
+                                ? 'This booking was cancelled. Check My Bookings for its recorded refund status.'
+                                : bookingStatus.toLowerCase() == 'expired' ? 'This reservation expired. Check with port staff if you submitted a payment.'
+                                : 'Boarding becomes available after payment and any required ID review are confirmed.',
                             textAlign: TextAlign.center,
                             style: text.bodySmall?.copyWith(
                               color: isCancelled
@@ -860,7 +860,11 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                     const SizedBox(width: AppPalette.space12),
                     Text(
                       '₱${passenger.individualFare.toStringAsFixed(2)}',
-                      style: text.headlineMedium?.copyWith(color: colors.accent),
+                      style: text.headlineMedium?.copyWith(
+                        color: colors.accent,
+                        fontWeight: FontWeight.w700,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                   ],
                 ),

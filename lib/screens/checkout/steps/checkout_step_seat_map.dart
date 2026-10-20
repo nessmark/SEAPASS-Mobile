@@ -328,25 +328,28 @@ class CheckoutStepSeatMap extends StatelessWidget {
 
   Widget _buildLegendItem(
       BuildContext context, String label, Color fill, Widget child) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 22,
-          height: 22,
-          decoration: BoxDecoration(
-            color: fill,
-            borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+    return Semantics(
+      label: 'Seat legend: $label',
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              color: fill,
+              borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+            ),
+            child: Center(child: child),
           ),
-          child: Center(child: child),
-        ),
-        const SizedBox(width: 6),
-        Flexible(
-          child: Text(label,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall),
-        ),
-      ],
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(label,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall),
+          ),
+        ],
+      ),
     );
   }
 
@@ -369,7 +372,9 @@ class CheckoutStepSeatMap extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               '$rowNumber',
-              style: Theme.of(context).textTheme.labelSmall,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
             ),
           ),
 
@@ -396,21 +401,36 @@ class CheckoutStepSeatMap extends StatelessWidget {
       bg = colors.accent;
       child = Text(
         'P${seat.assignedPassengerIndex}',
-        style: labelStyle?.copyWith(fontSize: 10, color: AppPalette.white),
+        style: labelStyle?.copyWith(fontSize: 10, color: AppPalette.white, fontWeight: FontWeight.w700),
       );
     }
 
-    return GestureDetector(
-      onTap: () => onSeatTapped(seat),
-      child: Container(
-        width: 36,
-        height: 36,
-        margin: const EdgeInsets.symmetric(horizontal: 3),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+    final semanticStatus = seat.isBooked
+        ? 'Booked'
+        : seat.isSelected
+            ? 'Selected for Passenger ${seat.assignedPassengerIndex}'
+            : 'Available';
+
+    return Semantics(
+      button: !seat.isBooked,
+      enabled: !seat.isBooked,
+      label: 'Seat ${seat.seatNumber}, $semanticStatus',
+      child: GestureDetector(
+        onTap: () => onSeatTapped(seat),
+        child: Container(
+          width: 36,
+          height: 36,
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+            border: Border.all(
+              color: seat.isSelected ? colors.accent : colors.hairline,
+              width: 1,
+            ),
+          ),
+          child: Center(child: child),
         ),
-        child: Center(child: child),
       ),
     );
   }

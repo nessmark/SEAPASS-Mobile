@@ -1,236 +1,148 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../../services/api_service.dart';
+import '../../services/payment_verification_service.dart';
 import '../../widgets/app_palette.dart';
+import 'paymongo_web_bridge.dart';
 
-enum PaymentResult {
-  success,
-  cancelled,
-  failed,
-}
+enum PaymentResult { success, cancelled, failed }
 
 class PayMongoWebViewScreen extends StatefulWidget {
   final String checkoutUrl;
   final String referenceNumber;
   final double totalAmount;
-
+  final PaymentVerificationService verificationService;
+  final ValueChanged<String>? openCheckout;
   const PayMongoWebViewScreen({
-    super.key,
-    required this.checkoutUrl,
-    required this.referenceNumber,
-    required this.totalAmount,
+    super.key, required this.checkoutUrl, required this.referenceNumber, required this.totalAmount,
+    this.verificationService = const PaymentVerificationService(), this.openCheckout,
   });
-
   @override
   State<PayMongoWebViewScreen> createState() => _PayMongoWebViewScreenState();
 }
 
 class _PayMongoWebViewScreenState extends State<PayMongoWebViewScreen> {
-  late final WebViewController _controller;
-  bool _isLoading = true;
-  int _loadingProgress = 0;
-  bool _isDisposed = false;
+  WebViewController? _controller;
+  Timer? _poll;
+  bool _checking = false;
+  bool _finished = false;
+  String _notice = 'Complete payment in secure checkout. SeaPass will verify the booking automatically.';
+  CheckoutVerification _status = CheckoutVerification.waiting;
 
   @override
   void initState() {
     super.initState();
-
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(AppPalette.white)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            if (!_isDisposed && mounted) {
-              setState(() {
-                _loadingProgress = progress;
-                if (progress >= 100) {
-                  _isLoading = false;
-                }
-              });
-            }
-          },
-          onPageStarted: (String url) {
-            _checkRedirectUrls(url);
-          },
-          onPageFinished: (String url) {
-            if (!_isDisposed && mounted) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-            _checkRedirectUrls(url);
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint('PayMongo WebView resource error: ${error.description}');
-          },
-          onNavigationRequest: (NavigationRequest request) {
-            final handled = _checkRedirectUrls(request.url);
-            if (handled) {
+    final uri = Uri.tryParse(widget.checkoutUrl);
+    if (uri == null || !['http', 'https'].contains(uri.scheme)) {
+      _notice = 'The checkout link is unavailable. Return to your booking and try again.';
+      _status = CheckoutVerification.missing;
+      return;
+    }
+    if (!kIsWeb && WebViewPlatform.instance != null) {
+      _controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setNavigationDelegate(NavigationDelegate(
+          onNavigationRequest: (request) {
+            if (PaymentVerificationService.isReturnUrl(request.url, Uri.parse(ApiService.baseUrl))) {
+              unawaited(_verify());
               return NavigationDecision.prevent;
             }
-            return NavigationDecision.navigate;
+            final next = Uri.tryParse(request.url);
+            return next != null && ['http', 'https'].contains(next.scheme)
+              ? NavigationDecision.navigate : NavigationDecision.prevent;
           },
-        ),
-      )
-      ..loadRequest(
-        Uri.parse(widget.checkoutUrl),
-        headers: const {
-          'ngrok-skip-browser-warning': '1',
-        },
-      );
+          onWebResourceError: (error) {
+            if (mounted && error.isForMainFrame == true) {
+              setState(() => _notice = 'Checkout could not load. Check your connection or return to My Bookings.');
+            }
+          },
+        ))
+        ..loadRequest(uri);
+    }
+    _poll = Timer.periodic(const Duration(seconds: 3), (_) => _verify());
   }
 
   @override
-  void dispose() {
-    _isDisposed = true;
-    super.dispose();
-  }
+  void dispose() { _poll?.cancel(); super.dispose(); }
 
-  bool _checkRedirectUrls(String url) {
-    final lower = url.toLowerCase();
-
-    // 1. Success redirection detected
-    if (lower.contains('/payment/success') ||
-        lower.contains('status=paid') ||
-        lower.contains('status=success') ||
-        lower.contains('paid=true')) {
-      if (mounted) {
+  Future<void> _verify() async {
+    if (_checking || _finished || !mounted) return;
+    setState(() => _checking = true);
+    try {
+      final status = await widget.verificationService.check(widget.referenceNumber);
+      if (!mounted || _finished) return;
+      if (status == CheckoutVerification.paid) {
+        _finished = true;
+        _poll?.cancel();
         Navigator.of(context).pop(PaymentResult.success);
+        return;
       }
-      return true;
+      setState(() {
+        _status = status;
+        _notice = switch (status) {
+          CheckoutVerification.cancelled => 'This booking was cancelled. Check its payment and refund details in My Bookings.',
+          CheckoutVerification.expired => 'This reservation expired. Check My Bookings if you already submitted a payment.',
+          CheckoutVerification.review => 'Your payment needs a port staff review. Check My Bookings before paying again.',
+          CheckoutVerification.missing => 'This booking could not be found. Check My Bookings before paying again.',
+          _ => 'Payment has not been verified yet. Complete checkout, then check again.',
+        };
+      });
+      if (status != CheckoutVerification.waiting) _poll?.cancel();
+    } catch (_) {
+      if (mounted) setState(() => _notice = 'Payment status could not be verified. Check your connection and My Bookings before paying again.');
+    } finally {
+      if (mounted && !_finished) setState(() => _checking = false);
     }
-
-    // 2. Cancellation redirection detected
-    if (lower.contains('/payment/cancel') ||
-        lower.contains('status=cancelled') ||
-        lower.contains('status=canceled')) {
-      if (mounted) {
-        Navigator.of(context).pop(PaymentResult.cancelled);
-      }
-      return true;
-    }
-
-    return false;
   }
 
-  Future<bool> _onWillPop() async {
-    final shouldLeave = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Cancel Payment?'),
-        content: const Text(
-          'Are you sure you want to exit? If you have not completed the QR scan in your GCash / banking app, your payment will not be recorded.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Stay & Pay'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppPalette.danger,
-              foregroundColor: AppPalette.white,
-            ),
-            child: const Text('Cancel Payment'),
-          ),
-        ],
-      ),
-    );
-
-    return shouldLeave ?? false;
+  Future<void> _leave() async {
+    final leave = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(
+      title: const Text('Leave checkout?'),
+      content: const Text('A payment you already submitted may still complete. Check My Bookings before paying again.'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Stay')),
+        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Leave checkout')),
+      ],
+    ));
+    if (leave == true && mounted) Navigator.of(context).pop(PaymentResult.cancelled);
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final waiting = _status == CheckoutVerification.waiting;
+    final status = Padding(padding: const EdgeInsets.all(20), child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Text(_notice, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
+      const SizedBox(height: 16),
+      OutlinedButton.icon(onPressed: _checking ? null : _verify,
+        icon: _checking ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.refresh_rounded),
+        label: const Text('Check payment status')),
+    ]));
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final navigator = Navigator.of(context);
-        final confirm = await _onWillPop();
-        if (confirm && mounted) {
-          navigator.pop(PaymentResult.cancelled);
-        }
-      },
+      onPopInvokedWithResult: (didPop, _) { if (!didPop) unawaited(_leave()); },
       child: Scaffold(
-        appBar: AppBar(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'PayMongo QR Checkout',
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              Text(
-                'Ref: #${widget.referenceNumber} • ₱${widget.totalAmount.toStringAsFixed(2)}',
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(color: AppColors.of(context).text3),
-              ),
-            ],
-          ),
-          centerTitle: false,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.close_rounded),
-              tooltip: 'Close Checkout',
-              onPressed: () async {
-                final navigator = Navigator.of(context);
-                final confirm = await _onWillPop();
-                if (confirm && mounted) {
-                  navigator.pop(PaymentResult.cancelled);
-                }
-              },
-            ),
-          ],
-          bottom: _isLoading
-              ? PreferredSize(
-                  preferredSize: const Size.fromHeight(3.0),
-                  child: LinearProgressIndicator(
-                    value: _loadingProgress > 0 ? _loadingProgress / 100 : null,
-                    backgroundColor: AppColors.of(context).surface2,
-                    color: AppColors.of(context).accent,
-                  ),
-                )
-              : null,
-        ),
-        body: Stack(
-          children: [
-            WebViewWidget(controller: _controller),
-            if (_isLoading)
-              Container(
-                color: AppColors.of(context).surface,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                            color: AppColors.of(context).accent),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Loading PayMongo QR Checkout...',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Please prepare your GCash or QR Ph app',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
+        backgroundColor: colors.canvas,
+        appBar: AppBar(title: const Text('Secure checkout'), automaticallyImplyLeading: false,
+          actions: [IconButton(tooltip: 'Leave checkout', onPressed: _leave, icon: const Icon(Icons.close_rounded))]),
+        body: _controller != null
+          ? Column(children: [Expanded(child: WebViewWidget(controller: _controller!)), status])
+          : SingleChildScrollView(padding: const EdgeInsets.all(24), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              const SizedBox(height: 20),
+              Icon(Icons.lock_outline_rounded, color: colors.accent, size: 42),
+              const SizedBox(height: 20),
+              Text('₱${widget.totalAmount.toStringAsFixed(2)}', textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineLarge),
+              const SizedBox(height: 8),
+              Text('Reference ${widget.referenceNumber}', textAlign: TextAlign.center),
+              const SizedBox(height: 28),
+              const Text('Open PayMongo to choose a payment method. Keep this screen open while your payment is verified.', textAlign: TextAlign.center),
+              const SizedBox(height: 20),
+              FilledButton.icon(onPressed: waiting ? () => (widget.openCheckout ?? openWebCheckoutUrl)(widget.checkoutUrl) : null,
+                icon: const Icon(Icons.open_in_new_rounded), label: const Text('Open secure checkout')),
+              status,
+            ])),
       ),
     );
   }

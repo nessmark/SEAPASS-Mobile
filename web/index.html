@@ -17,6 +17,7 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="SeaPass — book and manage lancha trips on the Surigao ⇄ San Jose route.">
   <meta name="theme-color" content="#1D8895">
@@ -43,6 +44,7 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js" async></script>
+  <!-- JAY-LOCKED 2026-10-20: Desktop passenger previews open at phone size with surrounding margins. Jay: "make it a permanent iniative of you that the phone part when opening you kinda build a margin so its phone size view". Change only if Jay asks in the session making the change. -->
+  <script src="phone-preview.js?v=20261020-integration2" defer></script>
 </body>
 </html>

@@ -116,19 +116,23 @@ class ApiService {
     Object? body,
     Map<String, dynamic>? queryParameters,
     bool requiresAuth = true,
+    http.Client? client,
   }) async {
     final reqHeaders = await buildHeaders(customHeaders: headers, requiresAuth: requiresAuth);
 
     Future<http.Response> execute(Uri uri, Duration timeout) async {
+      final transport = client ?? _client;
       http.Response response;
       if (method.toUpperCase() == 'POST') {
-        response = await _client.post(uri, headers: reqHeaders, body: body).timeout(timeout);
+        response = await transport.post(uri, headers: reqHeaders, body: body).timeout(timeout);
       } else if (method.toUpperCase() == 'PUT') {
-        response = await _client.put(uri, headers: reqHeaders, body: body).timeout(timeout);
+        response = await transport.put(uri, headers: reqHeaders, body: body).timeout(timeout);
+      } else if (method.toUpperCase() == 'PATCH') {
+        response = await transport.patch(uri, headers: reqHeaders, body: body).timeout(timeout);
       } else if (method.toUpperCase() == 'DELETE') {
-        response = await _client.delete(uri, headers: reqHeaders, body: body).timeout(timeout);
+        response = await transport.delete(uri, headers: reqHeaders, body: body).timeout(timeout);
       } else {
-        response = await _client.get(uri, headers: reqHeaders).timeout(timeout);
+        response = await transport.get(uri, headers: reqHeaders).timeout(timeout);
       }
 
       return await handleResponse(response, requiresAuth: requiresAuth);
@@ -140,7 +144,9 @@ class ApiService {
       return await execute(primaryUri, _timeout);
     } catch (firstError) {
       // If we encounter a network/socket or timeout error, attempt local alternate fallback
-      if (firstError is TimeoutException || firstError is SocketException) {
+      // A timed out write may already have succeeded. Never replay reservations or payments.
+      if (method.toUpperCase() == 'GET' &&
+          (firstError is TimeoutException || firstError is SocketException)) {
         final fallbackBase = ApiConfig.fallbackBaseUrl;
         if (fallbackBase != ApiConfig.baseUrl) {
           final fallbackUri = buildUri(fallbackBase, endpoint, queryParameters);
@@ -185,7 +191,8 @@ class ApiService {
       final response = await http.Response.fromStream(streamedResponse);
       return await handleResponse(response, requiresAuth: requiresAuth);
     } catch (firstError) {
-      if (firstError is TimeoutException || firstError is SocketException) {
+      if (method.toUpperCase() == 'GET' &&
+          (firstError is TimeoutException || firstError is SocketException)) {
         final fallbackBase = ApiConfig.fallbackBaseUrl;
         if (fallbackBase != ApiConfig.baseUrl) {
           final fallbackUri = buildUri(fallbackBase, endpoint);

@@ -21,6 +21,7 @@ class CheckoutStepPayment extends StatelessWidget {
     required this.totalPrice,
     required this.passengers,
     required this.formattedHoldTime,
+    this.hasReservation = false,
     required this.paymentMethods,
     required this.selectedPaymentId,
     required this.isSubmitting,
@@ -37,6 +38,7 @@ class CheckoutStepPayment extends StatelessWidget {
   final double totalPrice;
   final List<PassengerDetail> passengers;
   final String formattedHoldTime;
+  final bool hasReservation;
   final List<PaymentMethodOption> paymentMethods;
   final String selectedPaymentId;
   final bool isSubmitting;
@@ -65,9 +67,9 @@ class CheckoutStepPayment extends StatelessWidget {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      const TextSpan(text: 'Please secure your booking within '),
+                      TextSpan(text: hasReservation ? 'Your reservation expires in ' : 'Seats are reserved when checkout opens. Review your details before continuing.'),
                       TextSpan(
-                        text: formattedHoldTime,
+                        text: hasReservation ? formattedHoldTime : '',
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           color: AppPalette.warning,
@@ -301,10 +303,11 @@ class CheckoutStepPayment extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 '₱${totalPrice.toStringAsFixed(2)}',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(color: AppColors.of(context).accent),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: AppColors.of(context).accent,
+                      fontWeight: FontWeight.w700,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
               ),
             ],
           ),
@@ -323,7 +326,12 @@ class CheckoutStepPayment extends StatelessWidget {
             child: Text(label, style: Theme.of(context).textTheme.bodySmall),
           ),
           const SizedBox(width: 12),
-          Text(value, style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+          ),
         ],
       ),
     );

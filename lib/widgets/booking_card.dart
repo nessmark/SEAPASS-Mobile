@@ -85,7 +85,11 @@ class BookingCard extends StatelessWidget {
               const SizedBox(width: AppPalette.space12),
               Text(
                 '₱${booking.totalPrice.toStringAsFixed(2)}',
-                style: text.titleLarge?.copyWith(color: colors.accent),
+                style: text.titleLarge?.copyWith(
+                  color: colors.accent,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
             ],
           ),
@@ -93,8 +97,14 @@ class BookingCard extends StatelessWidget {
             const SizedBox(height: AppPalette.space16),
             SizedBox(
               width: double.infinity,
+              height: 44,
               child: FilledButton.icon(
                 onPressed: onViewTicket,
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppPalette.radiusMd),
+                  ),
+                ),
                 icon: const Icon(Icons.qr_code_rounded, size: 18),
                 label: const Text('View ticket & QR code'),
               ),
@@ -117,19 +127,31 @@ class _MetaRow extends StatelessWidget {
     final colors = AppColors.of(context);
     final text = Theme.of(context).textTheme;
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: Icon(icon, size: 16, color: colors.text3),
+        Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            color: colors.surface2,
+            borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+            border: Border.all(color: colors.hairline, width: 0.5),
+          ),
+          child: Icon(icon, size: 14, color: colors.text2),
         ),
         const SizedBox(width: AppPalette.space8),
         Expanded(
           child: Text(
             label,
             style: strong
-                ? text.bodyMedium?.copyWith(fontWeight: FontWeight.w600)
-                : text.bodyMedium?.copyWith(color: colors.text2),
+                ? text.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  )
+                : text.bodyMedium?.copyWith(
+                    color: colors.text2,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
           ),
         ),
       ],

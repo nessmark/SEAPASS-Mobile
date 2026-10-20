@@ -65,9 +65,10 @@ class MyApp extends StatelessWidget {
           );
         },
         BookingCheckoutScreen.routeName: (context) {
-          final schedule =
-              ModalRoute.of(context)!.settings.arguments as Schedule;
-          return BookingCheckoutScreen(schedule: schedule);
+          final args = ModalRoute.of(context)!.settings.arguments;
+          final schedule = (args is Map ? args['schedule'] : args) as Schedule;
+          return BookingCheckoutScreen(schedule: schedule,
+            initialSeatCount: args is Map ? int.tryParse(args['seatCount']?.toString() ?? '') ?? 1 : 1);
         },
       },
     );

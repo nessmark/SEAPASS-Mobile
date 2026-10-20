@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -210,13 +211,19 @@ class CheckoutStepDetails extends StatelessWidget {
                 color: AppColors.of(context).accent,
                 disabledColor: AppColors.of(context).text3,
                 iconSize: 24,
+                style: IconButton.styleFrom(
+                  minimumSize: const Size(44, 44),
+                  padding: EdgeInsets.zero,
+                ),
               ),
               SizedBox(
-                width: 24,
+                width: 28,
                 child: Text(
                   '$count',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleSmall,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                 ),
               ),
               IconButton(
@@ -224,6 +231,10 @@ class CheckoutStepDetails extends StatelessWidget {
                 icon: const Icon(Icons.add_circle_outline),
                 color: AppColors.of(context).accent,
                 iconSize: 24,
+                style: IconButton.styleFrom(
+                  minimumSize: const Size(44, 44),
+                  padding: EdgeInsets.zero,
+                ),
               ),
             ],
           ),
@@ -411,8 +422,8 @@ class CheckoutStepDetails extends StatelessWidget {
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(
                                         AppPalette.radiusSm),
-                                    child: Image.file(
-                                      File(passenger.idPhotoPath!),
+                                    child: Image(
+                                      image: (kIsWeb ? NetworkImage(passenger.idPhotoPath!) : FileImage(File(passenger.idPhotoPath!))) as ImageProvider,
                                       width: 80,
                                       height: 60,
                                       fit: BoxFit.cover,
@@ -511,8 +522,12 @@ class CheckoutStepDetails extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('TOTAL PRICE',
-                        style: Theme.of(context).textTheme.labelSmall),
+                    Text('TOTAL FARE',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.w700,
+                            )),
+                    const SizedBox(height: 2),
                     Text(
                       '$totalSeats Seat${totalSeats == 1 ? '' : 's'} Selected',
                       style: Theme.of(context).textTheme.titleSmall,
@@ -523,20 +538,26 @@ class CheckoutStepDetails extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 '₱${totalPrice.toStringAsFixed(2)}',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(color: AppColors.of(context).accent),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: AppColors.of(context).accent,
+                      fontWeight: FontWeight.w700,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
               ),
             ],
           ),
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
-            height: 44,
+            height: 48,
             child: FilledButton(
               onPressed: onProceedToSeats,
-              child: const Text('Select seats'),
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppPalette.radiusMd),
+                ),
+              ),
+              child: const Text('Select Seats'),
             ),
           ),
         ],

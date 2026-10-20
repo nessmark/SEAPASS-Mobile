@@ -87,19 +87,27 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
       // Fallback: rawCode is already a plain reference string (e.g. "SP-20260909-0001")
     }
 
-    // 2. Pass ONLY clean reference number to verification method
+    // 2. Pass complete scanned payload including signed boarding token
     await _verifyTicket(
       referenceNumber: referenceNumber,
       scannedJson: parsedJson,
+      rawPayload: rawCode.trim(),
     );
   }
 
   Future<void> _verifyTicket({
     required String referenceNumber,
     Map<String, dynamic>? scannedJson,
+    String? rawPayload,
+    bool manualLookup = false,
   }) async {
     try {
-      final result = await _dataService.verifyTicket(referenceNumber);
+      final result = await _dataService.verifyTicket(
+        referenceNumber,
+        scannedJson: scannedJson,
+        rawPayload: rawPayload,
+        manualLookup: manualLookup,
+      );
       if (!mounted) return;
 
       final bool isSuccess = result['success'] == true;
@@ -679,7 +687,7 @@ class _ScannerHomeScreenState extends State<ScannerHomeScreen> with WidgetsBindi
                 Navigator.pop(ctx);
                 if (code.isNotEmpty) {
                   setState(() => _isProcessing = true);
-                  _verifyTicket(referenceNumber: code);
+                  _verifyTicket(referenceNumber: code, manualLookup: true);
                 }
               },
               child: const Text('Verify Ticket'),

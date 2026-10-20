@@ -1,3 +1,4 @@
+import '../widgets/assistant/page_guide.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,6 +24,7 @@ class MyAccountScreen extends StatefulWidget {
 class _MyAccountScreenState extends State<MyAccountScreen> {
   final PassengerDataService _dataService = const PassengerDataService();
   bool _isLoadingHistory = true;
+  String? _historyErrorMessage;
   List<Booking> _travelHistory = [];
 
   @override
@@ -32,7 +34,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   }
 
   Future<void> _loadTravelHistory() async {
-    setState(() => _isLoadingHistory = true);
+    setState(() {
+      _isLoadingHistory = true;
+      _historyErrorMessage = null;
+    });
     try {
       final int passengerId = PassengerSession.passengerId;
       final String passengerName = PassengerSession.name;
@@ -54,16 +59,17 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
       if (mounted) {
         setState(() {
-          _travelHistory = history; // empty list → shows "No completed trips yet"
+          _travelHistory = history;
           _isLoadingHistory = false;
+          _historyErrorMessage = null;
         });
       }
-    } catch (_) {
-      // On error, show empty state — do NOT show fake/hardcoded bookings
+    } catch (e) {
       if (mounted) {
         setState(() {
           _travelHistory = [];
           _isLoadingHistory = false;
+          _historyErrorMessage = e.toString().replaceAll('Exception: ', '').replaceAll('ApiException: ', '');
         });
       }
     }
@@ -131,90 +137,314 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     final phoneController = TextEditingController(
       text: PassengerSession.phone,
     );
+    String? dialogError;
+    bool isSaving = false;
 
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Edit profile'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Full Name'),
+      barrierDismissible: !isSaving,
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) {
+          return AlertDialog(
+            title: const Text('Edit profile'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (dialogError != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppPalette.space12),
+                      decoration: BoxDecoration(
+                        color: AppPalette.danger.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded,
+                              color: AppPalette.danger, size: 18),
+                          const SizedBox(width: AppPalette.space8),
+                          Expanded(
+                            child: Text(
+                              dialogError!,
+                              style: const TextStyle(
+                                color: AppPalette.danger,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppPalette.space12),
+                  ],
+                  TextField(
+                    controller: nameController,
+                    enabled: !isSaving,
+                    decoration: const InputDecoration(
+                      labelText: 'Full Name',
+                      prefixIcon: Icon(Icons.person_outline_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: AppPalette.space12),
+                  TextField(
+                    controller: phoneController,
+                    enabled: !isSaving,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Mobile Number',
+                      prefixIcon: Icon(Icons.phone_outlined),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: AppPalette.space12),
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(labelText: 'Mobile Number'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              setState(() {
-                PassengerSession.name = nameController.text.trim();
-                PassengerSession.phone = phoneController.text.trim();
-              });
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Profile updated successfully!'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text('Save'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: isSaving ? null : () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        final newName = nameController.text.trim();
+                        final newPhone = phoneController.text.trim();
+                        if (newName.isEmpty) {
+                          setDialogState(() {
+                            dialogError = 'Name cannot be empty.';
+                          });
+                          return;
+                        }
+
+                        setDialogState(() {
+                          isSaving = true;
+                          dialogError = null;
+                        });
+
+                        try {
+                          await _dataService.updateProfile(
+                            name: newName,
+                            phone: newPhone,
+                          );
+
+                          // Persist session only after confirmed backend success
+                          await PassengerSession.saveSession(
+                            name: newName,
+                            phone: newPhone,
+                            email: PassengerSession.email,
+                            passengerId: PassengerSession.passengerId,
+                            role: PassengerSession.role,
+                            assignedPort: PassengerSession.assignedPort,
+                          );
+
+                          if (mounted) {
+                            setState(() {});
+                          }
+
+                          if (dialogCtx.mounted) {
+                            Navigator.pop(ctx);
+                          }
+
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Profile updated successfully!'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (dialogCtx.mounted) {
+                            setDialogState(() {
+                              isSaving = false;
+                              dialogError = e
+                                  .toString()
+                                  .replaceAll('Exception: ', '')
+                                  .replaceAll('ApiException: ', '');
+                            });
+                          }
+                        }
+                      },
+                child: isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppPalette.white,
+                        ),
+                      )
+                    : const Text('Save'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
   void _showChangePasswordDialog() {
-    final passController = TextEditingController();
-    showDialog(
+    final currentPassController = TextEditingController();
+    final newPassController = TextEditingController();
+    final confirmPassController = TextEditingController();
+    String? dialogError;
+    bool isSaving = false;
+
+    showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Change password'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const TextField(
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Current Password'),
+      barrierDismissible: !isSaving,
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) {
+          return AlertDialog(
+            title: const Text('Change password'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (dialogError != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppPalette.space12),
+                      decoration: BoxDecoration(
+                        color: AppPalette.danger.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(AppPalette.radiusSm),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded,
+                              color: AppPalette.danger, size: 18),
+                          const SizedBox(width: AppPalette.space8),
+                          Expanded(
+                            child: Text(
+                              dialogError!,
+                              style: const TextStyle(
+                                color: AppPalette.danger,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppPalette.space12),
+                  ],
+                  TextField(
+                    controller: currentPassController,
+                    enabled: !isSaving,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Current Password',
+                      prefixIcon: Icon(Icons.lock_outline_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: AppPalette.space12),
+                  TextField(
+                    controller: newPassController,
+                    enabled: !isSaving,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'New Password',
+                      prefixIcon: Icon(Icons.lock_reset_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: AppPalette.space12),
+                  TextField(
+                    controller: confirmPassController,
+                    enabled: !isSaving,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Confirm New Password',
+                      prefixIcon: Icon(Icons.check_circle_outline_rounded),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: AppPalette.space12),
-            TextField(
-              controller: passController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'New Password'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Password changed successfully!'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text('Update'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: isSaving ? null : () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        final currentPass = currentPassController.text;
+                        final newPass = newPassController.text;
+                        final confirmPass = confirmPassController.text;
+
+                        if (currentPass.isEmpty) {
+                          setDialogState(() {
+                            dialogError = 'Please enter your current password.';
+                          });
+                          return;
+                        }
+                        if (newPass.length < 8) {
+                          setDialogState(() {
+                            dialogError =
+                                'New password must be at least 8 characters.';
+                          });
+                          return;
+                        }
+                        if (newPass != confirmPass) {
+                          setDialogState(() {
+                            dialogError =
+                                'New password and confirmation do not match.';
+                          });
+                          return;
+                        }
+
+                        setDialogState(() {
+                          isSaving = true;
+                          dialogError = null;
+                        });
+
+                        try {
+                          await _dataService.updatePassword(
+                            currentPassword: currentPass,
+                            password: newPass,
+                            passwordConfirmation: confirmPass,
+                          );
+
+                          if (dialogCtx.mounted) {
+                            Navigator.pop(ctx);
+                          }
+
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Password updated successfully!'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (dialogCtx.mounted) {
+                            setDialogState(() {
+                              isSaving = false;
+                              dialogError = e
+                                  .toString()
+                                  .replaceAll('Exception: ', '')
+                                  .replaceAll('ApiException: ', '');
+                            });
+                          }
+                        }
+                      },
+                child: isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppPalette.white,
+                        ),
+                      )
+                    : const Text('Update'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -280,7 +510,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(AppPalette.space24, AppPalette.space20,
-          AppPalette.space24, AppPalette.space32),
+          AppPalette.space24, AppPalette.space32 + 88),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -320,9 +550,9 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                           ),
                           const SizedBox(width: AppPalette.space8),
                           const StatusChip(
-                            label: 'Verified',
+                            label: 'Passenger',
                             tone: StatusTone.success,
-                            icon: Icons.check_circle_rounded,
+                            icon: Icons.person_outline_rounded,
                           ),
                         ],
                       ),
@@ -344,7 +574,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 ),
               ],
             ),
-          ),
+          ).guide('profile_card'),
 
           const SizedBox(height: AppPalette.space32),
 
@@ -377,7 +607,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 ),
               ],
             ),
-          ),
+          ).guide('account_settings'),
 
           const SizedBox(height: AppPalette.space32),
 
@@ -390,7 +620,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                     label:
                         '${_travelHistory.length} trip${_travelHistory.length == 1 ? "" : "s"}',
                   ),
-          ),
+          ).guide('travel_history'),
 
           if (_isLoadingHistory)
             const Column(
@@ -417,6 +647,18 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                   ],
                 )),
               ],
+            )
+          else if (_historyErrorMessage != null)
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: AppEmptyState(
+                icon: Icons.cloud_off_rounded,
+                tone: AppPalette.danger,
+                title: 'Cannot reach the terminal',
+                caption: _historyErrorMessage!,
+                actionLabel: 'Retry',
+                onAction: _loadTravelHistory,
+              ),
             )
           else if (_travelHistory.isEmpty)
             AppCard(
@@ -528,7 +770,11 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               const SizedBox(width: AppPalette.space8),
               Text(
                 '₱${booking.totalPrice.toStringAsFixed(2)}',
-                style: text.titleLarge?.copyWith(color: colors.accent),
+                style: text.titleLarge?.copyWith(
+                  color: colors.accent,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
             ],
           ),

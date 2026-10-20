@@ -22,11 +22,12 @@ import 'paymongo_webview_screen.dart';
 /// Parent coordinator and shared state container for the booking checkout flow.
 /// Orchestrates stepper navigation, lifecycle timers, API polling, and submission.
 class BookingCheckoutScreen extends StatefulWidget {
-  const BookingCheckoutScreen({super.key, required this.schedule});
+  const BookingCheckoutScreen({super.key, required this.schedule, this.initialSeatCount = 1});
 
   static const String routeName = '/booking-checkout';
 
   final Schedule schedule;
+  final int initialSeatCount;
 
   @override
   State<BookingCheckoutScreen> createState() => _BookingCheckoutScreenState();
@@ -54,7 +55,9 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
 
   // ─── Hold Countdown Timer (15:00 mins) ────────────────────────────────────
   Timer? _holdTimer;
-  int _holdSecondsRemaining = 900;
+  int _holdSecondsRemaining = 0;
+  DateTime? _reservationExpiresAt;
+  bool _checkoutOutcomeUncertain = false;
 
   // ─── Payment Gateway Selection ────────────────────────────────────────────
   String _selectedPaymentId = 'paymongo_gcash';
@@ -75,6 +78,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
   bool _isSubmitting = false;
   String? _fareError;
   Timer? _farePollTimer;
+  int? _activeBookingId;
 
   final PassengerDataService _dataService = const PassengerDataService();
 
@@ -93,10 +97,9 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
+    _regularCount = widget.initialSeatCount.clamp(1, max(1, widget.schedule.availableSeats));
     _syncPassengerForms();
     _generateSeatMap();
-    _startHoldCountdown();
 
     // Listen to reactive seat map stream
     _seatMapSubscription = _seatMapService.seatMapStream.listen((rawMap) {
@@ -161,7 +164,9 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
 
   // ─── Timer Logic ──────────────────────────────────────────────────────────
 
-  void _startHoldCountdown() {
+  void _startHoldCountdown(DateTime expiresAt) {
+    _reservationExpiresAt = expiresAt;
+    _holdSecondsRemaining = expiresAt.difference(DateTime.now()).inSeconds.clamp(0, 900);
     _holdTimer?.cancel();
     _holdTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
@@ -170,7 +175,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
       }
       if (_holdSecondsRemaining > 0) {
         setState(() {
-          _holdSecondsRemaining--;
+          _holdSecondsRemaining = expiresAt.difference(DateTime.now()).inSeconds.clamp(0, 900);
         });
       } else {
         timer.cancel();
@@ -326,6 +331,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
   }
 
   void _reconcileCategory(String category, int targetCount) {
+    _activeBookingId = null;
     int current = _passengers.where((p) => p.category == category).length;
     while (current < targetCount) {
       _passengers.add(
@@ -391,6 +397,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
     if (activePassenger == null) return;
 
     setState(() {
+      _activeBookingId = null;
       if (seat.assignedPassengerIndex == activePassenger.index) {
         seat.assignedPassengerIndex = null;
         activePassenger.assignedSeat = null;
@@ -482,6 +489,10 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
   // ─── Step Transitions & Validations ───────────────────────────────────────
 
   void _goToStep(int step) {
+    if ((_activeBookingId != null || _checkoutOutcomeUncertain) && step != _currentStep) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('A reservation may already exist. Retry its payment or check My Bookings before changing passengers or seats.')));
+      return;
+    }
     if (step == 1) {
       // Validate Step 1
       for (final p in _passengers) {
@@ -565,6 +576,14 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
   // ─── Final Booking Submission ─────────────────────────────────────────────
 
   Future<void> _submitBooking() async {
+    if (_isSubmitting) return;
+    if (_checkoutOutcomeUncertain && _activeBookingId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Check My Bookings before submitting another reservation.'),
+        action: SnackBarAction(label: 'My Bookings', onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(PassengerHomeScreen.routeName, (route) => false, arguments: {'tabIndex': 1})),
+      ));
+      return;
+    }
     if (!widget.schedule.isBookableInManila) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -639,6 +658,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
 
     try {
       final session = await _dataService.createPayMongoCheckoutSession(
+        bookingId: _activeBookingId,
         scheduleId: widget.schedule.id,
         passengerName: primaryContactName,
         seatCount: _totalSeats,
@@ -658,6 +678,12 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
       final bookingData = (session['booking'] is Map)
           ? Map<String, dynamic>.from(session['booking'])
           : <String, dynamic>{};
+      final bookingId = bookingData['id'] as int?;
+      if (bookingId != null && bookingId > 0) {
+        _activeBookingId = bookingId;
+      }
+      final expiresAt = DateTime.tryParse(bookingData['reservation_expires_at']?.toString() ?? '');
+      if (expiresAt != null) _startHoldCountdown(expiresAt);
       final refNum = bookingData['reference_number']?.toString() ?? 'PENDING';
       final hasDiscounts = _studentCount > 0 || _seniorCount > 0 || (bookingData['has_discounts'] == true);
 
@@ -671,7 +697,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
           builder: (ctx) => PayMongoWebViewScreen(
             checkoutUrl: checkoutUrl,
             referenceNumber: refNum,
-            totalAmount: _totalPrice,
+            totalAmount: (bookingData['amount_collected'] as num?)?.toDouble() ?? _totalPrice,
           ),
         ),
       );
@@ -679,6 +705,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
       if (!mounted) return;
 
       if (result == PaymentResult.success) {
+        _activeBookingId = null;
         if (hasDiscounts) {
           // Holding State Dialog for Discounted Bookings
           showDialog(
@@ -744,7 +771,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                         _buildNoteLine(
                           context,
                           Icons.shield_outlined,
-                          'If your ID cannot be verified, your payment will be automatically refunded to your GCash account.',
+                          'If your ID cannot be verified, port staff will review the booking and refund request. Check My Bookings for the recorded refund status.',
                         ),
                       ],
                     ),
@@ -860,8 +887,23 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
       }
     } on ApiException catch (error) {
       if (!mounted) return;
+      if (error is CheckoutFailure) {
+        if (error.bookingId != null) _activeBookingId = error.bookingId;
+        if (error.expiresAt != null) _startHoldCountdown(error.expiresAt!);
+        _checkoutOutcomeUncertain = error.outcomeUnknown;
+      }
+      final msg = error.message.toLowerCase();
+      if (msg.contains('expired') ||
+          msg.contains('not found') ||
+          msg.contains('already been paid') ||
+          msg.contains('cannot open checkout')) {
+        _activeBookingId = null;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
+        SnackBar(
+          content: Text(error.message),
+          backgroundColor: AppPalette.danger,
+        ),
       );
     } finally {
       if (mounted) {
@@ -945,14 +987,14 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
   Widget _buildStepperHeader() {
     return Container(
       color: AppColors.of(context).surface,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          _buildStepNode(0, '1. Details'),
+          _buildStepNode(0, 'Details'),
           _buildStepConnector(0),
-          _buildStepNode(1, '2. Seat Map'),
+          _buildStepNode(1, 'Seats'),
           _buildStepConnector(1),
-          _buildStepNode(2, '3. Payment'),
+          _buildStepNode(2, 'Payment'),
         ],
       ),
     );
@@ -996,6 +1038,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                       '${stepIndex + 1}',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             fontSize: 12,
+                            fontWeight: FontWeight.w700,
                             color: isActive
                                 ? AppPalette.white
                                 : AppColors.of(context).text2,
@@ -1004,19 +1047,15 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
             ),
           ),
           const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              title,
-              overflow: TextOverflow.ellipsis,
-              softWrap: false,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontSize: 12,
-                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                    color: isActive
-                        ? AppColors.of(context).text
-                        : AppColors.of(context).text3,
-                  ),
-            ),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontSize: 12,
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                  color: isActive
+                      ? AppColors.of(context).text
+                      : AppColors.of(context).text3,
+                ),
           ),
         ],
       ),
@@ -1100,14 +1139,12 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
           totalPrice: _totalPrice,
           passengers: _passengers,
           formattedHoldTime: _formattedHoldTime,
+          hasReservation: _reservationExpiresAt != null,
           paymentMethods: _paymentMethods,
           selectedPaymentId: _selectedPaymentId,
           isSubmitting: _isSubmitting,
           onPaymentMethodSelected: (id) => setState(() => _selectedPaymentId = id),
-          onBackToSeats: () => setState(() {
-            _currentStep = 1;
-            _seatMapService.startPolling(widget.schedule.id);
-          }),
+          onBackToSeats: () => _goToStep(1),
           onConfirmAndPay: _submitBooking,
         );
     }

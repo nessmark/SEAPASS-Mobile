@@ -6,13 +6,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:seapass_passenger_app/models/booking.dart';
 import 'package:seapass_passenger_app/models/passenger_booking_models.dart';
 import 'package:seapass_passenger_app/models/route_fare.dart';
 import 'package:seapass_passenger_app/models/schedule.dart';
 import 'package:seapass_passenger_app/screens/checkout/steps/checkout_step_details.dart';
 import 'package:seapass_passenger_app/screens/checkout/steps/checkout_step_payment.dart';
 import 'package:seapass_passenger_app/screens/checkout/steps/checkout_step_seat_map.dart';
+import 'package:seapass_passenger_app/screens/view_ticket_screen.dart';
 import 'package:seapass_passenger_app/theme/app_theme.dart';
+import 'package:seapass_passenger_app/widgets/booking_card.dart';
 
 final schedule = Schedule(
   id: 7,
@@ -178,5 +181,59 @@ void main() {
       }
     });
 
+    testWidgets('booking card holds at 360 (${entry.key})', (tester) async {
+      tester.view.physicalSize = const Size(360, 780);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      const testBooking = Booking(
+        id: '12',
+        referenceNumber: 'SP-2026-0921-0042',
+        passengerName: 'Marilou Bautista',
+        route: 'Surigao City → San Jose',
+        date: 'Sep 21, 2026',
+        time: '08:00 AM',
+        boatName: 'MB Dinagat Star',
+        seatCount: 2,
+        seatNumbers: ['4D', '4E'],
+        totalPrice: 1908.0,
+        status: 'confirmed',
+        showViewTicket: true,
+      );
+      await tester.pumpWidget(host(
+        BookingCard(
+          booking: testBooking,
+          onViewTicket: () {},
+        ),
+        theme,
+      ));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('view ticket holds at 360 (${entry.key})', (tester) async {
+      tester.view.physicalSize = const Size(360, 780);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      const testBooking = Booking(
+        id: '12',
+        referenceNumber: 'SP-2026-0921-0042',
+        passengerName: 'Marilou Bautista',
+        route: 'Surigao City → San Jose',
+        date: 'Sep 21, 2026',
+        time: '08:00 AM',
+        boatName: 'MB Dinagat Star',
+        seatCount: 2,
+        seatNumbers: ['4D', '4E'],
+        totalPrice: 1908.0,
+        status: 'confirmed',
+        showViewTicket: true,
+      );
+      await tester.pumpWidget(MaterialApp(
+        theme: theme,
+        home: const ViewTicketScreen(booking: testBooking),
+      ));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
   }
 }

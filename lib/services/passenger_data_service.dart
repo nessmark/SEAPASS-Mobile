@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io' show SocketException, File;
 
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 import '../config/api_config.dart';
 import '../models/booking.dart';
@@ -15,7 +16,8 @@ import 'passenger_session.dart';
 import 'token_storage_service.dart';
 
 class PassengerDataService {
-  const PassengerDataService();
+  final http.Client? client;
+  const PassengerDataService({this.client});
 
   /// Centralized network exception mapper that returns clear, actionable diagnostic messages.
   static ApiException mapNetworkException(Object error, Uri uri) {
@@ -67,6 +69,7 @@ class PassengerDataService {
         body: body,
         queryParameters: queryParameters,
         requiresAuth: requiresAuth,
+        client: client,
       );
     } catch (firstError) {
       if (firstError is ApiException) rethrow;
@@ -137,8 +140,32 @@ class PassengerDataService {
   }
 
   /// Verify booking ticket QR code for boarding (Scanner Staff API).
-  Future<Map<String, dynamic>> verifyTicket(String codeOrReference) async {
+  Future<Map<String, dynamic>> verifyTicket(
+    String codeOrReference, {
+    Map<String, dynamic>? scannedJson,
+    String? rawPayload,
+    bool manualLookup = false,
+  }) async {
     try {
+      final Map<String, dynamic> body = {
+        'reference_number': codeOrReference,
+      };
+      if (manualLookup) {
+        body['manual_lookup'] = true;
+      }
+      if (scannedJson != null && scannedJson.isNotEmpty) {
+        body.addAll(scannedJson);
+      } else if (rawPayload != null &&
+          rawPayload.trim().startsWith('{') &&
+          rawPayload.trim().endsWith('}')) {
+        try {
+          final decoded = jsonDecode(rawPayload.trim());
+          if (decoded is Map<String, dynamic>) {
+            body.addAll(decoded);
+          }
+        } catch (_) {}
+      }
+
       final response = await _sendRequest(
         method: 'POST',
         path: '/api/bookings/verify-ticket',
@@ -146,7 +173,7 @@ class PassengerDataService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: jsonEncode({'reference_number': codeOrReference}),
+        body: jsonEncode(body),
         requiresAuth: true,
       );
 
@@ -162,6 +189,94 @@ class PassengerDataService {
     } catch (e) {
       if (e is ApiException) rethrow;
       final uri = ApiService.buildUri(ApiConfig.baseUrl, '/api/bookings/verify-ticket');
+      throw mapNetworkException(e, uri);
+    }
+  }
+
+  Future<Map<String, dynamic>> updateProfile({
+    required String name,
+    required String phone,
+  }) async {
+    try {
+      final response = await _sendRequest(
+        method: 'PATCH',
+        path: '/api/passenger/profile',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'name': name.trim(),
+          'phone': phone.trim(),
+        }),
+      );
+
+      final dynamic decoded = jsonDecode(response.body);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+        return {'success': true, 'message': 'Profile updated.'};
+      }
+
+      if (decoded is Map<String, dynamic>) {
+        final message = decoded['message']?.toString();
+        final errors = decoded['errors'];
+        if (errors is Map) {
+          final firstError = errors.values.expand((e) => e is List ? e : [e]).join(' ');
+          throw ApiException(firstError.isNotEmpty ? firstError : (message ?? 'Failed to update profile.'));
+        }
+        throw ApiException(message ?? 'Failed to update profile.');
+      }
+      throw ApiException('Failed to update profile.');
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      final uri = ApiService.buildUri(ApiConfig.baseUrl, '/api/passenger/profile');
+      throw mapNetworkException(e, uri);
+    }
+  }
+
+  Future<Map<String, dynamic>> updatePassword({
+    required String currentPassword,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    try {
+      final response = await _sendRequest(
+        method: 'PUT',
+        path: '/api/passenger/password',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'current_password': currentPassword,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        }),
+      );
+
+      final dynamic decoded = jsonDecode(response.body);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+        return {'success': true, 'message': 'Password updated.'};
+      }
+
+      if (decoded is Map<String, dynamic>) {
+        final message = decoded['message']?.toString();
+        final errors = decoded['errors'];
+        if (errors is Map) {
+          final firstError = errors.values.expand((e) => e is List ? e : [e]).join(' ');
+          throw ApiException(firstError.isNotEmpty ? firstError : (message ?? 'Failed to update password.'));
+        }
+        throw ApiException(message ?? 'Failed to update password.');
+      }
+      throw ApiException('Failed to update password.');
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      final uri = ApiService.buildUri(ApiConfig.baseUrl, '/api/passenger/password');
       throw mapNetworkException(e, uri);
     }
   }
@@ -594,8 +709,7 @@ class PassengerDataService {
           return decoded;
         }
 
-        final message = decoded is Map<String, dynamic> ? decoded['message']?.toString() : null;
-        throw ApiException(message ?? 'Failed to initialize PayMongo checkout.');
+        throw CheckoutFailure.fromPayload(decoded);
       }
 
       final List<http.MultipartFile> multipartFiles = [];
@@ -603,8 +717,13 @@ class PassengerDataService {
         for (final entry in passengerIdPhotos.entries) {
           final filePath = entry.value;
           if (filePath.isNotEmpty) {
-            final file = File(filePath);
-            if (await file.exists()) {
+            if (kIsWeb) {
+              final image = await http.get(Uri.parse(filePath));
+              if (image.statusCode != 200) throw ApiException('The ID photo could not be loaded. Select it again.');
+              multipartFiles.add(http.MultipartFile.fromBytes('passenger_id_photos_${entry.key}', image.bodyBytes, filename: 'discount-id-${entry.key}.jpg'));
+            } else {
+              final file = File(filePath);
+              if (!await file.exists()) throw ApiException('The ID photo could not be found. Select it again.');
               multipartFiles.add(
                 await http.MultipartFile.fromPath(
                   'passenger_id_photos_${entry.key}',
@@ -677,11 +796,10 @@ class PassengerDataService {
         return decoded;
       }
 
-      final message = decoded is Map<String, dynamic> ? decoded['message']?.toString() : null;
-      throw ApiException(message ?? 'Unable to initialize PayMongo payment session.');
+      throw CheckoutFailure.fromPayload(decoded);
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw mapNetworkException(e, Uri.parse('${ApiConfig.baseUrl}/api/payments/checkout'));
+      throw CheckoutFailure('The checkout response could not be confirmed. Check My Bookings before paying again.', outcomeUnknown: true);
     }
   }
 
