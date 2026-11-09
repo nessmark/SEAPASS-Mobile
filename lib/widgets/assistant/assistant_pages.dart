@@ -104,7 +104,7 @@ AssistantPage? assistantPage(String path) => assistantPages[path];
 List<Map<String, String>> assistantTargetsFor(String path, {Iterable<String>? mounted}) {
   final page = assistantPages[path];
   if (page == null) return const [];
-  final visible = mounted == null ? null : mounted.toSet();
+  final visible = mounted?.toSet();
   final onScreen = visible == null ? page.targets : page.targets.where((t) => visible.contains(t.id)).toList();
   final chosen = onScreen.isEmpty ? page.targets : onScreen;
   return chosen.map((t) => t.toContext()).toList();

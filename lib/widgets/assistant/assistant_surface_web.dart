@@ -35,7 +35,8 @@ class _AssistantSurfaceState extends State<AssistantSurface> {
       if (data is! Map || data['source'] != 'seapass-assistant') return;
       if (data['type'] == 'ready') {
         _frame.contentWindow?.postMessage({'type': 'seapass-bootstrap', ...widget.config}.jsify(), widget.uri.origin.toJS);
-      } else {
+        if (mounted) widget.onEvent({'source': 'seapass-assistant', 'type': 'ready'});
+      } else if (mounted) {
         widget.onEvent(Map<String, dynamic>.from(data));
       }
     }).toJS;

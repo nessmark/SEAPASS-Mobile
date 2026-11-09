@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'assistant_pages.dart';
+
 /// Registered rendered controls, scoped to the currently displayed app screen.
 class SeaPassGuideAnchor extends StatefulWidget {
   final String id;
@@ -31,148 +33,143 @@ extension SeaPassGuidedWidget on Widget {
   Widget guide(String id) => SeaPassGuideAnchor(id: id, child: this);
 }
 
-const _steps = <String, List<(String, String, String)>>{
-  'trips': [
-    (
-      'route_selector',
-      'Choose your route',
-      'Choose your departure and destination ports. The swap button reverses the journey.'
-    ),
-    (
-      'date_rail',
-      'Pick a travel date',
-      'Tap a date to refresh departures. A dot marks dates with scheduled trips.'
-    ),
-    (
-      'schedules_list',
-      'Review a sailing',
-      'Check the boat, departure, available seats and live fare. Book Seats opens passenger details before you select seats or pay.'
-    ),
-  ],
-  'bookings': [
-    (
-      'tabs',
-      'Find your booking',
-      'Switch between bookings awaiting review and confirmed tickets.'
-    ),
-    (
-      'booking_card',
-      'Open your boarding pass',
-      'Open a confirmed booking to view the signed boarding QR for each passenger.'
-    ),
-  ],
-  'advisories': [
-    (
-      'advisories_list',
-      'Check port notices',
-      'Open a notice for its affected route, effective dates and full message. Pull down to refresh.'
-    ),
-  ],
-  'profile': [
-    (
-      'profile_card',
-      'Your passenger details',
-      'These details identify your account and contact number.'
-    ),
-    (
-      'account_settings',
-      'Keep your details current',
-      'Edit profile saves to SeaPass. Changing your password requires your current password.'
-    ),
-    (
-      'travel_history',
-      'Past voyages',
-      'Your completed trips appear here. A connection error is shown when history cannot load.'
-    ),
-  ],
-};
+/// Ids of guide anchors currently rendered anywhere in the app.
+Iterable<String> mountedGuideTargets() => SeaPassGuideAnchor.anchors.entries
+    .where((entry) => entry.value.currentContext?.mounted == true)
+    .map((entry) => entry.key);
 
+bool _guideOpen = false;
+
+/// Spotlights real controls on [page]. A highlight shows one target, a tour
+/// shows every target on screen. It only scrolls and points: it never taps,
+/// selects a seat, submits a form or pays.
 Future<void> showSeaPassPageGuide(BuildContext context, String page,
     [Map<String, dynamic>? event]) async {
+  if (_guideOpen) return;
   final action = event?['action'];
   final args = action is Map ? action['args'] : null;
   final target = event?['target'] ?? (args is Map ? args['target'] : null);
   final message = event?['message'] ?? (args is Map ? args['message'] : null);
-  final steps = (_steps[page] ?? [])
-      .where((step) => target == null || step.$1 == target)
+  final steps = (assistantPage(page)?.targets ?? const <AssistantGuideTarget>[])
+      .where((step) => target == null || step.id == target)
+      .where((step) =>
+          SeaPassGuideAnchor.anchors[step.id]?.currentContext?.mounted == true)
       .toList();
-  var shown = false;
-  for (var index = 0; index < steps.length; index++) {
-    final step = steps[index];
-    final anchor = SeaPassGuideAnchor.anchors[step.$1]?.currentContext;
-    if (anchor == null || !anchor.mounted) continue;
-    await Scrollable.ensureVisible(anchor,
-        alignment: .35, duration: const Duration(milliseconds: 180));
-    await WidgetsBinding.instance.endOfFrame;
-    if (!context.mounted || !anchor.mounted) return;
-    final render = anchor.findRenderObject();
-    if (render is! RenderBox || !render.hasSize) continue;
-    final rect = render.localToGlobal(Offset.zero) & render.size;
-    shown = true;
-    final next = await showDialog<bool>(
-      context: context,
-      useSafeArea: false,
-      barrierColor: Colors.transparent,
-      builder: (dialogContext) {
-        final size = MediaQuery.sizeOf(dialogContext);
-        final colors = Theme.of(dialogContext).colorScheme;
-        final visibleRect = rect.intersect(Offset.zero & size).inflate(4);
-        return Stack(children: [
-          Positioned.fill(
-              child: CustomPaint(
-                  painter: _Spotlight(visibleRect, colors.primary))),
-          Positioned(
-            left: 16,
-            right: 16,
-            top: visibleRect.center.dy > size.height * .5
-                ? MediaQuery.paddingOf(dialogContext).top + 20
-                : null,
-            bottom: visibleRect.center.dy <= size.height * .5
-                ? MediaQuery.paddingOf(dialogContext).bottom + 24
-                : null,
-            child: Material(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(20),
-              child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(step.$2,
-                            style:
-                                Theme.of(dialogContext).textTheme.titleLarge),
-                        const SizedBox(height: 12),
-                        Text(message is String && message.isNotEmpty
-                            ? message
-                            : step.$3),
-                        const SizedBox(height: 16),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(dialogContext, false),
-                                  child: const Text('Close')),
-                              const SizedBox(width: 8),
-                              FilledButton(
-                                  onPressed: () =>
-                                      Navigator.pop(dialogContext, true),
-                                  child: Text(index == steps.length - 1
-                                      ? 'Done'
-                                      : 'Next')),
-                            ]),
-                      ])),
-            ),
-          ),
-        ]);
-      },
-    );
-    if (next != true || !context.mounted) return;
+  if (steps.isEmpty) {
+    if (context.mounted) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(
+          content: Text('That control is not visible on this screen yet.')));
+    }
+    return;
   }
-  if (!shown && context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('That control is not visible on this screen yet.')));
+  _guideOpen = true;
+  try {
+    var index = 0;
+    while (index >= 0 && index < steps.length) {
+      final step = steps[index];
+      final anchor = SeaPassGuideAnchor.anchors[step.id]?.currentContext;
+      if (anchor == null || !anchor.mounted || !context.mounted) return;
+      final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+      await Scrollable.ensureVisible(anchor,
+          alignment: .35,
+          duration: still ? Duration.zero : const Duration(milliseconds: 180));
+      await WidgetsBinding.instance.endOfFrame;
+      if (!context.mounted || !anchor.mounted) return;
+      final render = anchor.findRenderObject();
+      if (render is! RenderBox || !render.hasSize) return;
+      final rect = render.localToGlobal(Offset.zero) & render.size;
+      final body = message is String && message.isNotEmpty && steps.length == 1
+          ? message
+          : step.body;
+      final move = await showDialog<int>(
+        context: context,
+        useSafeArea: false,
+        barrierColor: Colors.transparent,
+        builder: (dialogContext) => _GuideCard(
+          rect: rect,
+          title: step.title,
+          body: body,
+          index: index,
+          total: steps.length,
+        ),
+      );
+      if (move == null || move == 0 || !context.mounted) return;
+      index += move;
+    }
+  } finally {
+    _guideOpen = false;
+  }
+}
+
+class _GuideCard extends StatelessWidget {
+  const _GuideCard(
+      {required this.rect,
+      required this.title,
+      required this.body,
+      required this.index,
+      required this.total});
+
+  final Rect rect;
+  final String title;
+  final String body;
+  final int index;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final padding = MediaQuery.paddingOf(context);
+    final colors = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final visibleRect = rect.intersect(Offset.zero & size).inflate(4);
+    final last = index == total - 1;
+    return Stack(children: [
+      Positioned.fill(
+          child: CustomPaint(painter: _Spotlight(visibleRect, colors.primary))),
+      Positioned(
+        left: 16,
+        right: 16,
+        top: visibleRect.center.dy > size.height * .5 ? padding.top + 20 : null,
+        bottom:
+            visibleRect.center.dy <= size.height * .5 ? padding.bottom + 24 : null,
+        child: Material(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (total > 1)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text('Step ${index + 1} of $total',
+                            style: text.labelMedium),
+                      ),
+                    Text(title, style: text.titleLarge),
+                    const SizedBox(height: 12),
+                    Text(body),
+                    const SizedBox(height: 16),
+                    Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(context, 0),
+                          child: const Text('Close')),
+                      if (index > 0) ...[
+                        const SizedBox(width: 8),
+                        TextButton(
+                            onPressed: () => Navigator.pop(context, -1),
+                            child: const Text('Back')),
+                      ],
+                      const SizedBox(width: 8),
+                      FilledButton(
+                          onPressed: () => Navigator.pop(context, last ? 0 : 1),
+                          child: Text(last ? 'Done' : 'Next')),
+                    ]),
+                  ])),
+        ),
+      ),
+    ]);
   }
 }
 
