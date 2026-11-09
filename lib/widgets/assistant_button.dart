@@ -378,7 +378,11 @@ class _AssistantSheetState extends State<AssistantSheet> {
         if (!_ready) setState(() => _ready = true);
       case 'surface_error':
         _readyTimer?.cancel();
-        setState(() => _failure = event['reason'] == 'unsupported' ? _unsupported : _pageFailed);
+        setState(() => _failure = switch (event['reason']) {
+              'unsupported' => _unsupported,
+              'offline' => _Failure.from(const AssistantUnavailable(AssistantFailureKind.offline)),
+              _ => _pageFailed,
+            });
       case 'mic_blocked':
         if (!_micBlocked) setState(() => _micBlocked = true);
       default:

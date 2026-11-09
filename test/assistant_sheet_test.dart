@@ -170,6 +170,15 @@ void main() {
       await tester.pump();
       expect(find.text('The assistant page could not load. Check your connection and try again.'), findsOneWidget);
 
+      final offline = FakeSurface();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(sheetHost(sheet(load: () async => {'token': 't'}, surface: offline)));
+      await tester.pump();
+      offline.emit!({'type': 'surface_error', 'reason': 'offline'});
+      await tester.pump();
+      expect(find.text('You are offline'), findsOneWidget);
+      expect(find.text('Try again'), findsOneWidget);
+
       final other = FakeSurface();
       await tester.pumpWidget(const SizedBox());
       await tester.pumpWidget(sheetHost(sheet(load: () async => {'token': 't'}, surface: other)));

@@ -101,7 +101,9 @@ class _AssistantSurfaceState extends State<AssistantSurface> {
         if (code >= 400 && url != null && url.path == widget.uri.path) _fail('load_failed');
       },
       onWebResourceError: (error) {
-        if (error.isForMainFrame == true) _fail('load_failed');
+        if (error.isForMainFrame != true) return;
+        // A failed name lookup almost always means the phone has no network.
+        _fail(error.errorType == WebResourceErrorType.hostLookup ? 'offline' : 'load_failed');
       },
     ));
     if (controller.platform is AndroidWebViewController) {
