@@ -87,9 +87,11 @@ class SeaPassAssistantButton extends StatelessWidget {
   });
 
   static bool _sheetOpen = false;
+  static BuildContext? _sheetContext;
 
-  /// True while an assistant sheet is showing. One sheet at a time.
-  static bool get isOpen => _sheetOpen;
+  /// True while an assistant sheet is showing. One sheet at a time. A sheet
+  /// whose screen was torn down without closing it no longer counts.
+  static bool get isOpen => _sheetOpen && _sheetContext?.mounted != false;
 
   @override
   Widget build(BuildContext context) {
@@ -112,15 +114,16 @@ class SeaPassAssistantButton extends StatelessWidget {
   }
 
   Future<void> open(BuildContext context) async {
-    if (_sheetOpen) return;
+    if (isOpen) return;
     _sheetOpen = true;
+    _sheetContext = null;
     final theme = Theme.of(context).brightness == Brightness.light ? 'light' : 'dark';
     // Read once per opening. Keyboard and viewport changes rebuild the sheet
     // while the passenger is typing, and must not restart the session.
     final screenDetails = details?.call();
     final mounted = mountedGuideTargets().toList();
-    Future<Map<String, dynamic>> load() => bootstrapper(
-        label: pageLabel, path: pagePath, theme: theme, details: screenDetails, mountedTargets: mounted);
+    Future<Map<String, dynamic>> load() =>
+        bootstrapper(label: pageLabel, path: pagePath, theme: theme, details: screenDetails, mountedTargets: mounted);
     final hasGuide = assistantTargetsFor(pagePath, mounted: mounted).isNotEmpty;
     try {
       await showModalBottomSheet<void>(
@@ -130,27 +133,31 @@ class SeaPassAssistantButton extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.surface,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         clipBehavior: Clip.antiAlias,
-        builder: (sheetContext) => SizedBox(
-          height: MediaQuery.sizeOf(sheetContext).height * .9,
-          child: AssistantSheet(
-            load: load,
-            uri: AssistantService.embedUri,
-            surfaceBuilder: surfaceBuilder,
-            readyTimeout: readyTimeout,
-            canShowGuide: hasGuide,
-            onClose: () => _closeSheet(sheetContext),
-            onSignIn: () {
-              _closeSheet(sheetContext);
-              Navigator.of(context, rootNavigator: true)
-                  .pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
-            },
-            onShowGuide: () => _handleGuide(context, sheetContext, const {'type': 'guide'}),
-            onEvent: (event) => _handleEvent(context, sheetContext, event),
-          ),
-        ),
+        builder: (sheetContext) {
+          _sheetContext = sheetContext;
+          return SizedBox(
+            height: MediaQuery.sizeOf(sheetContext).height * .9,
+            child: AssistantSheet(
+              load: load,
+              uri: AssistantService.embedUri,
+              surfaceBuilder: surfaceBuilder,
+              readyTimeout: readyTimeout,
+              canShowGuide: hasGuide,
+              onClose: () => _closeSheet(sheetContext),
+              onSignIn: () {
+                _closeSheet(sheetContext);
+                Navigator.of(context, rootNavigator: true)
+                    .pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
+              },
+              onShowGuide: () => _handleGuide(context, sheetContext, const {'type': 'guide'}),
+              onEvent: (event) => _handleEvent(context, sheetContext, event),
+            ),
+          );
+        },
       );
     } finally {
       _sheetOpen = false;
+      _sheetContext = null;
     }
   }
 
@@ -208,9 +215,11 @@ class SeaPassAssistantButton extends StatelessWidget {
     if (!shown || event['source'] != 'seapass-assistant' || !context.mounted) return;
     ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
       content: const Text('Guide finished.'),
-      action: SnackBarAction(label: 'Back to chat', onPressed: () {
-        if (context.mounted) open(context);
-      }),
+      action: SnackBarAction(
+          label: 'Back to chat',
+          onPressed: () {
+            if (context.mounted) open(context);
+          }),
     ));
   }
 }
@@ -301,7 +310,8 @@ class _AssistantSheetState extends State<AssistantSheet> {
       'The assistant did not open in time. Check your connection and try again.', Icons.cloud_off_rounded);
   static const _pageFailed = _Failure('Cannot reach SeaPass',
       'The assistant page could not load. Check your connection and try again.', Icons.cloud_off_rounded);
-  static const _unsupported = _Failure('Assistant unavailable',
+  static const _unsupported = _Failure(
+      'Assistant unavailable',
       'The assistant needs the SeaPass Android app or a web browser. The page guide still works.',
       Icons.info_outline_rounded,
       retry: false);

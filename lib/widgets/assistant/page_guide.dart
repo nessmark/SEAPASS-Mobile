@@ -156,21 +156,27 @@ class _GuideCard extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(body),
                     const SizedBox(height: 16),
-                    Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(context, 0),
-                          child: const Text('Close')),
-                      if (index > 0) ...[
-                        const SizedBox(width: 8),
-                        TextButton(
-                            onPressed: () => Navigator.pop(context, -1),
-                            child: const Text('Back')),
-                      ],
-                      const SizedBox(width: 8),
-                      FilledButton(
-                          onPressed: () => Navigator.pop(context, last ? 0 : 1),
-                          child: Text(last ? 'Done' : 'Next')),
-                    ]),
+                    // Wraps onto a second line on narrow phones instead of
+                    // pushing a button off the card.
+                    OverflowBar(
+                        alignment: MainAxisAlignment.end,
+                        overflowAlignment: OverflowBarAlignment.end,
+                        spacing: 8,
+                        overflowSpacing: 4,
+                        children: [
+                          TextButton(
+                              onPressed: () => Navigator.pop(context, 0),
+                              child: const Text('Close')),
+                          if (index > 0)
+                            TextButton(
+                                onPressed: () => Navigator.pop(context, -1),
+                                child: const Text('Back')),
+                          FilledButton(
+                              autofocus: true,
+                              onPressed: () =>
+                                  Navigator.pop(context, last ? 0 : 1),
+                              child: Text(last ? 'Done' : 'Next')),
+                        ]),
                   ])),
         ),
       ),
