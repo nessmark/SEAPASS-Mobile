@@ -52,7 +52,10 @@ class SeaPassAssistantButton extends StatelessWidget {
   /// holds booking prefill fields.
   final ValueChanged<Map<String, dynamic>>? onNavigation;
   final VoidCallback? onGuide;
-  final ValueChanged<Map<String, dynamic>>? onGuideAction;
+
+  /// Runs the page guide for an assistant `guide` event. Returns true when a
+  /// control was really shown, so the passenger can be offered the chat again.
+  final Future<bool> Function(Map<String, dynamic> event)? onGuideAction;
 
   /// Icon-only button for pushed screens with a busy top bar.
   final bool compact;
@@ -100,7 +103,11 @@ class SeaPassAssistantButton extends StatelessWidget {
     }
     return Tooltip(
       message: 'Open the SeaPass assistant',
-      child: TextButton(onPressed: () => open(context), child: const Text(label)),
+      child: TextButton(
+        onPressed: () => open(context),
+        style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+        child: const Text(label, maxLines: 1),
+      ),
     );
   }
 
@@ -174,7 +181,7 @@ class SeaPassAssistantButton extends StatelessWidget {
     if (confirmLeave != null) {
       if (!sheetContext.mounted) return;
       final leave = await confirmLeave!(sheetContext);
-      if (!leave) return;
+      if (!leave || !sheetContext.mounted) return;
     }
     if (!_closeSheet(sheetContext) || !context.mounted) return;
     final sanitized = {'type': 'navigate', 'page': request.page, 'args': request.prefill};
@@ -189,16 +196,39 @@ class SeaPassAssistantButton extends StatelessWidget {
     }
   }
 
-  void _handleGuide(BuildContext context, BuildContext sheetContext, Map<String, dynamic> event) {
+  Future<void> _handleGuide(BuildContext context, BuildContext sheetContext, Map<String, dynamic> event) async {
     if (!_closeSheet(sheetContext) || !context.mounted) return;
-    if (onGuideAction != null) {
-      onGuideAction!(event);
-    } else if (onGuide != null) {
+    if (onGuide != null && onGuideAction == null) {
       onGuide!();
-    } else {
-      showSeaPassPageGuide(context, pagePath, event);
+      return;
     }
+    final shown = await (onGuideAction?.call(event) ?? showSeaPassPageGuide(context, pagePath, event));
+    // A guide the assistant started hands the passenger back to the chat,
+    // which keeps its history on the device.
+    if (!shown || event['source'] != 'seapass-assistant' || !context.mounted) return;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+      content: const Text('Guide finished.'),
+      action: SnackBarAction(label: 'Back to chat', onPressed: () {
+        if (context.mounted) open(context);
+      }),
+    ));
   }
+}
+
+/// Asks before the assistant opens another screen and drops this one.
+Future<bool> confirmAssistantLeave(BuildContext context, {required String title, required String message}) async {
+  final leave = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(title),
+      content: Text(message),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Stay')),
+        FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Leave')),
+      ],
+    ),
+  );
+  return leave ?? false;
 }
 
 class _Failure {
@@ -238,6 +268,7 @@ class AssistantSheet extends StatefulWidget {
     this.readyTimeout = const Duration(seconds: 30),
     this.loadTimeout = const Duration(seconds: 25),
     this.canShowGuide = true,
+    this.openSettings = openAssistantPermissionSettings,
   });
 
   final Future<Map<String, dynamic>> Function() load;
@@ -251,6 +282,9 @@ class AssistantSheet extends StatefulWidget {
   final Duration loadTimeout;
   final bool canShowGuide;
 
+  /// Opens the app's system settings, for a microphone the passenger blocked.
+  final Future<bool> Function() openSettings;
+
   @override
   State<AssistantSheet> createState() => _AssistantSheetState();
 }
@@ -260,6 +294,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
   Map<String, dynamic>? _config;
   _Failure? _failure;
   bool _ready = false;
+  bool _micBlocked = false;
   Timer? _readyTimer;
 
   static const _tooSlow = _Failure('Taking too long',
@@ -291,6 +326,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
         _config = null;
         _failure = null;
         _ready = false;
+        _micBlocked = false;
       });
     }
     try {
@@ -315,6 +351,8 @@ class _AssistantSheetState extends State<AssistantSheet> {
       case 'surface_error':
         _readyTimer?.cancel();
         setState(() => _failure = event['reason'] == 'unsupported' ? _unsupported : _pageFailed);
+      case 'mic_blocked':
+        if (!_micBlocked) setState(() => _micBlocked = true);
       default:
         widget.onEvent(event);
     }
@@ -334,7 +372,31 @@ class _AssistantSheetState extends State<AssistantSheet> {
         ),
       ),
       if (!_ready) Positioned.fill(child: _buildLoading(context)),
+      if (_ready && _micBlocked) Positioned(left: 12, right: 12, bottom: 12, child: _buildMicBanner(context)),
     ]);
+  }
+
+  Widget _buildMicBanner(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      key: const ValueKey('assistant-mic-blocked'),
+      color: theme.colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 4, 8),
+        child: Row(children: [
+          Icon(Icons.mic_off_rounded, color: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(width: 12),
+          const Expanded(child: Text('Microphone is off for SeaPass. You can still type.')),
+          TextButton(onPressed: () => widget.openSettings(), child: const Text('Settings')),
+          IconButton(
+            tooltip: 'Dismiss',
+            onPressed: () => setState(() => _micBlocked = false),
+            icon: const Icon(Icons.close_rounded, size: 20),
+          ),
+        ]),
+      ),
+    );
   }
 
   Widget _header(BuildContext context) {

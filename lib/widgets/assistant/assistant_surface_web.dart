@@ -3,6 +3,10 @@ import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 import 'package:web/web.dart' as web;
 
+/// Browsers keep microphone access in their own site settings.
+Future<bool> openAssistantPermissionSettings() async => false;
+
+/// Browser host: the assistant page in an iframe, talking over postMessage.
 class AssistantSurface extends StatefulWidget {
   final Uri uri;
   final Map<String, dynamic> config;

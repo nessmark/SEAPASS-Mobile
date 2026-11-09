@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// No system settings page to open on this platform.
+Future<bool> openAssistantPermissionSettings() async => false;
+
 /// Platforms without a web view. The sheet shows its own unavailable state.
 class AssistantSurface extends StatefulWidget {
   final Uri uri;

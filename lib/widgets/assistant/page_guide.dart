@@ -43,9 +43,11 @@ bool _guideOpen = false;
 /// Spotlights real controls on [page]. A highlight shows one target, a tour
 /// shows every target on screen. It only scrolls and points: it never taps,
 /// selects a seat, submits a form or pays.
-Future<void> showSeaPassPageGuide(BuildContext context, String page,
+///
+/// Returns true when at least one control was shown.
+Future<bool> showSeaPassPageGuide(BuildContext context, String page,
     [Map<String, dynamic>? event]) async {
-  if (_guideOpen) return;
+  if (_guideOpen) return false;
   final action = event?['action'];
   final args = action is Map ? action['args'] : null;
   final target = event?['target'] ?? (args is Map ? args['target'] : null);
@@ -60,27 +62,29 @@ Future<void> showSeaPassPageGuide(BuildContext context, String page,
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(
           content: Text('That control is not visible on this screen yet.')));
     }
-    return;
+    return false;
   }
   _guideOpen = true;
+  var shown = false;
   try {
     var index = 0;
     while (index >= 0 && index < steps.length) {
       final step = steps[index];
       final anchor = SeaPassGuideAnchor.anchors[step.id]?.currentContext;
-      if (anchor == null || !anchor.mounted || !context.mounted) return;
+      if (anchor == null || !anchor.mounted || !context.mounted) return shown;
       final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
       await Scrollable.ensureVisible(anchor,
           alignment: .35,
           duration: still ? Duration.zero : const Duration(milliseconds: 180));
       await WidgetsBinding.instance.endOfFrame;
-      if (!context.mounted || !anchor.mounted) return;
+      if (!context.mounted || !anchor.mounted) return shown;
       final render = anchor.findRenderObject();
-      if (render is! RenderBox || !render.hasSize) return;
+      if (render is! RenderBox || !render.hasSize) return shown;
       final rect = render.localToGlobal(Offset.zero) & render.size;
       final body = message is String && message.isNotEmpty && steps.length == 1
           ? message
           : step.body;
+      shown = true;
       final move = await showDialog<int>(
         context: context,
         useSafeArea: false,
@@ -93,9 +97,10 @@ Future<void> showSeaPassPageGuide(BuildContext context, String page,
           total: steps.length,
         ),
       );
-      if (move == null || move == 0 || !context.mounted) return;
+      if (move == null || move == 0 || !context.mounted) return shown;
       index += move;
     }
+    return shown;
   } finally {
     _guideOpen = false;
   }

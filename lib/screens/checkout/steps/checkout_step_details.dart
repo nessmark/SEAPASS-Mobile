@@ -7,6 +7,7 @@ import '../../../models/passenger_booking_models.dart';
 import '../../../models/route_fare.dart';
 import '../../../models/schedule.dart';
 import '../../../widgets/app_palette.dart';
+import '../../../widgets/assistant/page_guide.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/section_header.dart';
 import '../../../widgets/status_chip.dart';
@@ -54,6 +55,9 @@ class CheckoutStepDetails extends StatelessWidget {
         const SizedBox(height: 18),
 
         // Seat Category Counter Selectors
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
         const SectionHeader('Select Seats & Passenger Types'),
 
         _buildCounterRow(context, 
@@ -83,17 +87,23 @@ class CheckoutStepDetails extends StatelessWidget {
           onDecrement: () => onDecrementCategory('senior'),
           onIncrement: () => onIncrementCategory('senior'),
         ),
+          ],
+        ).guide('passenger_types'),
         const SizedBox(height: 22),
 
         // Dynamic Passenger Detail Cards
-        SectionHeader('Passenger Details (${passengers.length} Total)'),
-
-        ...passengers.map((p) => _buildPassengerAccordionCard(context, p)),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SectionHeader('Passenger Details (${passengers.length} Total)'),
+            ...passengers.map((p) => _buildPassengerAccordionCard(context, p)),
+          ],
+        ).guide('passenger_details'),
 
         const SizedBox(height: 14),
 
         // Sticky Bottom Price & Action
-        _buildStep1BottomBar(context),
+        _buildStep1BottomBar(context).guide('fare_total'),
       ],
     );
   }

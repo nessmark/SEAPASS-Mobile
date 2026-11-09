@@ -54,6 +54,14 @@ class AssistantNavigationRequest {
     final route = (args['route']?.toString() ?? '').trim();
     if (route.isNotEmpty && route.length <= 100) out['route'] = route;
 
+    // Direction for the trips screen port picker. An explicit origin wins,
+    // otherwise the port named first in the route text.
+    final from = assistantPortOf(args['from']?.toString()) ?? assistantPortOf(route, first: true);
+    if (from != null) {
+      out['from'] = from;
+      out['to'] = from == assistantPorts.first ? assistantPorts.last : assistantPorts.first;
+    }
+
     final trip = int.tryParse(args['trip_id']?.toString() ?? '');
     if (trip != null && trip > 0) out['trip_id'] = trip;
 
@@ -68,6 +76,35 @@ class AssistantNavigationRequest {
 
   @override
   int get hashCode => Object.hash(page, Object.hashAllUnordered(prefill.entries.map((e) => '${e.key}=${e.value}')));
+}
+
+/// The two ports the passenger app books between, as the trips screen names them.
+const assistantPorts = ['Surigao', 'San Jose'];
+
+const _portWords = <String, String>{
+  'surigao': 'Surigao',
+  'san jose': 'San Jose',
+  'sanjose': 'San Jose',
+  'dinagat': 'San Jose',
+};
+
+/// The port named in [text]. With [first], the one named earliest, so
+/// "San Jose to Surigao" gives San Jose. Null when no port is named.
+String? assistantPortOf(String? text, {bool first = false}) {
+  final value = (text ?? '').toLowerCase();
+  if (value.trim().isEmpty) return null;
+  String? found;
+  var at = -1;
+  for (final entry in _portWords.entries) {
+    final index = value.indexOf(entry.key);
+    if (index < 0) continue;
+    if (!first) return entry.value;
+    if (at < 0 || index < at) {
+      at = index;
+      found = entry.value;
+    }
+  }
+  return found;
 }
 
 /// Hands a navigation request from a pushed screen (checkout, boarding pass)

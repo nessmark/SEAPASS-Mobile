@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../models/passenger_booking_models.dart';
 import '../../../models/schedule.dart';
 import '../../../widgets/app_palette.dart';
+import '../../../widgets/assistant/page_guide.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/status_chip.dart';
 
@@ -50,7 +51,7 @@ class CheckoutStepSeatMap extends StatelessWidget {
         FilledButton.icon(onPressed: isRefreshing ? null : onManualRefresh,
           icon: const Icon(Icons.refresh_rounded), label: Text(isRefreshing ? 'Refreshing...' : 'Refresh Seats')),
         TextButton(onPressed: onBackToDetails, child: const Text('Back to details')),
-      ]));
+      ])).guide('seat_map');
     }
     final activePassenger = passengers.isNotEmpty && activePassengerIndex < passengers.length
         ? passengers[activePassengerIndex]
@@ -318,7 +319,7 @@ class CheckoutStepSeatMap extends StatelessWidget {
           ),
         ),
       ],
-    );
+    ).guide('seat_map');
   }
 
   Widget _buildSeatLegend(BuildContext context) {

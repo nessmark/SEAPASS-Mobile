@@ -55,8 +55,12 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
       _selectedDate = date;
       _focusedDay = date;
     }
+    final from = args['from']?.toString();
     final route = args['route']?.toString().toLowerCase() ?? '';
-    if (route.startsWith('san jose') || route.startsWith('dinagat')) {
+    if (_ports.contains(from)) {
+      _from = from!;
+      _to = _ports.firstWhere((port) => port != from);
+    } else if (route.startsWith('san jose') || route.startsWith('dinagat')) {
       _from = 'San Jose';
       _to = 'Surigao';
     }

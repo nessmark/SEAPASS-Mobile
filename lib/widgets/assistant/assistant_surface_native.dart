@@ -8,6 +8,9 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 import 'assistant_permissions.dart';
 
+/// Opens SeaPass in the phone's settings, where a blocked microphone is allowed.
+Future<bool> openAssistantPermissionSettings() => openAppSettings();
+
 /// Native (Android) host for the Laravel assistant page.
 ///
 /// Reports `ready` once the page has its session, and `surface_error` when it
@@ -55,11 +58,15 @@ class _AssistantSurfaceState extends State<AssistantSurface> {
         await request.deny();
         return;
       }
-      final granted = await Permission.microphone.request().isGranted;
-      if (granted) {
+      final status = await Permission.microphone.request();
+      if (status.isGranted) {
         await request.grant();
-      } else {
-        await request.deny();
+        return;
+      }
+      await request.deny();
+      // Android stops asking after a second refusal, so point to Settings.
+      if (mounted && (status.isPermanentlyDenied || status.isRestricted)) {
+        widget.onEvent({'type': 'mic_blocked'});
       }
     });
     await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
