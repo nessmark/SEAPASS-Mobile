@@ -118,6 +118,18 @@ void main() {
       }
     });
 
+    test('too many requests asks the passenger to wait, with a retry', () async {
+      final client = MockClient((_) async => http.Response('{"message":"Too Many Attempts."}', 429));
+      try {
+        await AssistantService.bootstrap(label: 'Trips', path: 'trips', client: client, readToken: _token);
+        fail('should fail');
+      } on AssistantUnavailable catch (error) {
+        expect(error.kind, AssistantFailureKind.unavailable);
+        expect(error.message, 'The assistant is busy right now. Wait a minute, then try again.');
+        expect(error.canRetry, isTrue);
+      }
+    });
+
     test('a dropped connection is unreachable', () async {
       final client = MockClient((_) async => throw const SocketException('Connection refused'));
       await expectLater(

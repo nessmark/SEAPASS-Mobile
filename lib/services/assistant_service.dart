@@ -113,6 +113,10 @@ class AssistantService {
       final decoded = jsonDecode(response.body);
       if (decoded is Map<String, dynamic>) data = decoded;
     } catch (_) {}
+    if (response.statusCode == 429) {
+      throw const AssistantUnavailable(
+          AssistantFailureKind.unavailable, 'The assistant is busy right now. Wait a minute, then try again.');
+    }
     if (response.statusCode == 503) {
       throw AssistantUnavailable(AssistantFailureKind.unavailable, data['message']?.toString());
     }

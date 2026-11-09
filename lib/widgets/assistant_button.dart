@@ -1,3 +1,21 @@
+/// Passenger app host for the SeaPass assistant.
+///
+/// The chat panel is the Laravel `/assistant/embed` page, shown in an iframe on
+/// web and a WebView on Android. This file owns everything around it:
+///
+/// * The launcher sits in the top bar of the passenger shell, checkout and
+///   boarding pass, so it never covers a screen's own buttons.
+/// * The sheet shows one clear state for offline, server unreachable, signed
+///   out, assistant switched off and too slow, each with a way out. Every wait
+///   is bounded.
+/// * Page events: `ready` (page loaded, host sends the session), `close`,
+///   `navigate` (`page` plus booking prefill `args`), `guide` (a highlight or
+///   the current screen tour), `save_pdf` (native only) and `mic_blocked`
+///   (native only, from the host itself).
+/// * `navigate` only opens a passenger tab and fills the trip search. It never
+///   books, selects seats or pays. Android back closes the sheet first.
+library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
