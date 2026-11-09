@@ -184,14 +184,19 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
         children: [
           const SeaPassLogo(size: 26),
           const SizedBox(width: AppPalette.space12),
-          Text(
-            _getTabTitle(_currentIndex),
-            style: text.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.3,
+          // The title gives way first, so the assistant launcher always fits,
+          // even with large system text.
+          Expanded(
+            child: Text(
+              _getTabTitle(_currentIndex),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: text.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+              ),
             ),
           ),
-          const Spacer(),
           widget.assistantSlot ??
               SeaPassAssistantButton(
                 key: const ValueKey('assistant-launcher'),

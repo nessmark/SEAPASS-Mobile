@@ -79,6 +79,9 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
         to: _to,
       );
       _fareFuture = _dataService.fetchFareForRoute('', from: _from, to: _to);
+      // Fare cards show their own fallback. With no sailings to show, nothing
+      // listens, and a failed fare must not surface as an uncaught error.
+      _fareFuture!.ignore();
     });
   }
 
