@@ -142,7 +142,8 @@ class SeaPassAssistantButton extends StatelessWidget {
     final mounted = mountedGuideTargets().toList();
     Future<Map<String, dynamic>> load() =>
         bootstrapper(label: pageLabel, path: pagePath, theme: theme, details: screenDetails, mountedTargets: mounted);
-    final hasGuide = assistantTargetsFor(pagePath, mounted: mounted).isNotEmpty;
+    final hasGuide =
+        onGuide != null || (assistantPage(pagePath)?.targets.any((t) => mounted.contains(t.id)) ?? false);
     try {
       await showModalBottomSheet<void>(
         context: context,
@@ -153,22 +154,27 @@ class SeaPassAssistantButton extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         builder: (sheetContext) {
           _sheetContext = sheetContext;
-          return SizedBox(
-            height: MediaQuery.sizeOf(sheetContext).height * .9,
-            child: AssistantSheet(
-              load: load,
-              uri: AssistantService.embedUri,
-              surfaceBuilder: surfaceBuilder,
-              readyTimeout: readyTimeout,
-              canShowGuide: hasGuide,
-              onClose: () => _closeSheet(sheetContext),
-              onSignIn: () {
-                _closeSheet(sheetContext);
-                Navigator.of(context, rootNavigator: true)
-                    .pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
-              },
-              onShowGuide: () => _handleGuide(context, sheetContext, const {'type': 'guide'}),
-              onEvent: (event) => _handleEvent(context, sheetContext, event),
+          final size = MediaQuery.sizeOf(sheetContext);
+          final inset = MediaQuery.viewInsetsOf(sheetContext).bottom;
+          return Padding(
+            padding: EdgeInsets.only(bottom: inset),
+            child: SizedBox(
+              height: (size.height * .9 - inset).clamp(240.0, size.height * .9),
+              child: AssistantSheet(
+                load: load,
+                uri: AssistantService.embedUri,
+                surfaceBuilder: surfaceBuilder,
+                readyTimeout: readyTimeout,
+                canShowGuide: hasGuide,
+                onClose: () => _closeSheet(sheetContext),
+                onSignIn: () {
+                  _closeSheet(sheetContext);
+                  Navigator.of(context, rootNavigator: true)
+                      .pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
+                },
+                onShowGuide: () => _handleGuide(context, sheetContext, const {'type': 'guide'}),
+                onEvent: (event) => _handleEvent(context, sheetContext, event),
+              ),
             ),
           );
         },
@@ -319,6 +325,7 @@ class AssistantSheet extends StatefulWidget {
 class _AssistantSheetState extends State<AssistantSheet> {
   int _attempt = 0;
   Map<String, dynamic>? _config;
+  Widget? _surface;
   _Failure? _failure;
   bool _ready = false;
   bool _micBlocked = false;
@@ -352,6 +359,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
     if (attempt > 1) {
       setState(() {
         _config = null;
+        _surface = null;
         _failure = null;
         _ready = false;
         _micBlocked = false;
@@ -396,15 +404,22 @@ class _AssistantSheetState extends State<AssistantSheet> {
     if (failure != null) return _buildFailure(context, failure);
     final config = _config;
     if (config == null) return _buildLoading(context);
-    return Stack(children: [
-      Positioned.fill(
-        child: KeyedSubtree(
-          key: ValueKey('assistant-surface-$_attempt'),
-          child: widget.surfaceBuilder(context, widget.uri, config, _onSurfaceEvent),
-        ),
+    final surface = _surface ??= KeyedSubtree(
+      key: ValueKey('assistant-surface-$_attempt'),
+      child: widget.surfaceBuilder(context, widget.uri, config, _onSurfaceEvent),
+    );
+    return Column(children: [
+      Expanded(
+        child: Stack(children: [
+          Positioned.fill(child: surface),
+          if (!_ready) Positioned.fill(child: _buildLoading(context)),
+        ]),
       ),
-      if (!_ready) Positioned.fill(child: _buildLoading(context)),
-      if (_ready && _micBlocked) Positioned(left: 12, right: 12, bottom: 12, child: _buildMicBanner(context)),
+      if (_ready && _micBlocked)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+          child: _buildMicBanner(context),
+        ),
     ]);
   }
 

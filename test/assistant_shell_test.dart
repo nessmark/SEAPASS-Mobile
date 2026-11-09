@@ -9,6 +9,7 @@ import 'package:seapass_passenger_app/theme/app_theme.dart';
 import 'package:seapass_passenger_app/widgets/assistant/assistant_navigation.dart';
 import 'package:seapass_passenger_app/widgets/assistant/page_guide.dart';
 import 'package:seapass_passenger_app/widgets/assistant/assistant_pages.dart';
+import 'package:seapass_passenger_app/widgets/assistant_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String _ymd(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -63,11 +64,25 @@ void main() {
   testWidgets('every passenger tab keeps the launcher in the top bar, clear of the tab bar', (tester) async {
     await pumpShell(tester);
     final launcher = find.byKey(const ValueKey('assistant-launcher'));
-    for (final tab in ['Trips', 'Bookings', 'Advisories', 'Account']) {
+    const tabs = <String, (String, String)>{
+      'Trips': ('trips', 'SeaPass'),
+      'Bookings': ('bookings', 'My Bookings'),
+      'Advisories': ('advisories', 'Advisories'),
+      'Account': ('profile', 'My Account'),
+    };
+    for (final entry in tabs.entries) {
+      final tab = entry.key;
+      final (expectedPath, expectedTitle) = entry.value;
+      final tabRect = tester.getRect(find.text(tab).last);
+      expect(tabRect.left, greaterThanOrEqualTo(0), reason: tab);
+      expect(tabRect.right, lessThanOrEqualTo(360), reason: tab);
       await tester.tap(find.text(tab).last);
       await tester.pump(const Duration(milliseconds: 400));
       expect(launcher, findsOneWidget, reason: tab);
       expect(find.descendant(of: find.byType(AppBar), matching: launcher), findsOneWidget, reason: tab);
+      expect(find.descendant(of: find.byType(AppBar), matching: find.text(expectedTitle)), findsOneWidget, reason: tab);
+      final button = tester.widget<SeaPassAssistantButton>(find.byType(SeaPassAssistantButton));
+      expect(button.pagePath, expectedPath, reason: tab);
       final rect = tester.getRect(launcher);
       expect(rect.left, greaterThanOrEqualTo(0), reason: tab);
       expect(rect.right, lessThanOrEqualTo(360), reason: tab);
@@ -105,6 +120,7 @@ void main() {
     await pumpShell(tester);
     await tester.tap(find.text('Account').last);
     await tester.pump(const Duration(milliseconds: 300));
+    expect(find.descendant(of: find.byType(AppBar), matching: find.text('My Account')), findsOneWidget);
     final day = DateTime.now().add(const Duration(days: 2));
     AssistantNavigationBus.pending.value = AssistantNavigationRequest.fromEvent({
       'page': 'trips',

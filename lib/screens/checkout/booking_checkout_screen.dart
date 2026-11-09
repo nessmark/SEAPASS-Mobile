@@ -937,9 +937,12 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
     final step = const ['Passenger details', 'Seat selection', 'Review and pay'][_currentStep.clamp(0, 2)];
     final s = widget.schedule;
     final seats = _passengers.where((p) => p.assignedSeat?.isNotEmpty == true).length;
+    final total = _fare.regular > 0
+        ? 'Total PHP ${_totalPrice.toStringAsFixed(2)}.'
+        : (_isLoadingFares ? 'Fare is loading.' : 'Fare has not loaded yet.');
     return 'Step ${_currentStep + 1} of 3, $step. ${s.from} to ${s.to}, ${s.date} ${s.time}, ${s.boatName}.'
         ' $_totalSeats passenger${_totalSeats == 1 ? '' : 's'}, $seats with a seat.'
-        ' Total PHP ${_totalPrice.toStringAsFixed(2)}. Nothing is paid until the passenger taps Pay.';
+        ' $total Nothing is paid until the passenger taps Pay.';
   }
 
   // ─── Visual Stepper Header ────────────────────────────────────────────────

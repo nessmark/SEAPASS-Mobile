@@ -205,6 +205,9 @@ void main() {
       surface.emit!({'type': 'mic_blocked'});
       await tester.pump();
       expect(find.text('Microphone is off for SeaPass. You can still type.'), findsOneWidget);
+      final surfaceRect = tester.getRect(find.text('assistant page'));
+      final bannerRect = tester.getRect(find.text('Microphone is off for SeaPass. You can still type.'));
+      expect(surfaceRect.bottom, lessThanOrEqualTo(bannerRect.top));
       await tester.tap(find.text('Settings'));
       expect(opened, 1);
       await tester.tap(find.byTooltip('Dismiss'));
@@ -407,6 +410,46 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Step 2 of 2'), findsNothing);
       expect(find.text('Booking list'), findsOneWidget);
+    });
+
+    testWidgets('hides Show me this page on failure when no guide anchors are mounted', (tester) async {
+      phone(tester);
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          appBar: AppBar(title: const Text('My Bookings'), actions: [
+            SeaPassAssistantButton(
+              pageLabel: 'My Bookings',
+              pagePath: 'bookings',
+              bootstrapper: ({required label, required path, required theme, details, mountedTargets}) async =>
+                  throw const AssistantUnavailable(AssistantFailureKind.offline),
+              surfaceBuilder: surface.build,
+            ),
+          ]),
+          body: const Center(child: Text('Error loading bookings')),
+        ),
+      ));
+      await tester.tap(find.text('Ask SeaPass'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(find.text('You are offline'), findsOneWidget);
+      expect(find.text('Show me this page'), findsNothing);
+    });
+
+    testWidgets('soft keyboard inset lifts the sheet without restarting bootstrap', (tester) async {
+      phone(tester);
+      await tester.pumpWidget(app());
+      await openSheet(tester);
+      expect(loads, 1);
+      expect(surface.built, 1);
+      final beforeBottom = tester.getRect(find.byType(AssistantSheet)).bottom;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 260);
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pump();
+      final afterBottom = tester.getRect(find.byType(AssistantSheet)).bottom;
+      expect(afterBottom, lessThan(beforeBottom));
+      expect(loads, 1);
+      expect(surface.built, 1);
     });
   });
 

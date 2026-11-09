@@ -21,6 +21,14 @@ class _SeaPassGuideAnchorState extends State<SeaPassGuideAnchor> {
   }
 
   @override
+  void didUpdateWidget(SeaPassGuideAnchor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.id != widget.id && SeaPassGuideAnchor.anchors[oldWidget.id] == anchor) {
+      SeaPassGuideAnchor.anchors.remove(oldWidget.id);
+    }
+  }
+
+  @override
   void dispose() {
     if (SeaPassGuideAnchor.anchors[widget.id] == anchor) {
       SeaPassGuideAnchor.anchors.remove(widget.id);

@@ -70,6 +70,10 @@ void main() {
       final bad = AssistantNavigationRequest.sanitizeBookingPrefill(
           {'date': 'next friday', 'seats': 11, 'route': 'x' * 101}, today: today);
       expect(bad, isEmpty);
+      for (final rolledDate in ['2026-02-31', '2026-11-31', '2027-04-31']) {
+        expect(AssistantNavigationRequest.sanitizeBookingPrefill({'date': rolledDate}, today: today), isEmpty,
+            reason: rolledDate);
+      }
       final todayOk = AssistantNavigationRequest.sanitizeBookingPrefill({'date': '2026-11-09', 'seats': '10'}, today: today);
       expect(todayOk, {'date': '2026-11-09', 'seats': 10});
     });
@@ -98,6 +102,15 @@ void main() {
           {'route': 'Surigao → San Jose', 'from': 'San Jose'}, today: today);
       expect(prefill['from'], 'San Jose');
       expect(prefill['to'], 'Surigao');
+    });
+
+    test('an explicit destination derives the opposite origin port', () {
+      final toSanJose = AssistantNavigationRequest.sanitizeBookingPrefill({'to': 'San Jose'}, today: today);
+      expect(toSanJose['from'], 'Surigao');
+      expect(toSanJose['to'], 'San Jose');
+      final toSurigao = AssistantNavigationRequest.sanitizeBookingPrefill({'to': 'Surigao City'}, today: today);
+      expect(toSurigao['from'], 'San Jose');
+      expect(toSurigao['to'], 'Surigao');
     });
   });
 

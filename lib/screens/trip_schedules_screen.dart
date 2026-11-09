@@ -113,6 +113,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
       final tmp = _from;
       _from = _to;
       _to = tmp;
+      _requestedTripId = null;
     });
     _loadAvailableDates();
     _search();
@@ -345,6 +346,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                           _to = v;
                           _from = _ports.firstWhere((p) => p != v);
                         }
+                        _requestedTripId = null;
                       });
                       _loadAvailableDates();
                       _search();
@@ -409,6 +411,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                 setState(() {
                   _selectedDate = day;
                   _focusedDay = day;
+                  _requestedTripId = null;
                 });
                 _search();
               },

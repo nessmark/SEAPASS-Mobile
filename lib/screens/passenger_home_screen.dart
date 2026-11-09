@@ -285,38 +285,46 @@ class _FloatingNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _NavBarItem(
-            index: 0,
-            currentIndex: currentIndex,
-            label: 'Trips',
-            activeIcon: Icons.directions_boat_filled_rounded,
-            inactiveIcon: Icons.directions_boat_outlined,
-            onTap: () => onTabSelected(0),
+          Flexible(
+            child: _NavBarItem(
+              index: 0,
+              currentIndex: currentIndex,
+              label: 'Trips',
+              activeIcon: Icons.directions_boat_filled_rounded,
+              inactiveIcon: Icons.directions_boat_outlined,
+              onTap: () => onTabSelected(0),
+            ),
           ),
-          _NavBarItem(
-            index: 1,
-            currentIndex: currentIndex,
-            label: 'Bookings',
-            activeIcon: Icons.receipt_long_rounded,
-            inactiveIcon: Icons.receipt_long_outlined,
-            onTap: () => onTabSelected(1),
+          Flexible(
+            child: _NavBarItem(
+              index: 1,
+              currentIndex: currentIndex,
+              label: 'Bookings',
+              activeIcon: Icons.receipt_long_rounded,
+              inactiveIcon: Icons.receipt_long_outlined,
+              onTap: () => onTabSelected(1),
+            ),
           ),
-          _NavBarItem(
-            index: 2,
-            currentIndex: currentIndex,
-            label: 'Advisories',
-            activeIcon: Icons.campaign_rounded,
-            inactiveIcon: Icons.campaign_outlined,
-            showAdvisoryBadge: true,
-            onTap: () => onTabSelected(2),
+          Flexible(
+            child: _NavBarItem(
+              index: 2,
+              currentIndex: currentIndex,
+              label: 'Advisories',
+              activeIcon: Icons.campaign_rounded,
+              inactiveIcon: Icons.campaign_outlined,
+              showAdvisoryBadge: true,
+              onTap: () => onTabSelected(2),
+            ),
           ),
-          _NavBarItem(
-            index: 3,
-            currentIndex: currentIndex,
-            label: 'Account',
-            activeIcon: Icons.person_rounded,
-            inactiveIcon: Icons.person_outline_rounded,
-            onTap: () => onTabSelected(3),
+          Flexible(
+            child: _NavBarItem(
+              index: 3,
+              currentIndex: currentIndex,
+              label: 'Account',
+              activeIcon: Icons.person_rounded,
+              inactiveIcon: Icons.person_outline_rounded,
+              onTap: () => onTabSelected(3),
+            ),
           ),
         ],
       ),
@@ -402,6 +410,8 @@ class _NavBarItem extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: text.labelSmall?.copyWith(
                     fontSize: 11,
                     letterSpacing: 0,

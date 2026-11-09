@@ -49,14 +49,23 @@ class AssistantNavigationRequest {
 
     final date = args['date']?.toString() ?? '';
     final parsed = RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date) ? DateTime.tryParse(date) : null;
-    if (parsed != null && !parsed.isBefore(day)) out['date'] = date;
+    if (parsed != null &&
+        '${parsed.year.toString().padLeft(4, '0')}-${parsed.month.toString().padLeft(2, '0')}-${parsed.day.toString().padLeft(2, '0')}' ==
+            date &&
+        !parsed.isBefore(day)) {
+      out['date'] = date;
+    }
 
     final route = (args['route']?.toString() ?? '').trim();
     if (route.isNotEmpty && route.length <= 100) out['route'] = route;
 
     // Direction for the trips screen port picker. An explicit origin wins,
-    // otherwise the port named first in the route text.
-    final from = assistantPortOf(args['from']?.toString()) ?? assistantPortOf(route, first: true);
+    // otherwise the port named first in the route text, or the opposite of an
+    // explicit destination.
+    final toPort = assistantPortOf(args['to']?.toString());
+    final from = assistantPortOf(args['from']?.toString()) ??
+        assistantPortOf(route, first: true) ??
+        (toPort == null ? null : (toPort == assistantPorts.first ? assistantPorts.last : assistantPorts.first));
     if (from != null) {
       out['from'] = from;
       out['to'] = from == assistantPorts.first ? assistantPorts.last : assistantPorts.first;
