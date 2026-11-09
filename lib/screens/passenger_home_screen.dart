@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/advisory_provider.dart';
 import '../widgets/app_palette.dart';
 import '../widgets/assistant_button.dart';
+import '../widgets/assistant/assistant_navigation.dart';
 import '../widgets/assistant/page_guide.dart';
 import '../widgets/seapass_logo.dart';
 import 'advisories_screen.dart';
@@ -41,11 +42,42 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    AssistantNavigationBus.pending.addListener(_takePendingAssistantRequest);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<AdvisoryProvider>().fetchUnreadCount();
+        _takePendingAssistantRequest();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    AssistantNavigationBus.pending.removeListener(_takePendingAssistantRequest);
+    super.dispose();
+  }
+
+  /// A request left by the assistant on a pushed screen (checkout, boarding pass).
+  void _takePendingAssistantRequest() {
+    if (!mounted || AssistantNavigationBus.pending.value == null) return;
+    final request = AssistantNavigationBus.take();
+    if (request != null) _applyAssistantRequest(request);
+  }
+
+  /// Opens the requested tab. A trips request only fills the search: the
+  /// passenger still opens a sailing, picks seats and taps Pay.
+  void _applyAssistantRequest(AssistantNavigationRequest request) {
+    if (!mounted) return;
+    setState(() {
+      if (request.page == 'trips' && request.prefill.isNotEmpty) {
+        _bookingPrefill = Map<String, dynamic>.from(request.prefill);
+        _bookingIntentVersion++;
+      }
+      _currentIndex = request.tabIndex;
+    });
+    if (request.tabIndex == 2) {
+      context.read<AdvisoryProvider>().fetchUnreadCount();
+    }
   }
 
   @override
@@ -152,27 +184,27 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
         children: [
           const SeaPassLogo(size: 26),
           const SizedBox(width: AppPalette.space12),
-          Text(
-            _getTabTitle(_currentIndex),
-            style: text.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.3,
+          // The title gives way first, so the assistant launcher always fits,
+          // even with large system text.
+          Expanded(
+            child: Text(
+              _getTabTitle(_currentIndex),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: text.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+              ),
             ),
           ),
-          const Spacer(),
           widget.assistantSlot ??
               SeaPassAssistantButton(
-                pageLabel: _getTabTitle(_currentIndex),
+                key: const ValueKey('assistant-launcher'),
+                pageLabel: _getTabLabel(_currentIndex),
                 pagePath: _getTabPath(_currentIndex),
-                onNavigate: _handleAssistantNavigate,
                 onNavigation: (event) {
-                  if (event['page'] == 'trips' && event['args'] is Map) {
-                    setState(() {
-                      _bookingPrefill = Map<String, dynamic>.from(event['args'] as Map);
-                      _bookingIntentVersion++;
-                    });
-                  }
-                  _handleAssistantNavigate(event['page']?.toString() ?? '');
+                  final request = AssistantNavigationRequest.fromEvent(event);
+                  if (request != null) _applyAssistantRequest(request);
                 },
                 onGuideAction: (event) => showSeaPassPageGuide(context, _getTabPath(_currentIndex), event),
               ),
@@ -202,6 +234,10 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
     }
   }
 
+  /// Screen name sent to the assistant. The trips tab carries the app name as
+  /// its title, so it is named for what it shows.
+  String _getTabLabel(int index) => index == 0 ? 'Trips' : _getTabTitle(index);
+
   String _getTabPath(int index) {
     switch (index) {
       case 1:
@@ -213,19 +249,6 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
       case 0:
       default:
         return 'trips';
-    }
-  }
-
-  void _handleAssistantNavigate(String page) {
-    final targetIndex = switch (page.toLowerCase()) {
-      'trips' => 0,
-      'bookings' => 1,
-      'advisories' => 2,
-      'profile' => 3,
-      _ => -1,
-    };
-    if (targetIndex != -1 && mounted) {
-      setState(() => _currentIndex = targetIndex);
     }
   }
 
@@ -262,38 +285,46 @@ class _FloatingNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _NavBarItem(
-            index: 0,
-            currentIndex: currentIndex,
-            label: 'Trips',
-            activeIcon: Icons.directions_boat_filled_rounded,
-            inactiveIcon: Icons.directions_boat_outlined,
-            onTap: () => onTabSelected(0),
+          Flexible(
+            child: _NavBarItem(
+              index: 0,
+              currentIndex: currentIndex,
+              label: 'Trips',
+              activeIcon: Icons.directions_boat_filled_rounded,
+              inactiveIcon: Icons.directions_boat_outlined,
+              onTap: () => onTabSelected(0),
+            ),
           ),
-          _NavBarItem(
-            index: 1,
-            currentIndex: currentIndex,
-            label: 'Bookings',
-            activeIcon: Icons.receipt_long_rounded,
-            inactiveIcon: Icons.receipt_long_outlined,
-            onTap: () => onTabSelected(1),
+          Flexible(
+            child: _NavBarItem(
+              index: 1,
+              currentIndex: currentIndex,
+              label: 'Bookings',
+              activeIcon: Icons.receipt_long_rounded,
+              inactiveIcon: Icons.receipt_long_outlined,
+              onTap: () => onTabSelected(1),
+            ),
           ),
-          _NavBarItem(
-            index: 2,
-            currentIndex: currentIndex,
-            label: 'Advisories',
-            activeIcon: Icons.campaign_rounded,
-            inactiveIcon: Icons.campaign_outlined,
-            showAdvisoryBadge: true,
-            onTap: () => onTabSelected(2),
+          Flexible(
+            child: _NavBarItem(
+              index: 2,
+              currentIndex: currentIndex,
+              label: 'Advisories',
+              activeIcon: Icons.campaign_rounded,
+              inactiveIcon: Icons.campaign_outlined,
+              showAdvisoryBadge: true,
+              onTap: () => onTabSelected(2),
+            ),
           ),
-          _NavBarItem(
-            index: 3,
-            currentIndex: currentIndex,
-            label: 'Account',
-            activeIcon: Icons.person_rounded,
-            inactiveIcon: Icons.person_outline_rounded,
-            onTap: () => onTabSelected(3),
+          Flexible(
+            child: _NavBarItem(
+              index: 3,
+              currentIndex: currentIndex,
+              label: 'Account',
+              activeIcon: Icons.person_rounded,
+              inactiveIcon: Icons.person_outline_rounded,
+              onTap: () => onTabSelected(3),
+            ),
           ),
         ],
       ),
@@ -379,6 +410,8 @@ class _NavBarItem extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: text.labelSmall?.copyWith(
                     fontSize: 11,
                     letterSpacing: 0,

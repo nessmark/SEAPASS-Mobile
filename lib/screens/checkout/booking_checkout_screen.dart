@@ -12,6 +12,8 @@ import '../../services/passenger_data_service.dart';
 import '../../services/passenger_session.dart';
 import '../../services/seat_map_service.dart';
 import '../../widgets/app_palette.dart';
+import '../../widgets/assistant/page_guide.dart';
+import '../../widgets/assistant_button.dart';
 import '../../widgets/status_chip.dart';
 import '../passenger_home_screen.dart';
 import 'steps/checkout_step_details.dart';
@@ -874,6 +876,19 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
             }
           },
         ),
+        actions: [
+          SeaPassAssistantButton(
+            key: const ValueKey('assistant-launcher'),
+            pageLabel: 'Booking Checkout',
+            pagePath: 'checkout',
+            compact: true,
+            details: _assistantDetails,
+            confirmLeave: (context) => confirmAssistantLeave(context,
+                title: 'Leave checkout?',
+                message: 'Your seat choices on this booking will be lost. Nothing has been paid.'),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: _isLoadingFares
           ? Center(
@@ -901,7 +916,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                   child: Column(
                     children: [
                       // Stepper Progress Header
-                      _buildStepperHeader(),
+                      _buildStepperHeader().guide('checkout_steps'),
 
                       // Step Content
                       Expanded(
@@ -914,6 +929,20 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen>
                   ),
                 ),
     );
+  }
+
+  /// What the passenger sees right now, for the assistant. Never names
+  /// passengers or ID numbers.
+  String _assistantDetails() {
+    final step = const ['Passenger details', 'Seat selection', 'Review and pay'][_currentStep.clamp(0, 2)];
+    final s = widget.schedule;
+    final seats = _passengers.where((p) => p.assignedSeat?.isNotEmpty == true).length;
+    final total = _fare.regular > 0
+        ? 'Total PHP ${_totalPrice.toStringAsFixed(2)}.'
+        : (_isLoadingFares ? 'Fare is loading.' : 'Fare has not loaded yet.');
+    return 'Step ${_currentStep + 1} of 3, $step. ${s.from} to ${s.to}, ${s.date} ${s.time}, ${s.boatName}.'
+        ' $_totalSeats passenger${_totalSeats == 1 ? '' : 's'}, $seats with a seat.'
+        ' $total Nothing is paid until the passenger taps Pay.';
   }
 
   // ─── Visual Stepper Header ────────────────────────────────────────────────

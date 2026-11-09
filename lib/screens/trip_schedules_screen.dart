@@ -55,8 +55,12 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
       _selectedDate = date;
       _focusedDay = date;
     }
+    final from = args['from']?.toString();
     final route = args['route']?.toString().toLowerCase() ?? '';
-    if (route.startsWith('san jose') || route.startsWith('dinagat')) {
+    if (_ports.contains(from)) {
+      _from = from!;
+      _to = _ports.firstWhere((port) => port != from);
+    } else if (route.startsWith('san jose') || route.startsWith('dinagat')) {
       _from = 'San Jose';
       _to = 'Surigao';
     }
@@ -75,6 +79,9 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
         to: _to,
       );
       _fareFuture = _dataService.fetchFareForRoute('', from: _from, to: _to);
+      // Fare cards show their own fallback. With no sailings to show, nothing
+      // listens, and a failed fare must not surface as an uncaught error.
+      _fareFuture!.ignore();
     });
   }
 
@@ -106,6 +113,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
       final tmp = _from;
       _from = _to;
       _to = tmp;
+      _requestedTripId = null;
     });
     _loadAvailableDates();
     _search();
@@ -338,6 +346,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                           _to = v;
                           _from = _ports.firstWhere((p) => p != v);
                         }
+                        _requestedTripId = null;
                       });
                       _loadAvailableDates();
                       _search();
@@ -402,6 +411,7 @@ class _TripSchedulesScreenState extends State<TripSchedulesScreen> {
                 setState(() {
                   _selectedDate = day;
                   _focusedDay = day;
+                  _requestedTripId = null;
                 });
                 _search();
               },

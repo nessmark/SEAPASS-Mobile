@@ -10,6 +10,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../models/booking.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_palette.dart';
+import '../widgets/assistant/page_guide.dart';
+import '../widgets/assistant_button.dart';
 import '../widgets/status_chip.dart';
 
 class ViewTicketScreen extends StatefulWidget {
@@ -328,6 +330,17 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
           icon: const Icon(Icons.close_rounded, size: 22),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          SeaPassAssistantButton(
+            key: const ValueKey('assistant-launcher'),
+            pageLabel: 'Boarding Pass',
+            pagePath: 'ticket',
+            compact: true,
+            details: () => 'Booking $ticketId, $route, $boatName, $tripDate $tripTime.'
+                ' Status ${_getStatusText(bookingStatus)}. ${tickets.length} boarding pass${tickets.length == 1 ? '' : 'es'}.',
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -346,7 +359,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                 status: bookingStatus,
                 ticketCount: tickets.length,
                 total: totalCalculated,
-              ),
+              ).guide('trip_summary'),
 
               const SizedBox(height: AppPalette.space16),
 
@@ -360,7 +373,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
               ...tickets.asMap().entries.map((entry) {
                 final int index = entry.key;
                 final PassengerTicketInfo passenger = entry.value;
-                return RepaintBoundary(
+                final card = RepaintBoundary(
                   key: _getKeyForIndex(index),
                   child: Container(
                     color: AppColors.of(context).canvas,
@@ -379,6 +392,8 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                     ),
                   ),
                 );
+                // One anchor: the guide points at the first pass.
+                return index == 0 ? card.guide('boarding_qr') : card;
               }),
 
               const SizedBox(height: AppPalette.space8),
@@ -387,6 +402,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
+                  key: const ValueKey('ticket-save'),
                   onPressed: _isSaving
                       ? null
                       : () => _saveAllTicketsToGallery(tickets, ticketId),
@@ -413,7 +429,7 @@ class _ViewTicketScreenState extends State<ViewTicketScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
+              ).guide('save_tickets'),
               const SizedBox(height: AppPalette.space12),
               SizedBox(
                 width: double.infinity,

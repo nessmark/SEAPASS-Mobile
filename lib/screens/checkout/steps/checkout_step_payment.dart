@@ -4,6 +4,7 @@ import '../../../models/passenger_booking_models.dart';
 import '../../../models/route_fare.dart';
 import '../../../models/schedule.dart';
 import '../../../widgets/app_palette.dart';
+import '../../../widgets/assistant/page_guide.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/section_header.dart';
 import '../../../widgets/status_chip.dart';
@@ -89,9 +90,13 @@ class CheckoutStepPayment extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Select Payment Method
-        const SectionHeader('Select a Payment Method'),
-
-        ...paymentMethods.map((pm) => _buildPaymentTile(context, pm)),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SectionHeader('Select a Payment Method'),
+            ...paymentMethods.map((pm) => _buildPaymentTile(context, pm)),
+          ],
+        ).guide('payment_methods'),
 
         const SizedBox(height: 20),
 
@@ -101,7 +106,7 @@ class CheckoutStepPayment extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Itemized Price Details Card
-        _buildItemizedPriceCard(context),
+        _buildItemizedPriceCard(context).guide('fare_breakdown'),
 
         const SizedBox(height: 24),
 
@@ -128,6 +133,7 @@ class CheckoutStepPayment extends StatelessWidget {
               child: SizedBox(
                 height: 44,
                 child: FilledButton(
+                  key: const ValueKey('checkout-pay'),
                   onPressed: isSubmitting ? null : onConfirmAndPay,
                   style: FilledButton.styleFrom(
                     disabledBackgroundColor:
@@ -151,7 +157,7 @@ class CheckoutStepPayment extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                 ),
-              ),
+              ).guide('confirm_pay'),
             ),
           ],
         ),

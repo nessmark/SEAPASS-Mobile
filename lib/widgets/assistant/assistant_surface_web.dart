@@ -3,6 +3,10 @@ import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 import 'package:web/web.dart' as web;
 
+/// Browsers keep microphone access in their own site settings.
+Future<bool> openAssistantPermissionSettings() async => false;
+
+/// Browser host: the assistant page in an iframe, talking over postMessage.
 class AssistantSurface extends StatefulWidget {
   final Uri uri;
   final Map<String, dynamic> config;
@@ -35,7 +39,8 @@ class _AssistantSurfaceState extends State<AssistantSurface> {
       if (data is! Map || data['source'] != 'seapass-assistant') return;
       if (data['type'] == 'ready') {
         _frame.contentWindow?.postMessage({'type': 'seapass-bootstrap', ...widget.config}.jsify(), widget.uri.origin.toJS);
-      } else {
+        if (mounted) widget.onEvent({'source': 'seapass-assistant', 'type': 'ready'});
+      } else if (mounted) {
         widget.onEvent(Map<String, dynamic>.from(data));
       }
     }).toJS;
