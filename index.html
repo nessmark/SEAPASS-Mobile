@@ -194,35 +194,39 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ─── Screen: Direct Clean Login Interface ─── */
+    /* ─── Screen: Direct Clean Login Interface with SeaPass Boat Logo ─── */
     #login-screen {
       background: #F8FAFC;
-      padding: 40px 24px 24px;
+      padding: 36px 24px 24px;
       justify-content: center;
       overflow-y: auto;
     }
 
     .login-header {
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
 
-    .login-mini-logo {
-      width: 76px;
-      height: 76px;
-      background: linear-gradient(135deg, #00BFA5 0%, #00897B 100%);
-      border-radius: 22px;
+    /* Official SeaPass Boat Logo Container */
+    .login-logo-container {
+      width: 104px;
+      height: 104px;
       margin: 0 auto 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 10px 25px rgba(0, 191, 165, 0.25);
+      background: white;
+      border-radius: 26px;
+      padding: 12px;
+      box-shadow: 0 10px 25px rgba(0, 191, 165, 0.18), 0 2px 8px rgba(0, 0, 0, 0.04);
+      border: 1.5px solid rgba(0, 191, 165, 0.25);
     }
 
-    .login-mini-logo svg {
-      width: 46px;
-      height: 46px;
-      fill: white;
+    .login-boat-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(0, 191, 165, 0.15));
     }
 
     .login-title {
@@ -312,7 +316,26 @@
     .app-header-left {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+    }
+
+    .header-logo-badge {
+      width: 38px;
+      height: 38px;
+      background: white;
+      border: 1px solid rgba(0, 191, 165, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      box-shadow: 0 2px 6px rgba(0, 191, 165, 0.12);
+    }
+
+    .header-logo-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .app-header-title {
@@ -325,19 +348,6 @@
       font-size: 11.5px;
       color: var(--muted-text);
       font-weight: 500;
-    }
-
-    .header-user-avatar {
-      width: 36px;
-      height: 36px;
-      background: var(--primary-light);
-      color: var(--primary-dark);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 14px;
     }
 
     /* Tab Content Area */
@@ -881,12 +891,13 @@
       <!-- Screen Container -->
       <div class="screen-viewport">
 
-        <!-- 1. DIRECT LOGIN SCREEN (Active on Load) -->
+        <!-- 1. DIRECT LOGIN SCREEN FEATURING OFFICIAL SEAPASS BOAT LOGO -->
         <section class="screen active" id="login-screen">
           <div>
             <div class="login-header">
-              <div class="login-mini-logo">
-                <svg viewBox="0 0 24 24"><path d="M3 13.5l1.5-6h15l1.5 6m-18 0l2 6h14l2-6m-18 0h18M7 7.5V4h10v3.5"/></svg>
+              <!-- Official SeaPass Boat Logo -->
+              <div class="login-logo-container">
+                <img src="assets/logo.png" alt="SeaPass Boat Logo" class="login-boat-logo" onerror="this.onerror=null; this.src='assets/logo.svg';">
               </div>
               <div class="login-title">SeaPass - San Jose Port<br>Passenger Login</div>
               <div class="login-sub">Sign in to book lanchas and access digital passes</div>
@@ -913,7 +924,9 @@
           <!-- App Header -->
           <div class="app-header">
             <div class="app-header-left">
-              <div class="header-user-avatar" id="avatar-initial">NV</div>
+              <div class="header-logo-badge">
+                <img src="assets/logo.png" alt="SeaPass Logo" onerror="this.onerror=null; this.src='assets/logo.svg';">
+              </div>
               <div>
                 <div class="app-header-title" id="header-user-name">Nesmark Villocino</div>
                 <div class="app-header-sub">Regular Commuter • Surigao ⇄ San Jose</div>
@@ -1072,7 +1085,9 @@
           <!-- TAB 3: MY ACCOUNT -->
           <div class="tab-content" id="tab-account">
             <div class="route-filter-card" style="text-align:center; padding:24px 16px;">
-              <div class="header-user-avatar" style="width:64px; height:64px; font-size:24px; margin:0 auto 12px;">NV</div>
+              <div class="header-logo-badge" style="width:58px; height:58px; margin:0 auto 12px;">
+                <img src="assets/logo.png" alt="SeaPass Logo" onerror="this.onerror=null; this.src='assets/logo.svg';">
+              </div>
               <div style="font-size:18px; font-weight:800; color:var(--dark-text);" id="acc-name">Nesmark Villocino</div>
               <div style="font-size:13px; color:var(--muted-text);" id="acc-email">passenger@seapass.ph</div>
               <div style="margin-top:10px; display:inline-block; background:#E0F2F1; color:#00897B; font-size:11.5px; font-weight:700; padding:4px 12px; border-radius:20px;">
