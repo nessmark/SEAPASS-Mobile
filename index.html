@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SeaPass - Passenger Mobile App (Live System)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SeaPass - Passenger Mobile App</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,6 @@
       --dark-text: #0F172A;
       --body-text: #334155;
       --muted-text: #64748B;
-      --bg-page: #0B1120;
       --app-bg: #F8FAFC;
       --card-bg: #FFFFFF;
       --border-color: #E2E8F0;
@@ -37,157 +36,54 @@
     }
 
     body {
-      background-color: var(--bg-page);
+      background-color: #0F172A;
       color: var(--dark-text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      overflow-x: hidden;
-    }
-
-    /* Evaluator Top HUD Banner */
-    .evaluator-hud {
-      width: 100%;
-      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-      border-bottom: 2px solid var(--primary);
-      color: white;
-      padding: 10px 16px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      z-index: 1000;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    }
-
-    .hud-title-col {
+      min-height: -webkit-fill-available;
       display: flex;
       align-items: center;
-      gap: 10px;
-    }
-
-    .hud-badge {
-      background: var(--primary);
-      color: #0F172A;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 6px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    .hud-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #F8FAFC;
-    }
-
-    .hud-sub {
-      font-size: 12px;
-      color: #94A3B8;
-    }
-
-    .hud-credentials {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,0.06);
-      padding: 6px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.1);
-      font-size: 12px;
-    }
-
-    .hud-cred-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .hud-cred-label {
-      color: #94A3B8;
-    }
-
-    .hud-cred-val {
-      color: #38BDF8;
-      font-family: monospace;
-      font-weight: 700;
-    }
-
-    .hud-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hud-btn {
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      text-decoration: none;
-    }
-
-    .hud-btn-primary {
-      background: var(--primary);
-      color: #0F172A;
-    }
-
-    .hud-btn-primary:hover {
-      background: #2dd4bf;
-      transform: translateY(-1px);
-    }
-
-    .hud-btn-outline {
-      background: rgba(255,255,255,0.08);
-      color: #F8FAFC;
-      border: 1px solid rgba(255,255,255,0.15);
-    }
-
-    .hud-btn-outline:hover {
-      background: rgba(255,255,255,0.15);
+      justify-content: center;
+      overflow: hidden;
     }
 
     /* Main Container & Phone Mockup */
     .viewport-container {
-      flex: 1;
+      width: 100%;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px 10px;
-      width: 100%;
+      padding: 20px 0;
     }
 
     .phone-mockup {
       width: 100%;
       max-width: 430px;
-      height: 860px;
+      height: 100%;
+      max-height: 890px;
       background: var(--app-bg);
       border-radius: 40px;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 12px #1E293B, 0 0 0 14px #334155;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 10px #1E293B, 0 0 0 12px #334155;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       position: relative;
     }
 
+    /* On real mobile screens: 100% full screen, native app look */
     @media (max-width: 480px) {
+      body {
+        background-color: var(--app-bg);
+      }
       .viewport-container {
         padding: 0;
+        height: 100vh;
+        height: -webkit-fill-available;
       }
       .phone-mockup {
         max-width: 100%;
-        height: calc(100vh - 60px);
+        height: 100%;
+        max-height: none;
         border-radius: 0;
         box-shadow: none;
       }
@@ -207,6 +103,7 @@
       position: relative;
       z-index: 50;
       border-bottom: 1px solid rgba(0,0,0,0.03);
+      flex-shrink: 0;
     }
 
     .phone-notch {
@@ -220,13 +117,13 @@
       top: 8px;
     }
 
-    /* Simulated Semaphore SMS Push Notification Banner */
+    /* Simulated Semaphore SMS Push Notification Banner (Task P-05) */
     .sms-push-banner {
       position: absolute;
       top: 50px;
       left: 14px;
       right: 14px;
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(15, 23, 42, 0.96);
       backdrop-filter: blur(12px);
       color: white;
       border-radius: 18px;
@@ -361,8 +258,9 @@
     /* ─── Screen 2: Login Screen ─── */
     #login-screen {
       background: #F8FAFC;
-      padding: 30px 24px 20px;
+      padding: 32px 24px 20px;
       justify-content: space-between;
+      overflow-y: auto;
     }
 
     .login-header {
@@ -371,10 +269,10 @@
     }
 
     .login-mini-logo {
-      width: 68px;
-      height: 68px;
+      width: 72px;
+      height: 72px;
       background: linear-gradient(135deg, #00BFA5 0%, #00897B 100%);
-      border-radius: 20px;
+      border-radius: 22px;
       margin: 0 auto 16px;
       display: flex;
       align-items: center;
@@ -383,13 +281,13 @@
     }
 
     .login-mini-logo svg {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       fill: white;
     }
 
     .login-title {
-      font-size: 20px;
+      font-size: 21px;
       font-weight: 800;
       color: var(--dark-text);
       line-height: 1.3;
@@ -401,89 +299,36 @@
       margin-top: 4px;
     }
 
-    /* Quick Evaluator Access Box */
-    .evaluator-access-box {
-      background: white;
-      border: 1.5px solid var(--primary);
-      border-radius: var(--radius-md);
-      padding: 16px;
+    /* Clean Demo Access Pill */
+    .quick-creds-hint {
+      background: #E0F2F1;
+      border: 1px solid #B2DFDB;
+      border-radius: 12px;
+      padding: 10px 14px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(0, 191, 165, 0.1);
-    }
-
-    .eab-title {
-      font-size: 12.5px;
-      font-weight: 800;
-      color: var(--primary-dark);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
-    }
-
-    .eab-desc {
-      font-size: 12px;
-      color: var(--body-text);
-      line-height: 1.4;
-      margin-bottom: 12px;
-    }
-
-    .eab-creds {
-      background: #F1F5F9;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 12px;
-      margin-bottom: 12px;
-      border: 1px solid #E2E8F0;
-    }
-
-    .eab-creds-row {
-      display: flex;
       justify-content: space-between;
-      margin-bottom: 3px;
+      gap: 8px;
     }
 
-    .eab-btn {
-      width: 100%;
+    .qch-left {
+      font-size: 12px;
+      color: #00796B;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .qch-btn {
       background: var(--primary);
       color: white;
-      font-weight: 700;
       border: none;
-      padding: 11px;
-      border-radius: 10px;
-      font-size: 13px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .eab-btn:hover {
-      background: var(--primary-dark);
-    }
-
-    .divider-or {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      margin: 16px 0;
-      color: #94A3B8;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .divider-or::before, .divider-or::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid #E2E8F0;
-    }
-
-    .divider-or span {
-      padding: 0 10px;
+      white-space: nowrap;
     }
 
     .form-group {
@@ -527,6 +372,11 @@
       cursor: pointer;
       margin-top: 10px;
       box-shadow: 0 8px 20px rgba(0, 191, 165, 0.25);
+      transition: background 0.2s;
+    }
+
+    .btn-login:hover {
+      background: var(--primary-dark);
     }
 
     /* ─── Main Shell (Tabs + Bottom Nav) ─── */
@@ -544,6 +394,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-shrink: 0;
     }
 
     .app-header-left {
@@ -1037,6 +888,7 @@
       align-items: center;
       justify-content: space-around;
       z-index: 50;
+      flex-shrink: 0;
     }
 
     .nav-item {
@@ -1064,101 +916,14 @@
       fill: none;
       stroke-width: 2;
     }
-
-    /* Floating Scenario HUD (Right Bottom or Toggle) */
-    .checklist-drawer {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      background: #0F172A;
-      color: white;
-      border-radius: 18px;
-      padding: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-      border: 1.5px solid var(--primary);
-      width: 320px;
-      z-index: 1000;
-      display: none;
-    }
-
-    .checklist-drawer.show {
-      display: block;
-    }
-
-    .cld-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .cld-title {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .cld-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      font-size: 12px;
-      margin-bottom: 8px;
-      color: #CBD5E1;
-    }
-
-    .cld-item.completed {
-      color: #34D399;
-      text-decoration: line-through;
-    }
-
-    .cld-icon {
-      font-size: 13px;
-      flex-shrink: 0;
-    }
   </style>
 </head>
 <body>
 
-  <!-- Top Evaluator HUD -->
-  <header class="evaluator-hud">
-    <div class="hud-title-col">
-      <span class="hud-badge">Evaluation Mode</span>
-      <div>
-        <div class="hud-title">SeaPass Passenger Mobile App — Live System</div>
-        <div class="hud-sub">For Passenger Usability (SUS) & Acceptance (TAM) Survey Data Gathering</div>
-      </div>
-    </div>
-
-    <div class="hud-credentials">
-      <div class="hud-cred-item">
-        <span class="hud-cred-label">Login Email:</span>
-        <span class="hud-cred-val" id="hud-email-val">passenger@seapass.ph</span>
-      </div>
-      <span style="color:#475569">|</span>
-      <div class="hud-cred-item">
-        <span class="hud-cred-label">Password:</span>
-        <span class="hud-cred-val">password123</span>
-      </div>
-    </div>
-
-    <div class="hud-actions">
-      <button class="hud-btn hud-btn-primary" onclick="autoFillAndLogin()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-        1-Click Auto Login
-      </button>
-      <button class="hud-btn hud-btn-outline" onclick="toggleChecklist()">
-        📋 Task Checklist (<span id="completed-count">0</span>/6)
-      </button>
-    </div>
-  </header>
-
   <!-- Viewport Phone Mockup -->
   <main class="viewport-container">
     <div class="phone-mockup">
-      <!-- Simulated Phone Top Bar -->
+      <!-- Phone Top Bar -->
       <div class="phone-top-bar">
         <span>09:41</span>
         <div class="phone-notch"></div>
@@ -1206,32 +971,14 @@
               <div class="login-sub">Sign in to book lanchas and access digital passes</div>
             </div>
 
-            <!-- Evaluator 1-Tap Card -->
-            <div class="evaluator-access-box">
-              <div class="eab-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
-                Survey Evaluator Quick Access
+            <!-- Pre-filled Credentials Helper -->
+            <div class="quick-creds-hint">
+              <div class="qch-left">
+                <strong>Demo Account:</strong> passenger@seapass.ph<br>
+                <span>Password: <code>password123</code></span>
               </div>
-              <div class="eab-desc">
-                No need to create an account. Use the official test credentials below:
-              </div>
-              <div class="eab-creds">
-                <div class="eab-creds-row">
-                  <span style="color:#64748B">Email:</span>
-                  <strong style="color:#0F172A">passenger@seapass.ph</strong>
-                </div>
-                <div class="eab-creds-row">
-                  <span style="color:#64748B">Password:</span>
-                  <strong style="color:#0F172A">password123</strong>
-                </div>
-              </div>
-              <button class="eab-btn" onclick="autoFillAndLogin()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-                Log In Instantly as Evaluator
-              </button>
+              <button class="qch-btn" onclick="executeLogin()">Instant Sign In</button>
             </div>
-
-            <div class="divider-or"><span>OR SIGN IN MANUALLY</span></div>
 
             <form onsubmit="handleManualLogin(event)">
               <div class="form-group">
@@ -1249,7 +996,7 @@
           </div>
 
           <div style="text-align:center; font-size:12px; color:#64748B; margin-top:16px;">
-            SEAPASS Capstone Research Project • 2026
+            SEAPASS Capstone Project • 2026
           </div>
         </section>
 
@@ -1441,7 +1188,7 @@
               </div>
             </div>
 
-            <button onclick="handleLogout()" class="hud-btn hud-btn-outline" style="width:100%; justify-content:center; padding:12px; color:#EF4444; border-color:#EF4444; margin-top:20px;">
+            <button onclick="handleLogout()" class="sc-book-btn" style="width:100%; margin-left:0; background:#EF4444; padding:12px; font-size:14px; margin-top:20px;">
               Log Out of SeaPass
             </button>
           </div>
@@ -1550,7 +1297,7 @@
               <div class="ticket-grid">
                 <div class="tg-item">
                   <div class="tg-label">Passenger</div>
-                  <div class="tg-val" id="tm-passenger">Juan Dela Cruz</div>
+                  <div class="tg-val" id="tm-passenger">Nesmark Villocino</div>
                 </div>
                 <div class="tg-item">
                   <div class="tg-label">Assigned Seat</div>
@@ -1568,7 +1315,7 @@
             </div>
           </div>
 
-          <button class="hud-btn hud-btn-outline" style="width:100%; justify-content:center; padding:12px; color:#0F172A; border-color:#CBD5E1;" onclick="closeTicketModal()">
+          <button class="sc-book-btn" style="width:100%; margin-left:0; padding:12px; background:#475569;" onclick="closeTicketModal()">
             Done Viewing
           </button>
         </div>
@@ -1576,46 +1323,6 @@
 
     </div>
   </main>
-
-  <!-- Task Checklist Floating Drawer -->
-  <aside class="checklist-drawer" id="checklist-drawer">
-    <div class="cld-header">
-      <div class="cld-title">Survey Testing Checklist</div>
-      <button onclick="toggleChecklist()" style="background:none; border:none; color:#94A3B8; cursor:pointer;">✕</button>
-    </div>
-    <div style="font-size:11.5px; color:#94A3B8; margin-bottom:12px;">
-      Perform these scenarios in the app, then answer the Google Form:
-    </div>
-
-    <div class="cld-item" id="task-p01">
-      <span class="cld-icon">⭕</span>
-      <div><strong>P-01:</strong> Account Login & Dashboard</div>
-    </div>
-    <div class="cld-item" id="task-p02">
-      <span class="cld-icon">⭕</span>
-      <div><strong>P-02:</strong> Trip Schedule Browsing & Filter</div>
-    </div>
-    <div class="cld-item" id="task-p03">
-      <span class="cld-icon">⭕</span>
-      <div><strong>P-03:</strong> Digital Seat Reservation</div>
-    </div>
-    <div class="cld-item" id="task-p04">
-      <span class="cld-icon">⭕</span>
-      <div><strong>P-04:</strong> E-Ticket & Cryptographic QR Pass</div>
-    </div>
-    <div class="cld-item" id="task-p05">
-      <span class="cld-icon">⭕</span>
-      <div><strong>P-05:</strong> Semaphore SMS Notification Check</div>
-    </div>
-    <div class="cld-item" id="task-p06">
-      <span class="cld-icon">⭕</span>
-      <div><strong>P-06:</strong> Booking History & Profile</div>
-    </div>
-
-    <a href="https://forms.google.com" target="_blank" class="hud-btn hud-btn-primary" style="width:100%; justify-content:center; margin-top:14px; text-decoration:none;">
-      Open Google Form Survey 📝
-    </a>
-  </aside>
 
   <!-- Application Logic & State -->
   <script>
@@ -1634,7 +1341,6 @@
       },
       currentBookingModal: null,
       selectedSeat: 7,
-      completedTasks: new Set(),
       bookings: [
         {
           id: "7841",
@@ -1663,10 +1369,10 @@
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
-      // Auto transition from splash after 1.4s
+      // Auto transition from splash after 1.2s
       setTimeout(() => {
         showScreen('login-screen');
-      }, 1400);
+      }, 1200);
 
       renderBookings();
     });
@@ -1683,16 +1389,6 @@
       
       document.getElementById('tab-' + tabName).classList.add('active');
       if (el) el.classList.add('active');
-
-      if (tabName === 'bookings') markTaskDone('p06');
-      if (tabName === 'account') markTaskDone('p06');
-    }
-
-    // Auto Fill & Login
-    function autoFillAndLogin() {
-      document.getElementById('input-email').value = "passenger@seapass.ph";
-      document.getElementById('input-password').value = "password123";
-      executeLogin();
     }
 
     function handleManualLogin(e) {
@@ -1702,15 +1398,13 @@
 
     function executeLogin() {
       state.isLoggedIn = true;
-      markTaskDone('p01');
-
       showScreen('main-shell');
       switchTab('schedules', document.querySelector('.nav-item'));
 
       // Show welcome SMS notification
       setTimeout(() => {
         showSmsAlert("[SEAPASS] Welcome back to SeaPass Passenger App. Search lancha trips and reserve seats online.");
-      }, 800);
+      }, 600);
     }
 
     function handleLogout() {
@@ -1726,13 +1420,11 @@
 
       document.getElementById('route-from-text').textContent = state.currentRoute.from;
       document.getElementById('route-to-text').textContent = state.currentRoute.to;
-      markTaskDone('p02');
     }
 
     function setDateFilter(type, el) {
       document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
       el.classList.add('active');
-      markTaskDone('p02');
     }
 
     // Booking Modal
@@ -1745,7 +1437,6 @@
       calculateFare();
 
       document.getElementById('booking-modal').classList.add('active');
-      markTaskDone('p02');
     }
 
     function closeBookingModal() {
@@ -1815,16 +1506,13 @@
       renderBookings();
       closeBookingModal();
 
-      markTaskDone('p03');
-
       // Trigger Task P-05 Semaphore SMS Push
       showSmsAlert(`[SEAPASS] Booking #${newRef} confirmed for ${newBooking.route}. Seat #${seatStr}. Show your digital QR pass at the port gate.`);
-      markTaskDone('p05');
 
       // Open Ticket
       setTimeout(() => {
         openTicketModal(newBooking);
-      }, 600);
+      }, 500);
     }
 
     // Bookings & Ticket Display
@@ -1847,7 +1535,7 @@
             <span>Vessel: <strong>${b.vessel}</strong></span>
             <span>Departure: <strong>${b.time}</strong></span>
           </div>
-          <button class="hud-btn hud-btn-primary" style="width:100%; justify-content:center; padding:10px; border-radius:10px;" onclick='openTicketModal(${JSON.stringify(b)})'>
+          <button class="sc-book-btn" style="width:100%; margin-left:0; padding:10px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick='openTicketModal(${JSON.stringify(b)})'>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
             View Boarding Pass & QR
           </button>
@@ -1869,7 +1557,6 @@
       generateSvgQr(booking.ref + "|" + state.user.name + "|" + booking.seat);
 
       document.getElementById('ticket-modal').classList.add('active');
-      markTaskDone('p04');
     }
 
     function closeTicketModal() {
@@ -1944,23 +1631,6 @@
 
     function dismissSmsBanner() {
       document.getElementById('sms-banner').classList.remove('show');
-    }
-
-    // Task Checklist Tracking
-    function toggleChecklist() {
-      document.getElementById('checklist-drawer').classList.toggle('show');
-    }
-
-    function markTaskDone(taskId) {
-      if (!state.completedTasks.has(taskId)) {
-        state.completedTasks.add(taskId);
-        const item = document.getElementById('task-' + taskId);
-        if (item) {
-          item.classList.add('completed');
-          item.querySelector('.cld-icon').textContent = '✅';
-        }
-        document.getElementById('completed-count').textContent = state.completedTasks.size;
-      }
     }
   </script>
 </body>
