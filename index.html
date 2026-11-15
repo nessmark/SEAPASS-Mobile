@@ -89,7 +89,7 @@
       }
     }
 
-    /* Phone Dynamic Island / Speaker */
+    /* Phone Top Bar */
     .phone-top-bar {
       height: 44px;
       background: white;
@@ -117,7 +117,7 @@
       top: 8px;
     }
 
-    /* Simulated Semaphore SMS Push Notification Banner (Task P-05) */
+    /* Simulated Semaphore SMS Push Notification Banner */
     .sms-push-banner {
       position: absolute;
       top: 50px;
@@ -194,83 +194,22 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ─── Screen 1: Splash Screen ─── */
-    #splash-screen {
-      background: white;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 30px;
-    }
-
-    .splash-logo-box {
-      width: 100px;
-      height: 100px;
-      background: linear-gradient(135deg, #00BFA5 0%, #00897B 100%);
-      border-radius: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 15px 35px rgba(0, 191, 165, 0.35);
-      margin-bottom: 24px;
-      animation: pulseLogo 2s infinite;
-    }
-
-    @keyframes pulseLogo {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-
-    .splash-logo-box svg {
-      width: 60px;
-      height: 60px;
-      fill: white;
-    }
-
-    .splash-title {
-      font-size: 30px;
-      font-weight: 800;
-      color: var(--dark-text);
-      letter-spacing: 1.2px;
-    }
-
-    .splash-sub {
-      font-size: 13px;
-      color: var(--muted-text);
-      margin-top: 6px;
-    }
-
-    .splash-spinner {
-      margin-top: 40px;
-      width: 28px;
-      height: 28px;
-      border: 3px solid rgba(0, 191, 165, 0.2);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ─── Screen 2: Login Screen ─── */
+    /* ─── Screen: Direct Clean Login Interface ─── */
     #login-screen {
       background: #F8FAFC;
-      padding: 32px 24px 20px;
-      justify-content: space-between;
+      padding: 40px 24px 24px;
+      justify-content: center;
       overflow-y: auto;
     }
 
     .login-header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 32px;
     }
 
     .login-mini-logo {
-      width: 72px;
-      height: 72px;
+      width: 76px;
+      height: 76px;
       background: linear-gradient(135deg, #00BFA5 0%, #00897B 100%);
       border-radius: 22px;
       margin: 0 auto 16px;
@@ -281,105 +220,78 @@
     }
 
     .login-mini-logo svg {
-      width: 44px;
-      height: 44px;
+      width: 46px;
+      height: 46px;
       fill: white;
     }
 
     .login-title {
-      font-size: 21px;
+      font-size: 22px;
       font-weight: 800;
       color: var(--dark-text);
       line-height: 1.3;
     }
 
     .login-sub {
-      font-size: 13px;
+      font-size: 13.5px;
       color: var(--muted-text);
-      margin-top: 4px;
-    }
-
-    /* Clean Demo Access Pill */
-    .quick-creds-hint {
-      background: #E0F2F1;
-      border: 1px solid #B2DFDB;
-      border-radius: 12px;
-      padding: 10px 14px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .qch-left {
-      font-size: 12px;
-      color: #00796B;
-      font-weight: 600;
-      line-height: 1.35;
-    }
-
-    .qch-btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      font-size: 11.5px;
-      font-weight: 700;
-      padding: 6px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      white-space: nowrap;
+      margin-top: 6px;
     }
 
     .form-group {
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
 
     .form-label {
       display: block;
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--dark-text);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .form-input {
       width: 100%;
-      height: 48px;
+      height: 52px;
       background: white;
       border: 1.5px solid #CBD5E1;
-      border-radius: 12px;
-      padding: 0 14px;
-      font-size: 14px;
+      border-radius: 14px;
+      padding: 0 16px;
+      font-size: 14.5px;
       color: var(--dark-text);
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .form-input:focus {
       border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 191, 165, 0.15);
     }
 
     .btn-login {
       width: 100%;
-      height: 50px;
+      height: 52px;
       background: var(--primary);
       color: white;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 16px;
       border: none;
       border-radius: 14px;
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 14px;
       box-shadow: 0 8px 20px rgba(0, 191, 165, 0.25);
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
     }
 
     .btn-login:hover {
       background: var(--primary-dark);
     }
 
-    /* ─── Main Shell (Tabs + Bottom Nav) ─── */
+    .btn-login:active {
+      transform: scale(0.99);
+    }
+
+    /* ─── Main Shell (Dashboard Tabs + Bottom Nav) ─── */
     #main-shell {
       flex: 1;
       display: flex;
@@ -440,7 +352,7 @@
       display: block;
     }
 
-    /* Tab 1: Schedules */
+    /* Tab 1: Schedules (Dashboard) */
     .route-filter-card {
       background: white;
       border-radius: var(--radius-md);
@@ -916,6 +828,25 @@
       fill: none;
       stroke-width: 2;
     }
+
+    /* Empty state */
+    .empty-state-box {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted-text);
+    }
+
+    .empty-state-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 14px;
+      background: var(--primary-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-dark);
+    }
   </style>
 </head>
 <body>
@@ -933,7 +864,7 @@
         </div>
       </div>
 
-      <!-- Simulated Push SMS Notification Banner (Task P-05) -->
+      <!-- Simulated Push SMS Notification Banner -->
       <div class="sms-push-banner" id="sms-banner" onclick="dismissSmsBanner()">
         <div class="sms-header">
           <div class="sms-sender">
@@ -950,18 +881,8 @@
       <!-- Screen Container -->
       <div class="screen-viewport">
 
-        <!-- 1. SPLASH SCREEN -->
-        <section class="screen active" id="splash-screen">
-          <div class="splash-logo-box">
-            <svg viewBox="0 0 24 24"><path d="M3 13.5l1.5-6h15l1.5 6m-18 0l2 6h14l2-6m-18 0h18M7 7.5V4h10v3.5"/></svg>
-          </div>
-          <div class="splash-title">SeaPass</div>
-          <div class="splash-sub">San Jose Port — Passenger</div>
-          <div class="splash-spinner"></div>
-        </section>
-
-        <!-- 2. LOGIN SCREEN -->
-        <section class="screen" id="login-screen">
+        <!-- 1. DIRECT LOGIN SCREEN (Active on Load) -->
+        <section class="screen active" id="login-screen">
           <div>
             <div class="login-header">
               <div class="login-mini-logo">
@@ -969,15 +890,6 @@
               </div>
               <div class="login-title">SeaPass - San Jose Port<br>Passenger Login</div>
               <div class="login-sub">Sign in to book lanchas and access digital passes</div>
-            </div>
-
-            <!-- Pre-filled Credentials Helper -->
-            <div class="quick-creds-hint">
-              <div class="qch-left">
-                <strong>Demo Account:</strong> passenger@seapass.ph<br>
-                <span>Password: <code>password123</code></span>
-              </div>
-              <button class="qch-btn" onclick="executeLogin()">Instant Sign In</button>
             </div>
 
             <form onsubmit="handleManualLogin(event)">
@@ -994,13 +906,9 @@
               <button type="submit" class="btn-login">Sign In</button>
             </form>
           </div>
-
-          <div style="text-align:center; font-size:12px; color:#64748B; margin-top:16px;">
-            SEAPASS Capstone Project • 2026
-          </div>
         </section>
 
-        <!-- 3. MAIN SHELL (AFTER LOGIN) -->
+        <!-- 2. MAIN DASHBOARD SHELL (AFTER LOGIN) -->
         <section class="screen" id="main-shell">
           <!-- App Header -->
           <div class="app-header">
@@ -1016,7 +924,7 @@
             </button>
           </div>
 
-          <!-- TAB 1: SCHEDULES -->
+          <!-- TAB 1: SCHEDULES (DASHBOARD) -->
           <div class="tab-content active" id="tab-schedules">
             <div class="route-filter-card">
               <div class="route-selector">
@@ -1153,11 +1061,11 @@
           <div class="tab-content" id="tab-bookings">
             <div class="section-headline">
               <div class="section-title">My Tickets & QR Passes</div>
-              <span class="section-badge" id="bookings-count-badge">2 Active</span>
+              <span class="section-badge" id="bookings-count-badge">0 Active</span>
             </div>
 
             <div id="bookings-list-container">
-              <!-- Dynamically populated -->
+              <!-- Dynamically populated or clean empty state -->
             </div>
           </div>
 
@@ -1212,7 +1120,7 @@
 
       </div>
 
-      <!-- BOOKING MODAL (Task P-03) -->
+      <!-- BOOKING MODAL -->
       <div class="modal-overlay" id="booking-modal">
         <div class="modal-sheet">
           <div class="modal-header">
@@ -1274,7 +1182,7 @@
         </div>
       </div>
 
-      <!-- TICKET QR PASS MODAL (Task P-04) -->
+      <!-- TICKET QR PASS MODAL -->
       <div class="modal-overlay" id="ticket-modal">
         <div class="modal-sheet" style="max-height:92%;">
           <div class="modal-header">
@@ -1340,40 +1248,11 @@
         to: "San Jose Port"
       },
       currentBookingModal: null,
-      selectedSeat: 7,
-      bookings: [
-        {
-          id: "7841",
-          ref: "SP-2026-7841",
-          vessel: "MV San Jose Star",
-          route: "Surigao Port → San Jose Port",
-          date: "Today",
-          time: "08:00 AM",
-          seat: "07",
-          status: "Confirmed",
-          fare: 100.00
-        },
-        {
-          id: "9102",
-          ref: "SP-2026-9102",
-          vessel: "MB Dinagat Princess",
-          route: "San Jose Port → Surigao Port",
-          date: "Yesterday",
-          time: "01:30 PM",
-          seat: "14",
-          status: "Completed",
-          fare: 100.00
-        }
-      ]
+      selectedSeat: null,
+      bookings: [] // Fresh clean state
     };
 
-    // Initialize
     window.addEventListener('DOMContentLoaded', () => {
-      // Auto transition from splash after 1.2s
-      setTimeout(() => {
-        showScreen('login-screen');
-      }, 1200);
-
       renderBookings();
     });
 
@@ -1403,8 +1282,8 @@
 
       // Show welcome SMS notification
       setTimeout(() => {
-        showSmsAlert("[SEAPASS] Welcome back to SeaPass Passenger App. Search lancha trips and reserve seats online.");
-      }, 600);
+        showSmsAlert("[SEAPASS] Welcome to SeaPass Passenger App. Search lancha trips and reserve seats online.");
+      }, 500);
     }
 
     function handleLogout() {
@@ -1506,7 +1385,7 @@
       renderBookings();
       closeBookingModal();
 
-      // Trigger Task P-05 Semaphore SMS Push
+      // Trigger Semaphore SMS Push
       showSmsAlert(`[SEAPASS] Booking #${newRef} confirmed for ${newBooking.route}. Seat #${seatStr}. Show your digital QR pass at the port gate.`);
 
       // Open Ticket
@@ -1519,6 +1398,20 @@
     function renderBookings() {
       const container = document.getElementById('bookings-list-container');
       container.innerHTML = '';
+
+      if (state.bookings.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state-box">
+            <div class="empty-state-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+            </div>
+            <div style="font-weight:700; color:var(--dark-text); font-size:14px; margin-bottom:4px;">No Active Bookings Yet</div>
+            <div style="font-size:12px;">Reserve a seat in the Schedules tab to generate your digital boarding pass.</div>
+          </div>
+        `;
+        document.getElementById('bookings-count-badge').textContent = "0 Active";
+        return;
+      }
 
       state.bookings.forEach(b => {
         const card = document.createElement('div');
@@ -1563,15 +1456,13 @@
       document.getElementById('ticket-modal').classList.remove('active');
     }
 
-    // High Quality Dynamic SVG QR Generator (Self-Contained)
+    // High Quality Dynamic SVG QR Generator
     function generateSvgQr(dataStr) {
       const box = document.getElementById('tm-qr-box');
-      // Algorithmic scannable matrix pattern
       const size = 21;
       let svg = `<svg width="170" height="170" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">`;
       svg += `<rect width="${size}" height="${size}" fill="white"/>`;
 
-      // Helper function to seed deterministic pseudorandom modules based on dataStr
       let hash = 0;
       for (let i = 0; i < dataStr.length; i++) {
         hash = ((hash << 5) - hash) + dataStr.charCodeAt(i);
@@ -1579,20 +1470,15 @@
       }
 
       function isFinder(r, c) {
-        if (r < 7 && c < 7) return true; // Top-left
-        if (r < 7 && c >= size - 7) return true; // Top-right
-        if (r >= size - 7 && c < 7) return true; // Bottom-left
+        if (r < 7 && c < 7) return true;
+        if (r < 7 && c >= size - 7) return true;
+        if (r >= size - 7 && c < 7) return true;
         return false;
       }
 
-      // Draw modules
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           if (isFinder(r, c)) {
-            // Draw standard QR finder pattern
-            const isBorder = (r === 0 || r === 6 || c === 0 || c === 6 ||
-                              r === size-7 || r === size-1 || c === size-7 || c === size-1) ||
-                             ((r >= 2 && r <= 4) && (c >= 2 && c <= 4));
             if (r < 7 && c < 7) {
               const border = r===0||r===6||c===0||c===6 || (r>=2&&r<=4&&c>=2&&c<=4);
               if (border) svg += `<rect x="${c}" y="${r}" width="1" height="1" fill="#0F172A"/>`;
@@ -1606,7 +1492,6 @@
               if (border) svg += `<rect x="${c}" y="${r}" width="1" height="1" fill="#0F172A"/>`;
             }
           } else {
-            // Data bits
             const bit = ((hash * (r + 1) * 31 + c * 17) & 3) === 0;
             if (bit || (r === 6 || c === 6)) {
               svg += `<rect x="${c}" y="${r}" width="1" height="1" fill="#0F172A"/>`;
