@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>SeaPass - Passenger Mobile App</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,6 +27,10 @@
       --radius-lg: 20px;
     }
 
+    html {
+      height: 100%;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -38,8 +42,9 @@
     body {
       background-color: #0F172A;
       color: var(--dark-text);
+      height: 100%;
       min-height: 100vh;
-      min-height: -webkit-fill-available;
+      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -49,7 +54,7 @@
     /* Main Container & Phone Mockup */
     .viewport-container {
       width: 100%;
-      height: 100vh;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -60,6 +65,7 @@
       width: 100%;
       max-width: 430px;
       height: 100%;
+      min-height: 0;
       max-height: 890px;
       background: var(--app-bg);
       border-radius: 40px;
@@ -77,8 +83,7 @@
       }
       .viewport-container {
         padding: 0;
-        height: 100vh;
-        height: -webkit-fill-available;
+        height: 100%;
       }
       .phone-mockup {
         max-width: 100%;
@@ -172,21 +177,23 @@
     /* Screen Views */
     .screen-viewport {
       flex: 1;
-      overflow-y: auto;
+      min-height: 0;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       position: relative;
     }
 
     .screen {
-      display: none !important;
+      display: none;
       flex: 1;
+      min-height: 0;
       flex-direction: column;
       animation: fadeIn 0.25s ease-in-out;
     }
 
     .screen.active {
-      display: flex !important;
+      display: flex;
     }
 
     @keyframes fadeIn {
@@ -194,20 +201,43 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ─── Screen: Direct Clean Login Interface with SeaPass Boat Logo ─── */
+    /* ─── Screen: Direct Clean Login Interface ─── */
     #login-screen {
       background: #F8FAFC;
-      padding: 36px 24px 24px;
-      justify-content: center;
+      padding: 40px 24px 24px;
+      justify-content: flex-start;
       overflow-y: auto;
+    }
+
+    #login-screen > div {
+      width: 100%;
+      margin: auto 0;
     }
 
     .login-header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 32px;
     }
 
-    /* Official SeaPass Boat Logo Container */
+    .login-mini-logo {
+      width: 76px;
+      height: 76px;
+      background: linear-gradient(135deg, #00BFA5 0%, #00897B 100%);
+      border-radius: 22px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(0, 191, 165, 0.25);
+    }
+
+    .login-mini-logo svg {
+      width: 46px;
+      height: 46px;
+      fill: white;
+    }
+
+    /* Official SeaPass Boat Logo */
     .login-logo-container {
       width: 104px;
       height: 104px;
@@ -227,6 +257,26 @@
       height: 100%;
       object-fit: contain;
       filter: drop-shadow(0 4px 6px rgba(0, 191, 165, 0.15));
+    }
+
+    .header-logo-badge {
+      width: 38px;
+      height: 38px;
+      background: white;
+      border: 1px solid rgba(0, 191, 165, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      box-shadow: 0 2px 6px rgba(0, 191, 165, 0.12);
+      flex-shrink: 0;
+    }
+
+    .header-logo-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .login-title {
@@ -295,11 +345,169 @@
       transform: scale(0.99);
     }
 
+    .auth-form {
+      width: 100%;
+    }
+
+    .auth-form.hidden,
+    .hidden {
+      display: none !important;
+    }
+
+    .pw-wrap {
+      position: relative;
+    }
+
+    .pw-wrap .form-input {
+      padding-right: 58px;
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 36px;
+      padding: 0 10px;
+      border: none;
+      background: transparent;
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .pw-toggle:active {
+      background: var(--primary-light);
+    }
+
+    .input-invalid {
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12) !important;
+    }
+
+    .field-error {
+      display: none;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--danger);
+      margin-top: 6px;
+    }
+
+    .field-error.show {
+      display: block;
+    }
+
+    .auth-switch {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted-text);
+      margin-top: 22px;
+    }
+
+    .auth-link {
+      background: none;
+      border: none;
+      padding: 0 2px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .auth-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: #F1F5F9;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-top: 20px;
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: var(--muted-text);
+    }
+
+    .auth-note svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: var(--primary-dark);
+    }
+
+    .auth-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0;
+      color: #94A3B8;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .auth-row::before,
+    .auth-row::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .custom-date-wrap {
+      margin-top: 10px;
+    }
+
+    .custom-date-wrap .form-input {
+      height: 46px;
+      font-size: 13.5px;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      height: 50px;
+      background: white;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 14.5px;
+      border: 1.5px solid var(--primary);
+      border-radius: 14px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    .btn-secondary:active {
+      background: var(--primary-light);
+    }
+
+    .danger-link {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-size: 12.5px;
+      font-weight: 800;
+      padding: 10px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
     /* ─── Main Shell (Dashboard Tabs + Bottom Nav) ─── */
     #main-shell {
       flex: 1;
       flex-direction: column;
       overflow: hidden;
+      min-height: 0;
+    }
+
+    #main-shell.active {
+      display: flex;
     }
 
     .app-header {
@@ -315,26 +523,7 @@
     .app-header-left {
       display: flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .header-logo-badge {
-      width: 38px;
-      height: 38px;
-      background: white;
-      border: 1px solid rgba(0, 191, 165, 0.3);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px;
-      box-shadow: 0 2px 6px rgba(0, 191, 165, 0.12);
-    }
-
-    .header-logo-badge img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+      gap: 10px;
     }
 
     .app-header-title {
@@ -347,6 +536,19 @@
       font-size: 11.5px;
       color: var(--muted-text);
       font-weight: 500;
+    }
+
+    .header-user-avatar {
+      width: 36px;
+      height: 36px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
     }
 
     /* Tab Content Area */
@@ -865,7 +1067,7 @@
     <div class="phone-mockup">
       <!-- Phone Top Bar -->
       <div class="phone-top-bar">
-        <span>09:41</span>
+        <span id="mock-clock">09:41</span>
         <div class="phone-notch"></div>
         <div style="display:flex; gap: 6px; align-items:center;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 18.5a.75.75 0 001.06 1.06l.89-.89A8.96 8.96 0 0012 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7 0 1.63-.56 3.13-1.5 4.34l-9.84-9.84A6.96 6.96 0 0112 5z"/></svg>
@@ -890,31 +1092,81 @@
       <!-- Screen Container -->
       <div class="screen-viewport">
 
-        <!-- 1. DIRECT LOGIN SCREEN FEATURING OFFICIAL SEAPASS BOAT LOGO -->
+        <!-- 1. AUTH SCREEN — SIGN IN / CREATE ACCOUNT (Active on Load) -->
         <section class="screen active" id="login-screen">
           <div>
             <div class="login-header">
-              <!-- Official SeaPass Boat Logo -->
               <div class="login-logo-container">
                 <img src="assets/logo.png" alt="SeaPass Boat Logo" class="login-boat-logo" onerror="this.onerror=null; this.src='assets/logo.svg';">
               </div>
-              <div class="login-title">SeaPass - San Jose Port<br>Passenger Login</div>
-              <div class="login-sub">Sign in to book lanchas and access digital passes</div>
+              <div class="login-title" id="auth-heading">Welcome to SeaPass</div>
+              <div class="login-sub" id="auth-sub">Sign in to book lancha trips and access your digital pass</div>
             </div>
 
-            <form onsubmit="handleManualLogin(event)">
+            <!-- SIGN IN -->
+            <form class="auth-form" id="signin-form" onsubmit="handleSignIn(event)" novalidate>
               <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" id="input-email" class="form-input" placeholder="Enter your email" required value="passenger@seapass.ph">
+                <label class="form-label" for="signin-email">Email Address</label>
+                <input type="email" id="signin-email" class="form-input" placeholder="you@example.com" autocomplete="email" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" id="input-password" class="form-input" placeholder="Enter password" required value="password123">
+                <label class="form-label" for="signin-password">Password</label>
+                <div class="pw-wrap">
+                  <input type="password" id="signin-password" class="form-input" placeholder="Enter your password" autocomplete="current-password" required>
+                  <button type="button" class="pw-toggle" onclick="togglePassword('signin-password', this)">Show</button>
+                </div>
               </div>
+
+              <div class="field-error" id="signin-error"></div>
 
               <button type="submit" class="btn-login">Sign In</button>
+
+              <div class="auth-switch">
+                New passenger?
+                <button type="button" class="auth-link" onclick="showAuthMode('signup')">Create an account</button>
+              </div>
             </form>
+
+            <!-- CREATE ACCOUNT -->
+            <form class="auth-form hidden" id="signup-form" onsubmit="handleSignUp(event)" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="signup-name">Full Name</label>
+                <input type="text" id="signup-name" class="form-input" placeholder="Juan Dela Cruz" autocomplete="name" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="signup-email">Email Address</label>
+                <input type="email" id="signup-email" class="form-input" placeholder="you@example.com" autocomplete="email" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="signup-phone">Mobile Number</label>
+                <input type="tel" id="signup-phone" class="form-input" placeholder="0917 123 4567" autocomplete="tel" inputmode="tel" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="signup-password">Create Password</label>
+                <div class="pw-wrap">
+                  <input type="password" id="signup-password" class="form-input" placeholder="At least 6 characters" autocomplete="new-password" required>
+                  <button type="button" class="pw-toggle" onclick="togglePassword('signup-password', this)">Show</button>
+                </div>
+              </div>
+
+              <div class="field-error" id="signup-error"></div>
+
+              <button type="submit" class="btn-login">Create Account</button>
+
+              <div class="auth-switch">
+                Already have an account?
+                <button type="button" class="auth-link" onclick="showAuthMode('signin')">Sign in</button>
+              </div>
+            </form>
+
+            <div class="auth-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16v-4m0-4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+              <span>Demo build for the SeaPass passenger survey. Your details and bookings are saved only on this device.</span>
+            </div>
           </div>
         </section>
 
@@ -927,8 +1179,8 @@
                 <img src="assets/logo.png" alt="SeaPass Logo" onerror="this.onerror=null; this.src='assets/logo.svg';">
               </div>
               <div>
-                <div class="app-header-title" id="header-user-name">Nesmark Villocino</div>
-                <div class="app-header-sub">Regular Commuter • Surigao ⇄ San Jose</div>
+                <div class="app-header-title" id="header-user-name">Passenger</div>
+                <div class="app-header-sub" id="header-user-sub">Regular Commuter • Surigao ⇄ San Jose</div>
               </div>
             </div>
             <button onclick="handleLogout()" style="background:none; border:none; cursor:pointer; color:#64748B;" title="Logout">
@@ -958,11 +1210,15 @@
                 <button class="date-pill" onclick="setDateFilter('tomorrow', this)">Tomorrow</button>
                 <button class="date-pill" onclick="setDateFilter('custom', this)">Pick Date</button>
               </div>
+
+              <div class="custom-date-wrap hidden" id="custom-date-wrap">
+                <input type="date" id="custom-date-input" class="form-input" onchange="setCustomDate(this.value)">
+              </div>
             </div>
 
             <div class="section-headline">
               <div class="section-title">Available Lancha Trips</div>
-              <span class="section-badge">4 Daily Trips</span>
+              <span class="section-badge">3 Daily Trips</span>
             </div>
 
             <!-- Trip 1 -->
@@ -977,24 +1233,24 @@
               <div class="sc-timings">
                 <div class="sc-time-block">
                   <div class="sc-time-val">08:00 AM</div>
-                  <div class="sc-port-val">Surigao Port</div>
+                  <div class="sc-port-val" data-port="from">Surigao Port</div>
                 </div>
                 <div class="sc-trip-duration">~1h 45m</div>
                 <div class="sc-time-block" style="text-align:right;">
                   <div class="sc-time-val">09:45 AM</div>
-                  <div class="sc-port-val">San Jose Port</div>
+                  <div class="sc-port-val" data-port="to">San Jose Port</div>
                 </div>
               </div>
               <div class="sc-footer">
                 <div class="sc-seats-info">
-                  Available: <span class="sc-seats-val">24 seats</span>
+                  Available: <span class="sc-seats-val" id="seats-trip1">24 seats</span>
                 </div>
                 <div style="display:flex; align-items:center;">
                   <div class="sc-fare-info">
                     <span style="font-size:10px; color:#64748B;">From</span>
                     <div class="sc-fare-val">₱100.00</div>
                   </div>
-                  <button class="sc-book-btn" onclick="openBookingModal('MV San Jose Star', '08:00 AM', 24, 101)">Reserve</button>
+                  <button class="sc-book-btn" onclick="openBookingModal('trip1')">Reserve</button>
                 </div>
               </div>
             </div>
@@ -1011,24 +1267,24 @@
               <div class="sc-timings">
                 <div class="sc-time-block">
                   <div class="sc-time-val">10:30 AM</div>
-                  <div class="sc-port-val">Surigao Port</div>
+                  <div class="sc-port-val" data-port="from">Surigao Port</div>
                 </div>
                 <div class="sc-trip-duration">~1h 50m</div>
                 <div class="sc-time-block" style="text-align:right;">
                   <div class="sc-time-val">12:20 PM</div>
-                  <div class="sc-port-val">San Jose Port</div>
+                  <div class="sc-port-val" data-port="to">San Jose Port</div>
                 </div>
               </div>
               <div class="sc-footer">
                 <div class="sc-seats-info">
-                  Available: <span class="sc-seats-val">16 seats</span>
+                  Available: <span class="sc-seats-val" id="seats-trip2">16 seats</span>
                 </div>
                 <div style="display:flex; align-items:center;">
                   <div class="sc-fare-info">
                     <span style="font-size:10px; color:#64748B;">From</span>
                     <div class="sc-fare-val">₱100.00</div>
                   </div>
-                  <button class="sc-book-btn" onclick="openBookingModal('MB Dinagat Princess', '10:30 AM', 16, 102)">Reserve</button>
+                  <button class="sc-book-btn" onclick="openBookingModal('trip2')">Reserve</button>
                 </div>
               </div>
             </div>
@@ -1045,24 +1301,24 @@
               <div class="sc-timings">
                 <div class="sc-time-block">
                   <div class="sc-time-val">01:30 PM</div>
-                  <div class="sc-port-val">Surigao Port</div>
+                  <div class="sc-port-val" data-port="from">Surigao Port</div>
                 </div>
                 <div class="sc-trip-duration">~1h 30m</div>
                 <div class="sc-time-block" style="text-align:right;">
                   <div class="sc-time-val">03:00 PM</div>
-                  <div class="sc-port-val">San Jose Port</div>
+                  <div class="sc-port-val" data-port="to">San Jose Port</div>
                 </div>
               </div>
               <div class="sc-footer">
                 <div class="sc-seats-info">
-                  Available: <span class="sc-seats-val">32 seats</span>
+                  Available: <span class="sc-seats-val" id="seats-trip3">32 seats</span>
                 </div>
                 <div style="display:flex; align-items:center;">
                   <div class="sc-fare-info">
                     <span style="font-size:10px; color:#64748B;">From</span>
                     <div class="sc-fare-val">₱100.00</div>
                   </div>
-                  <button class="sc-book-btn" onclick="openBookingModal('MV Island Express', '01:30 PM', 32, 103)">Reserve</button>
+                  <button class="sc-book-btn" onclick="openBookingModal('trip3')">Reserve</button>
                 </div>
               </div>
             </div>
@@ -1081,14 +1337,12 @@
             </div>
           </div>
 
-          <!-- TAB 3: MY ACCOUNT -->
-          <div class="tab-content" id="tab-account">
+          <!-- TAB 3: MY PROFILE -->
+          <div class="tab-content" id="tab-profile">
             <div class="route-filter-card" style="text-align:center; padding:24px 16px;">
-              <div class="header-logo-badge" style="width:58px; height:58px; margin:0 auto 12px;">
-                <img src="assets/logo.png" alt="SeaPass Logo" onerror="this.onerror=null; this.src='assets/logo.svg';">
-              </div>
-              <div style="font-size:18px; font-weight:800; color:var(--dark-text);" id="acc-name">Nesmark Villocino</div>
-              <div style="font-size:13px; color:var(--muted-text);" id="acc-email">passenger@seapass.ph</div>
+              <div class="header-user-avatar" id="acc-avatar" style="width:64px; height:64px; font-size:24px; margin:0 auto 12px;">P</div>
+              <div style="font-size:18px; font-weight:800; color:var(--dark-text);" id="acc-name">Passenger</div>
+              <div style="font-size:13px; color:var(--muted-text);" id="acc-email">—</div>
               <div style="margin-top:10px; display:inline-block; background:#E0F2F1; color:#00897B; font-size:11.5px; font-weight:700; padding:4px 12px; border-radius:20px;">
                 Verified Passenger Profile
               </div>
@@ -1097,20 +1351,28 @@
             <div class="section-title" style="margin-bottom:12px;">Passenger Details</div>
             <div class="route-filter-card" style="padding:14px;">
               <div class="fare-row">
-                <span>Phone Number</span>
-                <strong id="acc-phone">0917-123-4567</strong>
+                <span>Mobile Number</span>
+                <strong id="acc-phone">—</strong>
               </div>
               <div class="fare-row">
                 <span>Classification</span>
-                <strong>Regular Commuter</strong>
+                <strong id="acc-class">Regular Commuter</strong>
               </div>
               <div class="fare-row">
+                <span>Active Bookings</span>
+                <strong id="acc-bookings">0</strong>
+              </div>
+              <div class="fare-row" style="margin-bottom:0;">
                 <span>Account Status</span>
-                <strong style="color:var(--success)">Active (Sanctum Token)</strong>
+                <strong style="color:var(--success)">Signed In</strong>
               </div>
             </div>
 
-            <button onclick="handleLogout()" class="sc-book-btn" style="width:100%; margin-left:0; background:#EF4444; padding:12px; font-size:14px; margin-top:20px;">
+            <button class="btn-secondary" onclick="switchTab('bookings', document.querySelectorAll('.nav-item')[1])">
+              View My Bookings
+            </button>
+
+            <button onclick="handleLogout()" class="sc-book-btn" style="width:100%; margin-left:0; background:#EF4444; padding:12px; font-size:14px; margin-top:12px;">
               Log Out of SeaPass
             </button>
           </div>
@@ -1125,9 +1387,9 @@
               <svg viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
               <span>My Bookings</span>
             </div>
-            <div class="nav-item" onclick="switchTab('account', this)">
+            <div class="nav-item" onclick="switchTab('profile', this)">
               <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2m8-10a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-              <span>Account</span>
+              <span>Profile</span>
             </div>
           </nav>
         </section>
@@ -1170,7 +1432,7 @@
             </div>
 
             <div class="seat-grid" id="seat-grid">
-              <!-- Dynamically populated 1 to 24 -->
+              <!-- Dynamically populated from the selected trip -->
             </div>
           </div>
 
@@ -1189,6 +1451,8 @@
               <span id="bm-total-fare" style="color:var(--primary-dark);">₱100.00</span>
             </div>
           </div>
+
+          <div class="field-error" id="bm-error"></div>
 
           <button class="btn-login" style="margin-top:16px;" onclick="confirmSeatBooking()">
             Confirm Seat & Lock Ticket
@@ -1211,27 +1475,35 @@
             </div>
             <div class="ticket-body">
               <div class="qr-container" id="tm-qr-box">
-                <!-- SVG QR Code drawn here -->
+                <!-- QR code drawn here -->
               </div>
-              <div style="font-size:13px; font-weight:800; color:#0F172A;" id="tm-ref">Ref: SP-2026-7841</div>
-              <div style="font-size:11px; color:#10B981; font-weight:700; margin-top:2px;">● VERIFIED SCANNER QR READY</div>
+              <div style="font-size:13px; font-weight:800; color:#0F172A;" id="tm-ref">Ref: —</div>
+              <div style="font-size:11px; color:#10B981; font-weight:700; margin-top:2px;" id="tm-qr-status">● READY FOR PORT SCANNER</div>
 
               <div class="ticket-grid">
                 <div class="tg-item">
                   <div class="tg-label">Passenger</div>
-                  <div class="tg-val" id="tm-passenger">Nesmark Villocino</div>
+                  <div class="tg-val" id="tm-passenger">—</div>
                 </div>
                 <div class="tg-item">
                   <div class="tg-label">Assigned Seat</div>
-                  <div class="tg-val" style="color:var(--primary-dark);" id="tm-seat">Seat #07</div>
+                  <div class="tg-val" style="color:var(--primary-dark);" id="tm-seat">—</div>
                 </div>
                 <div class="tg-item">
                   <div class="tg-label">Vessel</div>
-                  <div class="tg-val" id="tm-vessel">MV San Jose Star</div>
+                  <div class="tg-val" id="tm-vessel">—</div>
                 </div>
                 <div class="tg-item">
                   <div class="tg-label">Departure</div>
-                  <div class="tg-val" id="tm-time">08:00 AM</div>
+                  <div class="tg-val" id="tm-time">—</div>
+                </div>
+                <div class="tg-item">
+                  <div class="tg-label">Travel Date</div>
+                  <div class="tg-val" id="tm-date">—</div>
+                </div>
+                <div class="tg-item">
+                  <div class="tg-label">Fare Paid</div>
+                  <div class="tg-val" id="tm-fare">—</div>
                 </div>
               </div>
             </div>
@@ -1247,29 +1519,346 @@
   </main>
 
   <!-- Application Logic & State -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
   <script>
-    // State Store
-    const state = {
-      isLoggedIn: false,
-      user: {
-        name: "Nesmark Villocino",
-        email: "passenger@seapass.ph",
-        phone: "0917-123-4567",
-        classification: "Regular Commuter"
+    // ─── Reference Data ───
+    const TRIPS = {
+      trip1: {
+        key: 'trip1', vessel: 'MV San Jose Star', type: 'Passenger Motor Lancha', capacity: 35,
+        seats: 30, taken: [2, 5, 11, 15, 18, 21], dep: '08:00 AM', eta: '09:45 AM', duration: '~1h 45m'
       },
-      currentRoute: {
-        from: "Surigao Port",
-        to: "San Jose Port"
+      trip2: {
+        key: 'trip2', vessel: 'MB Dinagat Princess', type: 'Passenger Pumpboat', capacity: 30,
+        seats: 24, taken: [1, 4, 7, 9, 12, 16, 20, 23], dep: '10:30 AM', eta: '12:20 PM', duration: '~1h 50m'
       },
-      currentBookingModal: null,
-      selectedSeat: null,
-      bookings: [] // Fresh clean state
+      trip3: {
+        key: 'trip3', vessel: 'MV Island Express', type: 'High-speed Ferry', capacity: 40,
+        seats: 40, taken: [3, 6, 10, 14, 17, 25, 31, 36], dep: '01:30 PM', eta: '03:00 PM', duration: '~1h 30m'
+      }
     };
 
-    window.addEventListener('DOMContentLoaded', () => {
+    const FARE_TIERS = [
+      { value: 'regular', label: 'Regular Commuter', fare: 100 },
+      { value: 'student', label: 'Student', fare: 75 },
+      { value: 'senior', label: 'Senior Citizen / PWD', fare: 70 },
+      { value: 'child', label: 'Child', fare: 50 }
+    ];
+
+    const STORE = { accounts: 'seapass.accounts.v1', bookings: 'seapass.bookings.v1' };
+
+    // ─── State ───
+    const state = {
+      isLoggedIn: false,
+      user: null,
+      currentRoute: { from: 'Surigao Port', to: 'San Jose Port' },
+      selectedDate: '',
+      dateLabel: 'Today',
+      currentBookingModal: null,
+      selectedSeat: null,
+      selectedFare: 100,
+      selectedTier: 'Regular Commuter',
+      bookings: []
+    };
+
+    // ─── Storage helpers ───
+    function readStore(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (err) {
+        return fallback;
+      }
+    }
+
+    function writeStore(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {}
+    }
+
+    // ─── Date helpers ───
+    function isoDate(dateObj) {
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return dateObj.getFullYear() + '-' + m + '-' + d;
+    }
+
+    function todayISO() {
+      return isoDate(new Date());
+    }
+
+    function shiftDate(iso, days) {
+      const parts = iso.split('-').map(Number);
+      const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+      dt.setDate(dt.getDate() + days);
+      return isoDate(dt);
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      const parts = iso.split('-').map(Number);
+      const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+      return dt.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // ─── Init ───
+    document.addEventListener('DOMContentLoaded', () => {
+      state.selectedDate = todayISO();
+      const dateInput = document.getElementById('custom-date-input');
+      dateInput.min = todayISO();
+      dateInput.value = todayISO();
+      updateSeatBadges();
       renderBookings();
+      showAuthMode('signin');
+      updateClock();
+      setInterval(updateClock, 30000);
     });
 
+    function updateClock() {
+      const clock = document.getElementById('mock-clock');
+      if (!clock) return;
+      const now = new Date();
+      const h = now.getHours() % 12 || 12;
+      const m = String(now.getMinutes()).padStart(2, '0');
+      clock.textContent = h + ':' + m;
+    }
+
+    function updateSeatBadges() {
+      Object.keys(TRIPS).forEach(key => {
+        const trip = TRIPS[key];
+        const el = document.getElementById('seats-' + key);
+        if (el) el.textContent = (trip.seats - trip.taken.length) + ' seats';
+      });
+    }
+
+    // ─── Auth ───
+    function nameFromEmail(email) {
+      const local = (email.split('@')[0] || '').replace(/[._-]+/g, ' ').trim();
+      if (!local) return 'Passenger';
+      return local.split(' ').filter(Boolean).map(function (word) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }).join(' ');
+    }
+
+    function initials(name) {
+      const words = (name || 'Passenger').trim().split(/\s+/).filter(Boolean);
+      if (!words.length) return 'P';
+      if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+      return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+    }
+
+    function validEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+    }
+
+    function validPhone(value) {
+      const digits = value.replace(/\D/g, '');
+      return digits.length >= 10 && digits.length <= 13;
+    }
+
+    function formatPhone(value) {
+      let digits = value.replace(/\D/g, '');
+      if (digits.startsWith('63') && digits.length === 12) digits = '0' + digits.slice(2);
+      if (digits.length === 11) return digits.slice(0, 4) + ' ' + digits.slice(4, 7) + ' ' + digits.slice(7);
+      return value.trim();
+    }
+
+    function showAuthMode(mode) {
+      const signin = document.getElementById('signin-form');
+      const signup = document.getElementById('signup-form');
+      const heading = document.getElementById('auth-heading');
+      const sub = document.getElementById('auth-sub');
+
+      clearFormError('signin-error');
+      clearFormError('signup-error');
+      markInvalid('signin-email', false);
+      markInvalid('signin-password', false);
+      markInvalid('signup-name', false);
+      markInvalid('signup-email', false);
+      markInvalid('signup-phone', false);
+      markInvalid('signup-password', false);
+
+      if (mode === 'signup') {
+        signin.classList.add('hidden');
+        signup.classList.remove('hidden');
+        heading.textContent = 'Create Your Account';
+        sub.textContent = 'One account for booking seats and keeping your digital passes';
+        const emailField = document.getElementById('signup-email');
+        if (!emailField.value) emailField.value = document.getElementById('signin-email').value.trim();
+      } else {
+        signup.classList.add('hidden');
+        signin.classList.remove('hidden');
+        heading.textContent = 'Welcome to SeaPass';
+        sub.textContent = 'Sign in to book lancha trips and access your digital pass';
+      }
+    }
+
+    function togglePassword(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.textContent = show ? 'Hide' : 'Show';
+    }
+
+    function setFormError(id, message) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = message;
+      el.classList.add('show');
+    }
+
+    function clearFormError(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = '';
+      el.classList.remove('show');
+    }
+
+    function markInvalid(id, invalid) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('input-invalid', !!invalid);
+    }
+
+    function fieldValue(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function handleSignIn(event) {
+      event.preventDefault();
+      clearFormError('signin-error');
+
+      const email = fieldValue('signin-email').toLowerCase();
+      const password = document.getElementById('signin-password').value;
+
+      if (!validEmail(email)) {
+        markInvalid('signin-email', true);
+        setFormError('signin-error', 'Enter a valid email address.');
+        return;
+      }
+      markInvalid('signin-email', false);
+
+      if (password.length < 6) {
+        markInvalid('signin-password', true);
+        setFormError('signin-error', 'Password must be at least 6 characters.');
+        return;
+      }
+      markInvalid('signin-password', false);
+
+      const accounts = readStore(STORE.accounts, {});
+      let account = accounts[email];
+
+      if (!account) {
+        account = {
+          name: nameFromEmail(email),
+          email: email,
+          phone: '',
+          classification: 'Regular Commuter'
+        };
+        accounts[email] = account;
+        writeStore(STORE.accounts, accounts);
+      }
+
+      enterApp(account);
+    }
+
+    function handleSignUp(event) {
+      event.preventDefault();
+      clearFormError('signup-error');
+
+      const name = fieldValue('signup-name');
+      const email = fieldValue('signup-email').toLowerCase();
+      const phone = fieldValue('signup-phone');
+      const password = document.getElementById('signup-password').value;
+
+      if (name.length < 2) {
+        markInvalid('signup-name', true);
+        setFormError('signup-error', 'Enter your full name.');
+        return;
+      }
+      markInvalid('signup-name', false);
+
+      if (!validEmail(email)) {
+        markInvalid('signup-email', true);
+        setFormError('signup-error', 'Enter a valid email address.');
+        return;
+      }
+      markInvalid('signup-email', false);
+
+      if (!validPhone(phone)) {
+        markInvalid('signup-phone', true);
+        setFormError('signup-error', 'Enter a valid mobile number.');
+        return;
+      }
+      markInvalid('signup-phone', false);
+
+      if (password.length < 6) {
+        markInvalid('signup-password', true);
+        setFormError('signup-error', 'Password must be at least 6 characters.');
+        return;
+      }
+      markInvalid('signup-password', false);
+
+      const accounts = readStore(STORE.accounts, {});
+      const account = {
+        name: name,
+        email: email,
+        phone: formatPhone(phone),
+        classification: 'Regular Commuter'
+      };
+      accounts[email] = account;
+      writeStore(STORE.accounts, accounts);
+
+      enterApp(account);
+    }
+
+    function enterApp(account) {
+      state.isLoggedIn = true;
+      state.user = account;
+      state.bookings = readStore(STORE.bookings, {})[account.email] || [];
+
+      document.getElementById('header-user-name').textContent = account.name;
+      document.getElementById('header-user-sub').textContent =
+        (account.classification || 'Regular Commuter') + ' • Surigao ⇄ San Jose';
+      const headerAvatar = document.getElementById('avatar-initial');
+      if (headerAvatar) headerAvatar.textContent = initials(account.name);
+
+      renderProfile();
+      renderBookings();
+      document.getElementById('signin-password').value = '';
+      document.getElementById('signup-password').value = '';
+
+      showScreen('main-shell');
+      switchTab('schedules', document.querySelector('.nav-item'));
+
+      setTimeout(() => {
+        showSmsAlert('[SEAPASS] Welcome aboard, ' + account.name.split(' ')[0] +
+          '. Search lancha trips and reserve your seat online.');
+      }, 600);
+    }
+
+    function handleLogout() {
+      state.isLoggedIn = false;
+      state.user = null;
+      state.bookings = [];
+      state.currentBookingModal = null;
+      state.selectedSeat = null;
+
+      document.getElementById('signin-email').value = '';
+      document.getElementById('signin-password').value = '';
+      document.getElementById('signup-name').value = '';
+      document.getElementById('signup-email').value = '';
+      document.getElementById('signup-phone').value = '';
+      document.getElementById('signup-password').value = '';
+
+      closeBookingModal();
+      closeTicketModal();
+      renderBookings();
+      showAuthMode('signin');
+      showScreen('login-screen');
+    }
+
+    // ─── Screens and tabs ───
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const target = document.getElementById(screenId);
@@ -1279,33 +1868,13 @@
     function switchTab(tabName, el) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      
-      document.getElementById('tab-' + tabName).classList.add('active');
+
+      const target = document.getElementById('tab-' + tabName);
+      if (target) target.classList.add('active');
       if (el) el.classList.add('active');
     }
 
-    function handleManualLogin(e) {
-      e.preventDefault();
-      executeLogin();
-    }
-
-    function executeLogin() {
-      state.isLoggedIn = true;
-      showScreen('main-shell');
-      switchTab('schedules', document.querySelector('.nav-item'));
-
-      // Show welcome SMS notification
-      setTimeout(() => {
-        showSmsAlert("[SEAPASS] Welcome to SeaPass Passenger App. Search lancha trips and reserve seats online.");
-      }, 500);
-    }
-
-    function handleLogout() {
-      state.isLoggedIn = false;
-      showScreen('login-screen');
-    }
-
-    // Route Switching & Filter
+    // ─── Route and date filters ───
     function swapRoute() {
       const temp = state.currentRoute.from;
       state.currentRoute.from = state.currentRoute.to;
@@ -1313,22 +1882,62 @@
 
       document.getElementById('route-from-text').textContent = state.currentRoute.from;
       document.getElementById('route-to-text').textContent = state.currentRoute.to;
+      document.querySelectorAll('.sc-port-val[data-port="from"]').forEach(el => {
+        el.textContent = state.currentRoute.from;
+      });
+      document.querySelectorAll('.sc-port-val[data-port="to"]').forEach(el => {
+        el.textContent = state.currentRoute.to;
+      });
     }
 
     function setDateFilter(type, el) {
       document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
-      el.classList.add('active');
+      if (el) el.classList.add('active');
+
+      const wrap = document.getElementById('custom-date-wrap');
+      const input = document.getElementById('custom-date-input');
+
+      if (type === 'today') {
+        state.selectedDate = todayISO();
+        state.dateLabel = 'Today';
+        wrap.classList.add('hidden');
+      } else if (type === 'tomorrow') {
+        state.selectedDate = shiftDate(todayISO(), 1);
+        state.dateLabel = 'Tomorrow';
+        wrap.classList.add('hidden');
+      } else {
+        wrap.classList.remove('hidden');
+        if (!input.value || input.value < todayISO()) input.value = todayISO();
+        state.selectedDate = input.value;
+        state.dateLabel = formatDate(input.value);
+        if (typeof input.showPicker === 'function') {
+          try { input.showPicker(); } catch (err) {}
+        }
+      }
     }
 
-    // Booking Modal
-    function openBookingModal(vessel, time, available, id) {
-      state.currentBookingModal = { vessel, time, available, id };
-      document.getElementById('bm-vessel').textContent = vessel;
-      document.getElementById('bm-route').textContent = state.currentRoute.from + " → " + state.currentRoute.to;
-      
-      renderSeats(available);
-      calculateFare();
+    function setCustomDate(value) {
+      if (!value) return;
+      if (value < todayISO()) {
+        value = todayISO();
+        document.getElementById('custom-date-input').value = value;
+      }
+      state.selectedDate = value;
+      state.dateLabel = formatDate(value);
+    }
 
+    // ─── Booking ───
+    function openBookingModal(tripKey) {
+      const trip = TRIPS[tripKey];
+      if (!trip) return;
+
+      state.currentBookingModal = trip;
+      document.getElementById('bm-vessel').textContent = trip.vessel;
+      document.getElementById('bm-route').textContent = state.currentRoute.from + ' → ' + state.currentRoute.to;
+      clearFormError('bm-error');
+
+      renderSeats(trip);
+      calculateFare();
       document.getElementById('booking-modal').classList.add('active');
     }
 
@@ -1336,23 +1945,29 @@
       document.getElementById('booking-modal').classList.remove('active');
     }
 
-    function renderSeats(available) {
+    function renderSeats(trip) {
       const container = document.getElementById('seat-grid');
       container.innerHTML = '';
-      const totalSeats = 24;
-      const occupiedIndices = new Set([2, 5, 11, 15, 18, 21]);
+
+      const taken = new Set(trip.taken);
+      state.bookings
+        .filter(b => b.tripKey === trip.key && b.date === state.selectedDate)
+        .forEach(b => taken.add(Number(b.seat)));
 
       state.selectedSeat = null;
-      document.getElementById('selected-seat-label').textContent = "Seat: None";
+      document.getElementById('selected-seat-label').textContent = 'Seat: None';
 
-      for (let i = 1; i <= totalSeats; i++) {
+      for (let i = 1; i <= trip.seats; i++) {
         const btn = document.createElement('button');
+        btn.type = 'button';
         btn.className = 'seat-btn';
         btn.textContent = i;
-        if (occupiedIndices.has(i)) {
+        if (taken.has(i)) {
           btn.classList.add('occupied');
           btn.disabled = true;
+          btn.setAttribute('aria-label', 'Seat ' + i + ' taken');
         } else {
+          btn.setAttribute('aria-label', 'Seat ' + i + ' available');
           btn.onclick = () => selectSeat(i, btn);
         }
         container.appendChild(btn);
@@ -1363,105 +1978,172 @@
       document.querySelectorAll('.seat-btn').forEach(b => b.classList.remove('selected'));
       btnEl.classList.add('selected');
       state.selectedSeat = seatNum;
-      document.getElementById('selected-seat-label').textContent = "Seat: #" + (seatNum < 10 ? '0' + seatNum : seatNum);
+      clearFormError('bm-error');
+      document.getElementById('selected-seat-label').textContent =
+        'Seat: #' + String(seatNum).padStart(2, '0');
     }
 
     function calculateFare() {
       const select = document.getElementById('bm-category');
-      const fare = parseFloat(select.options[select.selectedIndex].getAttribute('data-fare')) || 100;
-      document.getElementById('bm-base-fare').textContent = "₱" + fare.toFixed(2);
-      document.getElementById('bm-total-fare').textContent = "₱" + fare.toFixed(2);
+      const option = select.options[select.selectedIndex];
+      const fare = parseFloat(option.dataset.fare) || 100;
+      const tier = option.textContent.split('—')[0].trim();
+
+      state.selectedFare = fare;
+      state.selectedTier = tier;
+
+      document.getElementById('bm-base-fare').textContent = '₱' + fare.toFixed(2);
+      document.getElementById('bm-total-fare').textContent = '₱' + fare.toFixed(2);
     }
 
     function confirmSeatBooking() {
       if (!state.selectedSeat) {
-        alert("Please select your seat on the seat map before confirming.");
+        setFormError('bm-error', 'Select a seat on the map before confirming.');
         return;
       }
+      if (!state.currentBookingModal) return;
 
       const randomNum = Math.floor(1000 + Math.random() * 9000);
-      const newRef = "SP-2026-" + randomNum;
-      const seatStr = state.selectedSeat < 10 ? '0' + state.selectedSeat : '' + state.selectedSeat;
+      const newRef = 'SP-2026-' + randomNum;
+      const seatStr = String(state.selectedSeat).padStart(2, '0');
 
-      const newBooking = {
+      const booking = {
         id: randomNum.toString(),
         ref: newRef,
+        tripKey: state.currentBookingModal.key,
         vessel: state.currentBookingModal.vessel,
-        route: state.currentRoute.from + " → " + state.currentRoute.to,
-        date: "Today",
-        time: state.currentBookingModal.time,
+        route: state.currentRoute.from + ' → ' + state.currentRoute.to,
+        date: state.selectedDate,
+        dateLabel: state.dateLabel,
+        time: state.currentBookingModal.dep,
         seat: seatStr,
-        status: "Confirmed",
-        fare: 100.00
+        tier: state.selectedTier,
+        fare: state.selectedFare,
+        status: 'Confirmed',
+        createdAt: new Date().toISOString()
       };
 
-      state.bookings.unshift(newBooking);
+      state.bookings.unshift(booking);
+      persistBookings();
       renderBookings();
+      renderProfile();
       closeBookingModal();
 
-      // Trigger Semaphore SMS Push
-      showSmsAlert(`[SEAPASS] Booking #${newRef} confirmed for ${newBooking.route}. Seat #${seatStr}. Show your digital QR pass at the port gate.`);
+      showSmsAlert('[SEAPASS] Booking #' + newRef + ' confirmed for ' + booking.route +
+        ' on ' + booking.dateLabel + '. Seat #' + seatStr + '. Show your digital QR pass at the port gate.');
 
-      // Open Ticket
-      setTimeout(() => {
-        openTicketModal(newBooking);
-      }, 500);
+      setTimeout(() => openTicketModal(booking), 500);
     }
 
-    // Bookings & Ticket Display
+    function persistBookings() {
+      if (!state.user) return;
+      const all = readStore(STORE.bookings, {});
+      all[state.user.email] = state.bookings;
+      writeStore(STORE.bookings, all);
+    }
+
+    // ─── Bookings list ───
     function renderBookings() {
       const container = document.getElementById('bookings-list-container');
+      const badge = document.getElementById('bookings-count-badge');
+      if (!container || !badge) return;
+
       container.innerHTML = '';
 
-      if (state.bookings.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state-box">
-            <div class="empty-state-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
-            </div>
-            <div style="font-weight:700; color:var(--dark-text); font-size:14px; margin-bottom:4px;">No Active Bookings Yet</div>
-            <div style="font-size:12px;">Reserve a seat in the Schedules tab to generate your digital boarding pass.</div>
-          </div>
-        `;
-        document.getElementById('bookings-count-badge').textContent = "0 Active";
+      if (!state.isLoggedIn || state.bookings.length === 0) {
+        container.innerHTML =
+          '<div class="empty-state-box">' +
+            '<div class="empty-state-icon">' +
+              '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>' +
+            '</div>' +
+            '<div style="font-weight:700; color:var(--dark-text); font-size:14px; margin-bottom:4px;">No Active Bookings Yet</div>' +
+            '<div style="font-size:12px; margin-bottom:16px;">Reserve a seat in the Schedules tab to generate your digital boarding pass.</div>' +
+            '<button class="sc-book-btn" style="margin-left:0; padding:10px 18px;" onclick="switchTab(\'schedules\', document.querySelectorAll(\'.nav-item\')[0])">Browse Schedules</button>' +
+          '</div>';
+        badge.textContent = '0 Active';
         return;
       }
 
-      state.bookings.forEach(b => {
+      state.bookings.forEach(booking => {
         const card = document.createElement('div');
         card.className = 'schedule-card';
-        card.innerHTML = `
-          <div class="sc-header">
-            <div>
-              <div class="sc-vessel-name">${b.route}</div>
-              <div class="sc-vessel-type">Ref: ${b.ref} • Seat #${b.seat}</div>
-            </div>
-            <span class="sc-status-tag" style="${b.status === 'Completed' ? 'background:#F1F5F9; color:#475569;' : ''}">${b.status}</span>
-          </div>
-          <div class="fare-row" style="font-size:12px; margin-bottom:8px;">
-            <span>Vessel: <strong>${b.vessel}</strong></span>
-            <span>Departure: <strong>${b.time}</strong></span>
-          </div>
-          <button class="sc-book-btn" style="width:100%; margin-left:0; padding:10px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick='openTicketModal(${JSON.stringify(b)})'>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
-            View Boarding Pass & QR
-          </button>
-        `;
+
+        const header = document.createElement('div');
+        header.className = 'sc-header';
+        const left = document.createElement('div');
+        const routeEl = document.createElement('div');
+        routeEl.className = 'sc-vessel-name';
+        routeEl.textContent = booking.route;
+        const meta = document.createElement('div');
+        meta.className = 'sc-vessel-type';
+        meta.textContent = 'Ref: ' + booking.ref + ' • Seat #' + booking.seat;
+        left.appendChild(routeEl);
+        left.appendChild(meta);
+        const status = document.createElement('span');
+        status.className = 'sc-status-tag';
+        status.textContent = booking.status;
+        header.appendChild(left);
+        header.appendChild(status);
+        card.appendChild(header);
+
+        const details = [
+          ['Vessel', booking.vessel],
+          ['Departure', booking.time + ' • ' + booking.dateLabel],
+          ['Fare Tier', booking.tier],
+          ['Fare Paid', '₱' + Number(booking.fare).toFixed(2)]
+        ];
+        details.forEach(pair => {
+          const row = document.createElement('div');
+          row.className = 'fare-row';
+          row.style.fontSize = '12px';
+          row.style.marginBottom = '6px';
+          const label = document.createElement('span');
+          label.textContent = pair[0];
+          const value = document.createElement('strong');
+          value.textContent = pair[1];
+          row.appendChild(label);
+          row.appendChild(value);
+          card.appendChild(row);
+        });
+
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'sc-book-btn';
+        viewBtn.style.cssText = 'width:100%; margin-left:0; padding:10px; border-radius:10px; margin-top:6px;';
+        viewBtn.textContent = 'View Boarding Pass & QR';
+        viewBtn.onclick = () => openTicketModal(booking);
+        card.appendChild(viewBtn);
+
         container.appendChild(card);
       });
 
-      document.getElementById('bookings-count-badge').textContent = state.bookings.length + " Active";
+      badge.textContent = state.bookings.length + ' Active';
     }
 
+    // ─── Profile ───
+    function renderProfile() {
+      if (!state.user) return;
+      const user = state.user;
+      document.getElementById('acc-avatar').textContent = initials(user.name);
+      document.getElementById('acc-name').textContent = user.name;
+      document.getElementById('acc-email').textContent = user.email;
+      document.getElementById('acc-phone').textContent = user.phone || 'Not provided';
+      document.getElementById('acc-class').textContent = user.classification || 'Regular Commuter';
+      document.getElementById('acc-bookings').textContent = state.bookings.length;
+    }
+
+    // ─── Ticket ───
     function openTicketModal(booking) {
       document.getElementById('tm-route').textContent = booking.route;
-      document.getElementById('tm-ref').textContent = "Ref: " + booking.ref;
-      document.getElementById('tm-passenger').textContent = state.user.name;
-      document.getElementById('tm-seat').textContent = "Seat #" + booking.seat;
+      document.getElementById('tm-ref').textContent = 'Ref: ' + booking.ref;
+      document.getElementById('tm-passenger').textContent = state.user ? state.user.name : 'Passenger';
+      document.getElementById('tm-seat').textContent = 'Seat #' + booking.seat;
       document.getElementById('tm-vessel').textContent = booking.vessel;
       document.getElementById('tm-time').textContent = booking.time;
+      document.getElementById('tm-date').textContent = booking.dateLabel || formatDate(booking.date);
+      document.getElementById('tm-fare').textContent = '₱' + Number(booking.fare).toFixed(2);
 
-      generateSvgQr(booking.ref + "|" + state.user.name + "|" + booking.seat);
+      const passenger = state.user ? state.user.name : 'Passenger';
+      renderQr(['SEAPASS', booking.ref, passenger, booking.route, booking.date, booking.time, booking.seat].join('|'));
 
       document.getElementById('ticket-modal').classList.add('active');
     }
@@ -1470,60 +2152,80 @@
       document.getElementById('ticket-modal').classList.remove('active');
     }
 
-    // High Quality Dynamic SVG QR Generator
-    function generateSvgQr(dataStr) {
+    function renderQr(payload) {
       const box = document.getElementById('tm-qr-box');
-      const size = 21;
-      let svg = `<svg width="170" height="170" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">`;
-      svg += `<rect width="${size}" height="${size}" fill="white"/>`;
+      const status = document.getElementById('tm-qr-status');
 
+      if (typeof qrcode === 'function') {
+        try {
+          const qr = qrcode(0, 'M');
+          qr.addData(payload);
+          qr.make();
+          box.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 6, scalable: true });
+          const svg = box.querySelector('svg');
+          if (svg) {
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+          }
+          if (status) status.textContent = '● READY FOR PORT SCANNER';
+          return;
+        } catch (err) {}
+      }
+
+      box.innerHTML = fallbackQrSvg(payload);
+      if (status) status.textContent = '● DEMO PASS PREVIEW';
+    }
+
+    function fallbackQrSvg(payload) {
+      const size = 25;
       let hash = 0;
-      for (let i = 0; i < dataStr.length; i++) {
-        hash = ((hash << 5) - hash) + dataStr.charCodeAt(i);
+      for (let i = 0; i < payload.length; i++) {
+        hash = ((hash << 5) - hash) + payload.charCodeAt(i);
         hash |= 0;
       }
 
-      function isFinder(r, c) {
-        if (r < 7 && c < 7) return true;
-        if (r < 7 && c >= size - 7) return true;
-        if (r >= size - 7 && c < 7) return true;
-        return false;
+      function inFinder(r, c) {
+        return (r < 7 && c < 7) || (r < 7 && c >= size - 7) || (r >= size - 7 && c < 7);
       }
+
+      function finderBit(r, c) {
+        let rr = r;
+        let cc = c;
+        if (r < 7 && c >= size - 7) cc = c - (size - 7);
+        if (r >= size - 7 && c < 7) rr = r - (size - 7);
+        const ring = rr === 0 || rr === 6 || cc === 0 || cc === 6;
+        const core = rr >= 2 && rr <= 4 && cc >= 2 && cc <= 4;
+        return ring || core;
+      }
+
+      let svg = '<svg width="100%" height="100%" viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="crispEdges">';
+      svg += '<rect width="' + size + '" height="' + size + '" fill="white"/>';
 
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
-          if (isFinder(r, c)) {
-            if (r < 7 && c < 7) {
-              const border = r===0||r===6||c===0||c===6 || (r>=2&&r<=4&&c>=2&&c<=4);
-              if (border) svg += `<rect x="${c}" y="${r}" width="1" height="1" fill="#0F172A"/>`;
-            } else if (r < 7 && c >= size - 7) {
-              const cc = c - (size - 7);
-              const border = r===0||r===6||cc===0||cc===6 || (r>=2&&r<=4&&cc>=2&&cc<=4);
-              if (border) svg += `<rect x="${c}" y="${r}" width="1" height="1" fill="#0F172A"/>`;
-            } else if (r >= size - 7 && c < 7) {
-              const rr = r - (size - 7);
-              const border = rr===0||rr===6||c===0||c===6 || (rr>=2&&rr<=4&&c>=2&&c<=4);
-              if (border) svg += `<rect x="${c}" y="${r}" width="1" height="1" fill="#0F172A"/>`;
-            }
+          let dark = false;
+          if (inFinder(r, c)) {
+            dark = finderBit(r, c);
+          } else if (r === 6 || c === 6) {
+            dark = (r + c) % 2 === 0;
           } else {
-            const bit = ((hash * (r + 1) * 31 + c * 17) & 3) === 0;
-            if (bit || (r === 6 || c === 6)) {
-              svg += `<rect x="${c}" y="${r}" width="1" height="1" fill="#0F172A"/>`;
-            }
+            dark = (((hash * (r + 1) * 31 + c * 17) >> 2) & 3) === 0;
           }
+          if (dark) svg += '<rect x="' + c + '" y="' + r + '" width="1" height="1" fill="#0F172A"/>';
         }
       }
-      svg += `</svg>`;
-      box.innerHTML = svg;
+
+      return svg + '</svg>';
     }
 
-    // SMS Push Notification
+    // ─── SMS push simulation ───
     function showSmsAlert(text) {
       const banner = document.getElementById('sms-banner');
       document.getElementById('sms-text').textContent = text;
       banner.classList.add('show');
 
-      setTimeout(() => {
+      clearTimeout(showSmsAlert.hideTimer);
+      showSmsAlert.hideTimer = setTimeout(() => {
         banner.classList.remove('show');
       }, 7000);
     }
